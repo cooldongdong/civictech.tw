@@ -1,0 +1,331 @@
+---
+// 這裡預留未來從 Google Sheet API 撈取資料的邏輯
+// 目前第一階段，我們先準備幾則「模擬資料（Mock Data）」來測試 3D 翻牌卡片的視覺效果
+const mockWishes = [
+  {
+    id: 1,
+    title: "真的假的 Cofacts",
+    description: "透過 LINE 機器人回報可疑訊息的群眾協力事實查核平台。",
+    painPoint: "現有查核工具通常需要手動複製貼上到網頁，在通訊軟體內使用不夠直覺。",
+    superpower: "徵求會寫 LINE Bot API 的後端工程師，以及有社群營運經驗的推廣夥伴！",
+    progress: "已有構想、已有草稿"
+  },
+  {
+    id: 2,
+    title: "阿美語萌典",
+    description: "將傳統阿美語字典數位化，並提供網頁與 App 快速查閱與發音整合。",
+    painPoint: "紙本工具難以使用且音檔分散，年輕一代想學習卻找不到友善的數位載體。",
+    superpower: "徵求會用 React Native 的行動應用開發者，以及阿美族語發音錄製志工。",
+    progress: "已有資料"
+  }
+];
+---
+
+<section id="wish-pool" class="wishpool-section">
+  <div class="container">
+    
+    <div class="form-container">
+      <h2 class="form-title">💡 填寫您的公民科技專案期待</h2>
+      
+      <form id="js-wish-form" class="wish-form">
+        <div class="form-group">
+          <label for="wish-q1">1. 給專案取個酷名字：如「真的假的」、「阿美語萌典」，好記又有個性。</label>
+          <input type="text" id="wish-q1" name="entry.111111" required placeholder="請輸入專案名稱..." />
+        </div>
+
+        <div class="form-group">
+          <label for="wish-q2">2. 一句話形容這個專案：透過 [技術] 解決 [誰] 的 [什麼痛點]。</label>
+          <input type="text" id="wish-q2" name="entry.222222" required placeholder="請輸入一句話形容..." />
+        </div>
+
+        <div class="form-group">
+          <label for="wish-q3">3. 現有工具的不足：為什麼現在的方法行不通？</label>
+          <textarea id="wish-q3" name="entry.333333" rows="3" required placeholder="請描述目前的困境與不足..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="wish-q4">4. 需要的超能力：（例如：徵求會用 ______ 的人）。</label>
+          <input type="text" id="wish-q4" name="entry.444444" required placeholder="例如：徵求會寫 React / 需要 UI 設計師..." />
+        </div>
+
+        <div class="form-group">
+          <label for="wish-q5">5. 目前的進度：</label>
+          <select id="wish-q5" name="entry.555555" required>
+            <option value="" disabled selected>-- 請選擇目前進度 --</option>
+            <option value="已有構想">已有構想</option>
+            <option value="已有草稿">已有草稿</option>
+            <option value="已有資料">已有資料</option>
+          </select>
+        </div>
+
+        <button type="submit" class="submit-btn">送出許願</button>
+      </form>
+      
+      <div id="js-success-msg" class="success-message hidden">
+        🎉 許願已成功送出！為了防範垃圾訊息，小編審核通過後就會出現在下方喔！
+      </div>
+    </div>
+
+    <div class="wishes-display-area">
+      <h3 class="display-title">許願池展示區</h3>
+      
+      <div class="wishes-grid">
+        {mockWishes.map((wish) => (
+          /* 3D 翻轉卡片的舞台外殼 */
+          <div class="flip-card" tabindex="0">
+            <div class="flip-card-inner">
+              
+              <div class="flip-card-front">
+                <div class="card-badge">{wish.progress}</div>
+                <div class="avatar-placeholder">💡</div>
+                <h4 class="card-wish-title">{wish.title}</h4>
+                <p class="card-wish-desc">{wish.description}</p>
+                <div class="flip-hint">💡 滑鼠懸停或點擊翻面查看需求</div>
+              </div>
+              
+              <div class="flip-card-back">
+                <h4 class="back-title">專案需求詳情</h4>
+                <div class="back-content">
+                  <p><strong>現況痛點：</strong>{wish.painPoint}</p>
+                  <p><strong>極需支援：</strong>{wish.superpower}</p>
+                  <p><strong>目前進度：</strong>{wish.progress}</p>
+                </div>
+                <div class="flip-hint-back">🔄 移開或再次點擊翻回</div>
+              </div>
+
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  /* 區塊基礎設定 */
+  .wishpool-section {
+    padding: 80px 20px;
+    background-color: #f8fafc; /* 淺灰藍背景與區塊 2 做視覺分隔 */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  /* === 表單樣式 === */
+  .form-container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    margin-bottom: 80px;
+  }
+  .form-title {
+    font-size: 1.75rem;
+    color: #0369a1;
+    margin-bottom: 24px;
+    font-weight: 600;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 1rem;
+    color: #334155;
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .form-group input, 
+  .form-group textarea, 
+  .form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #1e293b;
+    background-color: #fff;
+    box-sizing: border-box;
+  }
+  .form-group input:focus, 
+  .form-group textarea:focus, 
+  .form-group select:focus {
+    outline: none;
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+  }
+  .submit-btn {
+    width: 100%;
+    background-color: #1e3a8a; /* 深藍色按鈕 */
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .submit-btn:hover {
+    background-color: #172554;
+  }
+  .success-message {
+    margin-top: 20px;
+    padding: 16px;
+    background-color: #f0fdf4;
+    border-left: 4px solid #22c55e;
+    color: #166534;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .hidden { display: none; }
+
+  /* === 許願展示區與 3D 翻轉卡片樣式 === */
+  .display-title {
+    font-size: 1.75rem;
+    color: #0f172a;
+    text-align: center;
+    margin-bottom: 40px;
+    font-weight: 700;
+  }
+  .wishes-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 30px;
+  }
+  @media (min-width: 768px) {
+    .wishes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  /* 3D 翻轉核心：場景設定 */
+  .flip-card {
+    background-color: transparent;
+    height: 320px;
+    perspective: 1000px; /* 定義 3D 空間透視深度 */
+    cursor: pointer;
+  }
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d; /* 關鍵：使子元素保有 3D 空間屬性 */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+  }
+
+  /* 觸發翻轉條件：滑鼠懸停 (Hover) 或 鍵盤/點擊聚焦 (Focus) */
+  .flip-card:hover .flip-card-inner,
+  .flip-card:focus .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  /* 正反面共同設定 */
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden; /* 關鍵：翻轉過去時，背面要隱藏 */
+    backface-visibility: hidden;
+    border-radius: 12px;
+    padding: 24px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* 正面樣式（白底藍調，俐落清爽） */
+  .flip-card-front {
+    background-color: #ffffff;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+  }
+  .card-badge {
+    align-self: flex-end;
+    background-color: #f0fdf4;
+    color: #166534;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .avatar-placeholder {
+    width: 60px;
+    height: 60px;
+    background-color: #f1f5f9;
+    border-radius: 50%;
+    font-size: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-wish-title {
+    font-size: 1.3rem;
+    color: #0f172a;
+    margin: 12px 0 6px 0;
+    font-weight: 600;
+  }
+  .card-wish-desc {
+    font-size: 0.95rem;
+    color: #64748b;
+    line-height: 1.5;
+    text-align: center;
+    flex-grow: 1;
+  }
+
+  /* 背面樣式（深藍底，呈現核心規格感） */
+  .flip-card-back {
+    background-color: #0f172a;
+    color: #f8fafc;
+    transform: rotateY(180deg); /* 預設先水平翻轉 180 度 */
+    align-items: flex-start;
+    text-align: left;
+  }
+  .back-title {
+    font-size: 1.1rem;
+    color: #38bdf8; /* 亮藍色突顯標題 */
+    margin: 0 0 12px 0;
+    border-bottom: 1px solid #334155;
+    width: 100%;
+    padding-bottom: 6px;
+    font-weight: 600;
+  }
+  .back-content {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    flex-grow: 1;
+  }
+  .back-content p {
+    margin: 0 0 10px 0;
+  }
+  .back-content strong {
+    color: #bae6fd;
+  }
+
+  /* 翻轉小提示字體 */
+  .flip-hint { font-size: 0.8rem; color: #94a3b8; }
+  .flip-hint-back { font-size: 0.8rem; color: #64748b; align-self: center; }
+</style>
+
+<script>
+  // 簡單的前端互動：阻擋表單預設重整行為，並顯示成功提示
+  const form = document.getElementById('js-wish-form');
+  const successMsg = document.getElementById('js-success-msg');
+
+  if (form && successMsg) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault(); // 阻止網頁跳轉整頁重新整理
+      
+      // 未來在這裡加入 fetch 將資料 POST 到 Google Sheet 的程式碼
+      
+      form.classList.add('hidden'); // 隱藏表單
+      successMsg.classList.remove('hidden'); // 秀出審核提示
+    });
+  }
+</script>
