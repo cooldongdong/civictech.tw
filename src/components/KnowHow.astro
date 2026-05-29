@@ -1,0 +1,191 @@
+---
+// 1. 引入我們在前面準備好的 40 則資料 JSON
+import knowHowData from '../content/knowhow/data.json';
+
+// 2. 核心邏輯：將扁平的陣列，依據 category (領域) 自動分類成群組
+// 這樣未來你在 JSON 裡新增、修改項目，網頁就會自動重新排版，完全不用動 HTML！
+const categorizedData = knowHowData.reduce((acc, item) => {
+  if (!acc[item.category]) {
+    acc[item.category] = [];
+  }
+  acc[item.category].push(item);
+  return acc;
+}, {});
+
+// 定義 6 大領域的陣列，確保網頁渲染時的順序與你的草圖完全一致
+const categoriesOrder = [
+  "一段政策治理的描述",
+  "一段生活與學習的描述",
+  "一段地理與環境的描述",
+  "一段資料驅動類的描述",
+  "一段捲動使用者的描述",
+  "一段組織營運的描述"
+];
+---
+
+<section id="know-how" class="knowhow-section">
+  <div class="container">
+    <h2 class="section-title">40 則關鍵 Know-how</h2>
+    <p class="section-subtitle">點擊下方各領域的關鍵字，即可直接前往共筆查看豐富的公民科技實踐指南。</p>
+
+    <div class="categories-grid">
+      {categoriesOrder.map((categoryName) => {
+        const items = categorizedData[categoryName] || [];
+        return (
+          <div class="category-card">
+            <h3 class="category-header">{categoryName}</h3>
+            
+            <ul class="item-list">
+              {items.map((item) => (
+                <li class="item-li">
+                  <a 
+                    href={item.url || "#"} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    class={`item-link ${!item.url ? 'disabled' : ''}`}
+                    title={!item.url ? "共筆連結整理中" : `前往查看：${item.title}`}
+                  >
+                    <span class="bullet-dot">•</span>
+                    <span class="link-text">{item.title}</span>
+                    {item.url && (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="external-icon"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* 區塊整體設定 */
+  .knowhow-section {
+    padding: 80px 20px;
+    background-color: #ffffff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* 主副標題 */
+  .section-title {
+    font-size: 2.25rem;
+    color: #0c4a6e; /* 深藍色 */
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+  }
+
+  .section-subtitle {
+    font-size: 1.05rem;
+    color: #64748b; /* 灰藍色 */
+    text-align: center;
+    margin-bottom: 50px;
+  }
+
+  /* 核心 RWD 網格：預設 1 欄（手機）、中螢幕 2 欄、大螢幕 3 欄 */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 40px;
+  }
+
+  @media (min-width: 768px) {
+    .categories-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .categories-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* 各大領域卡片樣式 */
+  .category-card {
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 領域標題（對齊你的藍色大字） */
+  .category-header {
+    font-size: 1.5rem;
+    color: #0284c7; /* 亮眼的天藍色 */
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px dashed #e2e8f0; /* 分隔虛線 */
+    font-weight: 600;
+  }
+
+  /* 清單樣式移出預設樣式 */
+  .item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* 項目間距 */
+  }
+
+  .item-li {
+    line-height: 1.5;
+  }
+
+  /* 連結本體互動 */
+  .item-link {
+    display: inline-flex;
+    align-items: flex-start;
+    color: #334155;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+  }
+
+  .bullet-dot {
+    margin-right: 8px;
+    color: #94a3b8;
+    user-select: none;
+  }
+
+  .link-text {
+    flex: 1;
+  }
+
+  /* 外部連結小圖示 */
+  .external-icon {
+    margin-left: 6px;
+    margin-top: 4px;
+    color: #94a3b8;
+    flex-shrink: 0;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  /* Hover 效果：文字變色、圖示往右上微跳 */
+  .item-link:hover:not(.disabled) {
+    color: #0284c7;
+    text-decoration: underline;
+  }
+
+  .item-link:hover .external-icon {
+    color: #0284c7;
+    transform: translate(1px, -1px);
+  }
+
+  /* 未填寫連結時的「未開放狀態」樣式 */
+  .item-link.disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+  .item-link.disabled .bullet-dot {
+    color: #cbd5e1;
+  }
+</style>
