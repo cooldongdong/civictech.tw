@@ -1,11 +1,29 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// 引入我們規劃的三大區塊元件
+import HeroVideo from '../components/HeroVideo.astro';
+import KnowHow from '../components/KnowHow.astro';
+import WishPool from '../components/WishPool.astro';
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<html lang="zh-Hant-TW">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>台灣公民科技資料庫 Civic Tech Taiwan</title>
+		<meta name="description" content="匯聚 40 則關鍵 Know-how 與公民科技專案的入口平台" />
+	</head>
+	<body class="bg-slate-50 text-slate-800 m-0 p-0">
+		
+		<!-- 區塊 1：滿版影片 -->
+		<HeroVideo />
+
+		<!-- 區塊 2：40 則關鍵 Know-how -->
+		<KnowHow />
+
+		<!-- 區塊 3：許願區 -->
+		<WishPool />
+
+	</body>
+</html>
