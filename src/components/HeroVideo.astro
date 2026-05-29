@@ -1,6 +1,6 @@
 ---
-const videoSrc = "/videos/hero-background.mp4"; // 預計放在 public/videos/ 下
-const posterSrc = "/images/hero-poster.png";     // 手機端或未載入前的替代靜態圖
+const videoSrc = `${import.meta.env.BASE_URL}videos/hero-background.mp4`; // 預計放在 public/videos/ 下
+const posterSrc = `${import.meta.env.BASE_URL}images/hero-poster.png`;     // 手機端或未載入前的替代靜態圖
 const title = "台灣公民科技資料庫";
 const subtitle = "探索、協作、自主開源，連結數位公民的實踐指南";
 ---
