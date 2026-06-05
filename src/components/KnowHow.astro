@@ -1,5 +1,5 @@
 ---
-import knowHowData from '../content/knowhow/data.json';
+import knowHowData from "../content/knowhow/data.json";
 
 const categorizedData = knowHowData.reduce((acc, item) => {
   if (!acc[item.category]) {
@@ -10,11 +10,14 @@ const categorizedData = knowHowData.reduce((acc, item) => {
 }, {});
 
 const categoriesOrder = [
+  "如何發起一個公民科技專案？",
+  "資料驅動對策手法 Data-driven",
+  "捲動使用者的方法 TA = Take Action",
   "政策治理",
   "地理環境",
   "生活與學習",
   "與組織營運相關的工具與相關內容",
-  "計畫介紹"
+  "計畫介紹",
 ];
 
 const totalCount = knowHowData.length;
@@ -23,37 +26,58 @@ const totalCount = knowHowData.length;
 <section id="know-how" class="knowhow-section">
   <div class="container">
     <h2 class="section-title">{totalCount} 則關鍵 Know-how</h2>
-    <p class="section-subtitle">點擊下方各領域的關鍵字，即可直接前往共筆查看豐富的公民科技實踐指南。</p>
+    <p class="section-subtitle">
+      點擊下方各領域的關鍵字，即可直接前往共筆查看豐富的公民科技實踐指南。
+    </p>
 
     <div class="categories-grid">
-      {categoriesOrder.map((categoryName) => {
-        const items = categorizedData[categoryName] || [];
-        return (
-          <div class="category-card">
-            <h3 class="category-header">{categoryName}</h3>
-            
-            <ul class="item-list">
-              {items.map((item) => (
-                <li class="item-li">
-                  <a 
-                    href={item.url || "#"} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    class={`item-link ${!item.url ? 'disabled' : ''}`}
-                    title={!item.url ? "共筆連結整理中" : `前往查看：${item.title}`}
-                  >
-                    <span class="bullet-dot">•</span>
-                    <span class="link-text">{item.title}</span>
-                    {item.url && (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="external-icon"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                    )}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-      })}
+      {
+        categoriesOrder.map((categoryName) => {
+          const items = categorizedData[categoryName] || [];
+          return (
+            <div class="category-card">
+              <h3 class="category-header">{categoryName}</h3>
+
+              <ul class="item-list">
+                {items.map((item) => (
+                  <li class="item-li">
+                    <a
+                      href={item.url || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class={`item-link ${!item.url ? "disabled" : ""}`}
+                      title={
+                        !item.url ? "共筆連結整理中" : `前往查看：${item.title}`
+                      }
+                    >
+                      <span class="bullet-dot">•</span>
+                      <span class="link-text">{item.title}</span>
+                      {item.url && (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="external-icon"
+                        >
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })
+      }
     </div>
   </div>
 </section>
@@ -63,7 +87,11 @@ const totalCount = knowHowData.length;
   .knowhow-section {
     padding: 80px 20px;
     background-color: #ffffff;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
   }
 
   .container {
@@ -163,7 +191,9 @@ const totalCount = knowHowData.length;
     margin-top: 4px;
     color: #94a3b8;
     flex-shrink: 0;
-    transition: transform 0.2s ease, color 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      color 0.2s ease;
   }
 
   /* Hover 效果：文字變色、圖示往右上微跳 */
