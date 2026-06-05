@@ -1,182 +1,127 @@
 [
     {
-        "category": "一段政策治理的描述",
-        "title": "Follow the Money 各級政府預算、標案查詢、公共工程監督通報",
-        "url": ""
+        "category": "政策治理",
+        "title": "Follow the Money 預算決算施政標案督工",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FO9HAEOErSxy-s1yEpxB7SA%3Fview"
     },
     {
-        "category": "一段政策治理的描述",
-        "title": "Code 法律法規，立法歷程，議會觀測、政策意見徵集",
-        "url": ""
+        "category": "政策治理",
+        "title": "Law 法律法規，立法歷程，議會觀測、政策意見徵集",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F4jzCCzuMQpWgBJ3NMoENoQ%3Fview"
     },
     {
-        "category": "一段政策治理的描述",
+        "category": "政策治理",
         "title": "審議工具，想知道大家的意見",
-        "url": ""
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FSZobo6OqTCGEw7XI_6zCug%3Fview"
     },
     {
-        "category": "一段政策治理的描述",
+        "category": "政策治理",
         "title": "Judgment 判決內容資料",
-        "url": ""
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FAPFPBFNJQqurjsFDZ6r7Hg%3Fview"
     },
     {
-        "category": "一段政策治理的描述",
+        "category": "政策治理",
         "title": "Vote 政見資料，選舉資料",
-        "url": ""
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FoH-LgYkMQiGHaA0HFo7hsg%3Fview"
     },
     {
-        "category": "一段政策治理的描述",
-        "title": "Research",
-        "url": ""
+        "category": "政策治理",
+        "title": "Research 找研究成果",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2Fh4-ydVFcTfu-7lqg8SSBcA%3Fview"
     },
     {
-        "category": "一段政策治理的描述",
+        "category": "政策治理",
         "title": "想促使政府做事的方式改變",
-        "url": ""
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FtqAPBCZXTLCDln6gxOCalQ%3Fview"
     },
     {
-        "category": "一段生活與學習的描述",
-        "title": "Language 語言類",
-        "url": ""
-    },
-    {
-        "category": "一段生活與學習的描述",
-        "title": "學習與發展，親子，兒少，青年",
-        "url": ""
-    },
-    {
-        "category": "一段生活與學習的描述",
-        "title": "Health 相關專案",
-        "url": ""
-    },
-    {
-        "category": "一段生活與學習的描述",
-        "title": "Knowledge 知識開源相關工具",
-        "url": ""
-    },
-    {
-        "category": "一段生活與學習的描述",
-        "title": "Disinfo 相關專案",
-        "url": ""
-    },
-    {
-        "category": "一段生活與學習的描述",
-        "title": "Job 職場與勞資",
-        "url": ""
-    },
-    {
-        "category": "一段地理與環境的描述",
+        "category": "地理環境",
         "title": "Regional Revitalization 地方發展",
-        "url": ""
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FHaaAkDYnTiWBC2tnvKwHeg%3Fview"
     },
     {
-        "category": "一段地理與環境的描述",
-        "title": "交通與移動",
-        "url": ""
+        "category": "地理環境",
+        "title": "交通與移動 / 事故與道路改造",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FKRwY-A-UThaXxuXBFkJE3g%3Fview"
     },
     {
-        "category": "一段地理與環境的描述",
-        "title": "River 水環境與資源",
-        "url": ""
+        "category": "地理環境",
+        "title": "Water_River_Sea 水環境與資源",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F6OkRGg-2QAmV047ocSbGSg%3Fview"
     },
     {
-        "category": "一段地理與環境的描述",
-        "title": "Pollution 汙染與公衛",
-        "url": ""
+        "category": "地理環境",
+        "title": "Pollution & Illegal Land Use 汙染與公衛 / 空間土地違規使用",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FzDnfCJtkRaCiR2gr2F0Usg%3Fview"
     },
     {
-        "category": "一段地理與環境的描述",
+        "category": "地理環境",
         "title": "Disaster 防災",
-        "url": ""
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F2QPnlJdcRcmMxbBTLiujeA%3Fview"
     },
     {
-        "category": "一段地理與環境的描述",
+        "category": "地理環境",
+        "title": "Eco 生態",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F7bid8DlMSg2xC8ydTMoYag%3Fview"
+    },
+    {
+        "category": "地理環境",
         "title": "Geo Tool 地理資訊工具",
-        "url": ""
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FojGURACoTaO1uOrQ2l34qg%3Fview"
     },
     {
-        "category": "一段資料驅動類的描述",
-        "title": "沒有資料怎麼辦？",
-        "url": ""
+        "category": "生活與學習",
+        "title": "Language 語言與點字等溝通工具",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F-DjIIJ4SRLi64L_bfPI4Hg%3Fview"
     },
     {
-        "category": "一段資料驅動類的描述",
-        "title": "紙本資料難以使用",
-        "url": ""
+        "category": "生活與學習",
+        "title": "學習與發展，親子，兒少，青年",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F4hgTs5r8SImDqXGGr_kZNQ%3Fview"
     },
     {
-        "category": "一段資料驅動類的描述",
-        "title": "有資料需要分類",
-        "url": ""
+        "category": "生活與學習",
+        "title": "Health 相關專案",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FGXw__peBTIGaU-tv3Af8hw%3Fview"
     },
     {
-        "category": "一段資料驅動類的描述",
-        "title": "既有資料難以閱讀",
-        "url": ""
+        "category": "生活與學習",
+        "title": "Job 職場與勞資",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F5Ekz99iURdmN9PgC1l8MXw%3Fview"
     },
     {
-        "category": "一段資料驅動類的描述",
-        "title": "大數據分析",
-        "url": ""
+        "category": "生活與學習",
+        "title": "Knowledge 知識開源相關工具",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2Fz-yYTRhUTOC2qZ6UH8028w%3Fview"
     },
     {
-        "category": "一段資料驅動類的描述",
-        "title": "有大量資料希望推廣給更多人活用",
-        "url": ""
+        "category": "生活與學習",
+        "title": "Disinfo & Scam 錯假訊息與詐騙因應",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F2ff6XXi7QuqrYO6Ytv0UcA%3Fview"
     },
     {
-        "category": "一段資料驅動類的描述",
-        "title": "想開源硬體成果",
-        "url": ""
-    },
-    {
-        "category": "一段捲動使用者的描述",
-        "title": "想知道專案潛在使用者是誰",
-        "url": ""
-    },
-    {
-        "category": "一段捲動使用者的描述",
-        "title": "想讓使用者更方便快速找到適合的靜態資訊",
-        "url": ""
-    },
-    {
-        "category": "一段捲動使用者的描述",
-        "title": "Crowdsourcing 群眾協力模式，想讓廣大的佛系民眾可以參與專案",
-        "url": ""
-    },
-    {
-        "category": "一段捲動使用者的描述",
-        "title": "讓使用者體驗沒遇過的事（網戀詐騙）",
-        "url": ""
-    },
-    {
-        "category": "一段捲動使用者的描述",
-        "title": "想讓更多人跳坑參加專案開發",
-        "url": ""
-    },
-    {
-        "category": "一段捲動使用者的描述",
-        "title": "如何媒合物資？",
-        "url": ""
-    },
-    {
-        "category": "一段捲動使用者的描述",
-        "title": "如何媒合人力？",
-        "url": ""
-    },
-    {
-        "category": "一段組織營運的描述",
-        "title": "會務",
-        "url": ""
-    },
-    {
-        "category": "一段組織營運的描述",
-        "title": "資安",
-        "url": ""
-    },
-    {
-        "category": "一段組織營運的描述",
+        "category": "生活與學習",
         "title": "AI 應用相關介紹",
-        "url": ""
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FZD8a9bWgTquezUh7YoKTzQ%3Fview"
+    },
+    {
+        "category": "與組織營運相關的工具與相關內容",
+        "title": "會務",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FcwqZa1rcQia5Uv1r1kfgVw%3Fview"
+    },
+    {
+        "category": "與組織營運相關的工具與相關內容",
+        "title": "資安",
+        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FbmFGz6rISc-ELQHwvRtVGw%3Fview"
+    },
+    {
+        "category": "計畫介紹",
+        "title": "盤點 300+ 專案清單、建立查找服務",
+        "url": "https://g0v.hackmd.io/@jothon/civictech_doc"
+    },
+    {
+        "category": "計畫介紹",
+        "title": "縣市地區公民科技社群網絡",
+        "url": "https://g0v.hackmd.io/@jothon/meetup/https%3A%2F%2Fg0v.hackmd.io%2Fgj-iH-szRWypWKwt1glm_Q%3Fview"
     }
 ]

@@ -1,9 +1,6 @@
 ---
-// 1. 引入我們在前面準備好的 40 則資料 JSON
 import knowHowData from '../content/knowhow/data.json';
 
-// 2. 核心邏輯：將扁平的陣列，依據 category (領域) 自動分類成群組
-// 這樣未來你在 JSON 裡新增、修改項目，網頁就會自動重新排版，完全不用動 HTML！
 const categorizedData = knowHowData.reduce((acc, item) => {
   if (!acc[item.category]) {
     acc[item.category] = [];
@@ -12,20 +9,20 @@ const categorizedData = knowHowData.reduce((acc, item) => {
   return acc;
 }, {});
 
-// 定義 6 大領域的陣列，確保網頁渲染時的順序與你的草圖完全一致
 const categoriesOrder = [
-  "一段政策治理的描述",
-  "一段生活與學習的描述",
-  "一段地理與環境的描述",
-  "一段資料驅動類的描述",
-  "一段捲動使用者的描述",
-  "一段組織營運的描述"
+  "政策治理",
+  "地理環境",
+  "生活與學習",
+  "與組織營運相關的工具與相關內容",
+  "計畫介紹"
 ];
+
+const totalCount = knowHowData.length;
 ---
 
 <section id="know-how" class="knowhow-section">
   <div class="container">
-    <h2 class="section-title">40 則關鍵 Know-how</h2>
+    <h2 class="section-title">{totalCount} 則關鍵 Know-how</h2>
     <p class="section-subtitle">點擊下方各領域的關鍵字，即可直接前往共筆查看豐富的公民科技實踐指南。</p>
 
     <div class="categories-grid">
