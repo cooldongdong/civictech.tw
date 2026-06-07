@@ -20,6 +20,14 @@ jobs:
         uses: withastro/action@v3
         with:
           node-version: 22
+        env:
+          PUBLIC_GOOGLE_SHEET_CSV_URL: ${{ secrets.PUBLIC_GOOGLE_SHEET_CSV_URL }}
+          PUBLIC_GOOGLE_FORM_ACTION_URL: ${{ secrets.PUBLIC_GOOGLE_FORM_ACTION_URL }}
+          PUBLIC_ENTRY_TITLE: ${{ secrets.PUBLIC_ENTRY_TITLE }}
+          PUBLIC_ENTRY_DESCRIPTION: ${{ secrets.PUBLIC_ENTRY_DESCRIPTION }}
+          PUBLIC_ENTRY_PAINPOINT: ${{ secrets.PUBLIC_ENTRY_PAINPOINT }}
+          PUBLIC_ENTRY_SUPERPOWER: ${{ secrets.PUBLIC_ENTRY_SUPERPOWER }}
+          PUBLIC_ENTRY_PROGRESS: ${{ secrets.PUBLIC_ENTRY_PROGRESS }}
 
   deploy:
     needs: build

@@ -1,24 +1,5 @@
 ---
-// 這裡預留未來從 Google Sheet API 撈取資料的邏輯
-// 目前第一階段，我們先準備幾則「模擬資料（Mock Data）」來測試 3D 翻牌卡片的視覺效果
-const mockWishes = [
-  {
-    id: 1,
-    title: "真的假的 Cofacts",
-    description: "透過 LINE 機器人回報可疑訊息的群眾協力事實查核平台。",
-    painPoint: "現有查核工具通常需要手動複製貼上到網頁，在通訊軟體內使用不夠直覺。",
-    superpower: "徵求會寫 LINE Bot API 的後端工程師，以及有社群營運經驗的推廣夥伴！",
-    progress: "已有構想、已有草稿"
-  },
-  {
-    id: 2,
-    title: "阿美語萌典",
-    description: "將傳統阿美語字典數位化，並提供網頁與 App 快速查閱與發音整合。",
-    painPoint: "紙本工具難以使用且音檔分散，年輕一代想學習卻找不到友善的數位載體。",
-    superpower: "徵求會用 React Native 的行動應用開發者，以及阿美族語發音錄製志工。",
-    progress: "已有資料"
-  }
-];
+// 這裡的 mockWishes 移除，改為由前端 <script> 撈取 Google Sheet
 ---
 
 <section id="wish-pool" class="wishpool-section">
@@ -30,27 +11,27 @@ const mockWishes = [
       <form id="js-wish-form" class="wish-form">
         <div class="form-group">
           <label for="wish-q1">1. 給專案取個酷名字：如「真的假的」、「阿美語萌典」，好記又有個性。</label>
-          <input type="text" id="wish-q1" name="entry.111111" required placeholder="請輸入專案名稱..." />
+          <input type="text" id="wish-q1" name={import.meta.env.PUBLIC_ENTRY_TITLE} required placeholder="請輸入專案名稱..." />
         </div>
 
         <div class="form-group">
           <label for="wish-q2">2. 一句話形容這個專案：透過 [技術] 解決 [誰] 的 [什麼痛點]。</label>
-          <input type="text" id="wish-q2" name="entry.222222" required placeholder="請輸入一句話形容..." />
+          <input type="text" id="wish-q2" name={import.meta.env.PUBLIC_ENTRY_DESCRIPTION} required placeholder="請輸入一句話形容..." />
         </div>
 
         <div class="form-group">
           <label for="wish-q3">3. 現有工具的不足：為什麼現在的方法行不通？</label>
-          <textarea id="wish-q3" name="entry.333333" rows="3" required placeholder="請描述目前的困境與不足..."></textarea>
+          <textarea id="wish-q3" name={import.meta.env.PUBLIC_ENTRY_PAINPOINT} rows="3" required placeholder="請描述目前的困境與不足..."></textarea>
         </div>
 
         <div class="form-group">
           <label for="wish-q4">4. 需要的超能力：（例如：徵求會用 ______ 的人）。</label>
-          <input type="text" id="wish-q4" name="entry.444444" required placeholder="例如：徵求會寫 React / 需要 UI 設計師..." />
+          <input type="text" id="wish-q4" name={import.meta.env.PUBLIC_ENTRY_SUPERPOWER} required placeholder="例如：徵求會寫 React / 需要 UI 設計師..." />
         </div>
 
         <div class="form-group">
           <label for="wish-q5">5. 目前的進度：</label>
-          <select id="wish-q5" name="entry.555555" required>
+          <select id="wish-q5" name={import.meta.env.PUBLIC_ENTRY_PROGRESS} required>
             <option value="" disabled selected>-- 請選擇目前進度 --</option>
             <option value="已有構想">已有構想</option>
             <option value="已有草稿">已有草稿</option>
@@ -68,41 +49,16 @@ const mockWishes = [
 
     <div class="wishes-display-area">
       <h3 class="display-title">許願池展示區</h3>
-      
-      <div class="wishes-grid">
-        {mockWishes.map((wish) => (
-          /* 3D 翻轉卡片的舞台外殼 */
-          <div class="flip-card" tabindex="0">
-            <div class="flip-card-inner">
-              
-              <div class="flip-card-front">
-                <div class="card-badge">{wish.progress}</div>
-                <div class="avatar-placeholder">💡</div>
-                <h4 class="card-wish-title">{wish.title}</h4>
-                <p class="card-wish-desc">{wish.description}</p>
-                <div class="flip-hint">💡 滑鼠懸停或點擊翻面查看需求</div>
-              </div>
-              
-              <div class="flip-card-back">
-                <h4 class="back-title">專案需求詳情</h4>
-                <div class="back-content">
-                  <p><strong>現況痛點：</strong>{wish.painPoint}</p>
-                  <p><strong>極需支援：</strong>{wish.superpower}</p>
-                  <p><strong>目前進度：</strong>{wish.progress}</p>
-                </div>
-                <div class="flip-hint-back">🔄 移開或再次點擊翻回</div>
-              </div>
-
-            </div>
-          </div>
-        ))}
+      <div id="js-wishes-loading" class="loading-status">載入中，請稍候...</div>
+      <div id="js-wishes-container" class="wishes-grid">
+        <!-- 由 JavaScript 撈取 Google Sheet 動態渲染 -->
       </div>
     </div>
 
   </div>
 </section>
 
-<style>
+<style is:global>
   /* 區塊基礎設定 */
   .wishpool-section {
     padding: 80px 20px;
@@ -182,6 +138,14 @@ const mockWishes = [
     font-weight: 500;
   }
   .hidden { display: none; }
+
+  /* 載入狀態樣式 */
+  .loading-status {
+    text-align: center;
+    color: #64748b;
+    font-size: 1.1rem;
+    padding: 40px 0;
+  }
 
   /* === 許願展示區與 3D 翻轉卡片樣式 === */
   .display-title {
@@ -314,18 +278,163 @@ const mockWishes = [
 </style>
 
 <script>
-  // 簡單的前端互動：阻擋表單預設重整行為，並顯示成功提示
-  const form = document.getElementById('js-wish-form');
-  const successMsg = document.getElementById('js-success-msg');
+  // 從環境變數讀取 Google Sheets CSV 與 Google Form Action 網址
+  const GOOGLE_SHEET_CSV_URL = import.meta.env.PUBLIC_GOOGLE_SHEET_CSV_URL;
+  const GOOGLE_FORM_ACTION_URL = import.meta.env.PUBLIC_GOOGLE_FORM_ACTION_URL;
 
+  const form = document.getElementById('js-wish-form') as HTMLFormElement | null;
+  const successMsg = document.getElementById('js-success-msg');
+  const container = document.getElementById('js-wishes-container');
+  const loadingStatus = document.getElementById('js-wishes-loading');
+
+  // 1. 處理表單送出 (寫入 Google Sheet)
   if (form && successMsg) {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault(); // 阻止網頁跳轉整頁重新整理
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
       
-      // 未來在這裡加入 fetch 將資料 POST 到 Google Sheet 的程式碼
+      const formData = new FormData(form);
+      const searchParams = new URLSearchParams();
+      for (const [key, value] of formData) {
+        searchParams.append(key, value.toString());
+      }
       
-      form.classList.add('hidden'); // 隱藏表單
-      successMsg.classList.remove('hidden'); // 秀出審核提示
+      try {
+        // 使用 no-cors 規避 Google Form 的 CORS 限制，並使用 URLSearchParams 作為 x-www-form-urlencoded 傳送
+        await fetch(GOOGLE_FORM_ACTION_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: searchParams
+        });
+        
+        form.classList.add('hidden');
+        successMsg.classList.remove('hidden');
+      } catch (err) {
+        console.error('送出失敗', err);
+        alert('許願送出失敗，請檢查網路連線或稍後再試！');
+      }
     });
   }
+
+  // 2. 處理資料載入 (讀取 Google Sheet)
+  async function loadWishes() {
+    if (!container || !loadingStatus) return;
+    if (!GOOGLE_SHEET_CSV_URL) {
+      loadingStatus.textContent = '請先設定 PUBLIC_GOOGLE_SHEET_CSV_URL 環境變數。';
+      return;
+    }
+
+    try {
+      const response = await fetch(GOOGLE_SHEET_CSV_URL);
+      if (!response.ok) throw new Error('無法取得 Google Sheet 資料');
+      
+      const csvText = await response.text();
+      const rows = parseCSV(csvText);
+      console.log('Google Sheet 解析結果 (Rows):', rows);
+
+      // CSV 欄位順序：
+      // row[0] (A): 時間戳記 (Timestamp)
+      // row[1] (B): 專案名稱 (wish-q1)
+      // row[2] (C): 一句話形容 (wish-q2)
+      // row[3] (D): 現況痛點 (wish-q3)
+      // row[4] (E): 急需支援 (wish-q4)
+      // row[5] (F): 目前進度 (wish-q5)
+      // row[6] (G): 是否審核通過 ('Y' 代表通過)
+      const wishes = rows.slice(1) // 跳過 Header 列
+        .map((row, index) => ({
+          id: index,
+          title: row[1] || '',
+          description: row[2] || '',
+          painPoint: row[3] || '',
+          superpower: row[4] || '',
+          progress: row[5] || '',
+          isApproved: (row[6] || '').trim().toUpperCase() === 'Y'
+        }))
+        .filter(wish => wish.isApproved && wish.title);
+
+      loadingStatus.classList.add('hidden');
+
+      if (wishes.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 40px 0;">目前尚無審核通過的許願專案，快來當第一個許願者吧！</div>`;
+        return;
+      }
+
+      container.innerHTML = wishes.map(wish => `
+        <div class="flip-card" tabindex="0">
+          <div class="flip-card-inner">
+            
+            <div class="flip-card-front">
+              <div class="card-badge">${escapeHTML(wish.progress)}</div>
+              <div class="avatar-placeholder">💡</div>
+              <h4 class="card-wish-title">${escapeHTML(wish.title)}</h4>
+              <p class="card-wish-desc">${escapeHTML(wish.description)}</p>
+              <div class="flip-hint">💡 滑鼠懸停或點擊翻面查看需求</div>
+            </div>
+            
+            <div class="flip-card-back">
+              <h4 class="back-title">專案需求詳情</h4>
+              <div class="back-content">
+                <p><strong>現況痛點：</strong>${escapeHTML(wish.painPoint)}</p>
+                <p><strong>極需支援：</strong>${escapeHTML(wish.superpower)}</p>
+                <p><strong>目前進度：</strong>${escapeHTML(wish.progress)}</p>
+              </div>
+              <div class="flip-hint-back">🔄 移開或再次點擊翻回</div>
+            </div>
+
+          </div>
+        </div>
+      `).join('');
+
+    } catch (err) {
+      console.error(err);
+      loadingStatus.textContent = '載入許願池資料失敗，請重新整理網頁。';
+    }
+  }
+
+  // 簡易 CSV 解析器，支持換行與雙引號欄位
+  function parseCSV(text: string): string[][] {
+    const lines: string[][] = [];
+    let row: string[] = [''];
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      const next = text[i + 1];
+
+      if (c === '"') {
+        if (inQuotes && next === '"') {
+          row[row.length - 1] += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (c === ',' && !inQuotes) {
+        row.push('');
+      } else if ((c === '\r' || c === '\n') && !inQuotes) {
+        if (c === '\r' && next === '\n') i++;
+        lines.push(row);
+        row = [''];
+      } else {
+        row[row.length - 1] += c;
+      }
+    }
+    if (row.length > 1 || row[0] !== '') {
+      lines.push(row);
+    }
+    return lines;
+  }
+
+  // 防止 XSS 注入
+  function escapeHTML(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  loadWishes();
 </script>
