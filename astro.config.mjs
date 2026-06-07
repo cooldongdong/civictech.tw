@@ -3,6 +3,6 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://cooldongdong.github.io',
-  base: '/civictech.tw',
+  site: 'https://civictech.tw',
+  base: '/',
 });
