@@ -3,6 +3,8 @@
 import HeroVideo from '../components/HeroVideo.astro';
 import KnowHow from '../components/KnowHow.astro';
 import WishPool from '../components/WishPool.astro';
+import Footer from '../components/Footer.astro';
+import Navbar from '../components/Navbar.astro';
 ---
 
 <html lang="zh-Hant-TW">
@@ -16,6 +18,8 @@ import WishPool from '../components/WishPool.astro';
 	</head>
 	<body class="bg-slate-50 text-slate-800 m-0 p-0">
 		
+		<Navbar />
+
 		<!-- 區塊 1：滿版影片 -->
 		<HeroVideo />
 
@@ -24,6 +28,9 @@ import WishPool from '../components/WishPool.astro';
 
 		<!-- 區塊 3：許願區 -->
 		<WishPool />
+
+		<!-- 頁尾與連結 -->
+		<Footer />
 
 	</body>
 </html>
