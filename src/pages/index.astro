@@ -5,6 +5,9 @@ import KnowHow from '../components/KnowHow.astro';
 import WishPool from '../components/WishPool.astro';
 import Footer from '../components/Footer.astro';
 import Navbar from '../components/Navbar.astro';
+import knowHowData from '../content/knowhow/data.json';
+
+const totalCount = knowHowData.length;
 ---
 
 <html lang="zh-Hant-TW">
@@ -14,7 +17,7 @@ import Navbar from '../components/Navbar.astro';
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>台灣公民科技資料庫 Civic Tech Taiwan</title>
-		<meta name="description" content="匯聚 40 則關鍵 Know-how 與公民科技專案的入口平台" />
+		<meta name="description" content={`匯聚 ${totalCount} 則關鍵 Know-how 與公民科技專案的入口平台`} />
 	</head>
 	<body class="bg-slate-50 text-slate-800 m-0 p-0">
 		
