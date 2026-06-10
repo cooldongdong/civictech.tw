@@ -1,6 +1,7 @@
 ---
 // 引入我們規劃的三大區塊元件
 import HeroVideo from '../components/HeroVideo.astro';
+import ProjectList from '../components/ProjectList.astro';
 import KnowHow from '../components/KnowHow.astro';
 import WishPool from '../components/WishPool.astro';
 import Footer from '../components/Footer.astro';
@@ -26,7 +27,10 @@ const totalCount = knowHowData.length;
 		<!-- 區塊 1：滿版影片 -->
 		<HeroVideo />
 
-		<!-- 區塊 2：40 則關鍵 Know-how -->
+		<!-- 區塊 2：專案清單 -->
+		<ProjectList />
+
+		<!-- 區塊 3：關鍵 Know-how -->
 		<KnowHow />
 
 		<!-- 區塊 3：許願區 -->

@@ -2,7 +2,10 @@
 import knowHowData from "../content/knowhow/data.json";
 
 const videoSrc =
-  `${import.meta.env.BASE_URL}/videos/hero-background.mp4`.replace(/\/\//g, "/"); // 預計放在 public/videos/ 下
+  `${import.meta.env.BASE_URL}/videos/hero-background.mp4`.replace(
+    /\/\//g,
+    "/",
+  ); // 預計放在 public/videos/ 下
 const posterSrc = `${import.meta.env.BASE_URL}/images/hero-poster.png`.replace(
   /\/\//g,
   "/",
@@ -25,8 +28,8 @@ const totalCount = knowHowData.length;
   <div class="hero-content">
     <h1>{title}</h1>
     <p>{subtitle}</p>
-    <a href="#know-how" class="cta-button">
-      探索 {totalCount} 則關鍵 Know-how
+    <a href="#project-list" class="cta-button">
+      探索超過 350 個公民科技專案
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
@@ -39,8 +42,8 @@ const totalCount = knowHowData.length;
         stroke-linejoin="round"
         class="arrow-icon"
       >
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <polyline points="19 12 12 19 5 12" />
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <polyline points="19 12 12 19 5 12"></polyline>
       </svg>
     </a>
   </div>
@@ -56,7 +59,18 @@ const totalCount = knowHowData.length;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      Oxygen,
+      Ubuntu,
+      Cantarell,
+      "Open Sans",
+      "Helvetica Neue",
+      sans-serif;
   }
 
   /* 影片包覆層：絕對定位並撐滿 */
