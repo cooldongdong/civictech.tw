@@ -18,16 +18,7 @@ const categoriesOrder = [
   "計畫介紹",
 ];
 
-const categoryIcons = {
-  "如何發起一個公民科技專案？": "🚀",
-  "資料驅動對策手法 Data-driven": "📊",
-  "捲動使用者的方法 TA = Take Action": "🎯",
-  "政策治理": "🏛️",
-  "地理環境": "🌍",
-  "生活與學習": "📚",
-  "與組織營運相關的工具與相關內容": "⚙️",
-  "計畫介紹": "📋",
-};
+
 ---
 
 <section id="know-how" class="relative py-20 sm:py-24 px-5 bg-white">
@@ -53,12 +44,10 @@ const categoryIcons = {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {categoriesOrder.map((categoryName) => {
         const items = categorizedData[categoryName] || [];
-        const icon = categoryIcons[categoryName] || "📌";
         return (
           <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all duration-300 hover:border-slate-300 hover:shadow-md">
             <!-- Category header -->
             <div class="flex items-center gap-2.5 mb-4 pb-3.5 border-b border-slate-200">
-              <span class="text-xl leading-none">{icon}</span>
               <h3 class="text-[0.95rem] font-bold text-slate-800 flex-1 leading-snug">{categoryName}</h3>
               <span class="text-[0.65rem] font-bold text-primary-600 bg-primary-500/10 min-w-[24px] h-6 flex items-center justify-center rounded-full shrink-0">
                 {items.length}
