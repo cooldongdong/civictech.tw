@@ -2,164 +2,87 @@
 // src/components/Navbar.astro
 ---
 
-<nav class="navbar">
-  <div class="navbar-container">
-    <a href="#hero" class="logo"> 台灣公民科技資料庫 </a>
-    <ul class="nav-links">
-      <li><a href="#project-list" class="nav-link">專案清單</a></li>
-      <li><a href="#know-how" class="nav-link">行動指引</a></li>
-      <li><a href="#wish-pool" class="nav-link">專案許願池</a></li>
-      <li><a href="#footer" class="nav-link">協作與聯繫</a></li>
+<nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-out border-b border-transparent">
+  <div class="max-w-6xl mx-auto px-5 py-5 flex justify-between items-center transition-all duration-300">
+    <a href="#hero" class="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+      <span class="text-xl drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]">⚡</span>
+      <span class="logo-text text-[1.1rem] font-bold text-white tracking-wide drop-shadow-[0_1px_3px_rgba(0,0,0,0.25)]">
+        公民科技資料庫
+      </span>
+    </a>
+
+    <!-- Desktop -->
+    <ul class="nav-links hidden md:flex gap-1.5 list-none m-0 p-0">
+      <li><a href="#project-list" class="nav-link text-white/80 text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-300 hover:text-white hover:bg-white/12 drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">專案清單</a></li>
+      <li><a href="#know-how" class="nav-link text-white/80 text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-300 hover:text-white hover:bg-white/12 drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">行動指引</a></li>
+      <li><a href="#wish-pool" class="nav-link text-white/80 text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-300 hover:text-white hover:bg-white/12 drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">專案許願池</a></li>
+      <li><a href="#footer" class="nav-link text-white/80 text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-300 hover:text-white hover:bg-white/12 drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">協作與聯繫</a></li>
     </ul>
+
+    <!-- Hamburger -->
+    <button id="hamburger" class="hamburger md:hidden flex flex-col gap-[5px] bg-transparent border-none cursor-pointer p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="開啟選單" aria-expanded="false">
+      <span class="block w-[22px] h-[2px] bg-white rounded-sm transition-all duration-300"></span>
+      <span class="block w-[22px] h-[2px] bg-white rounded-sm transition-all duration-300"></span>
+      <span class="block w-[22px] h-[2px] bg-white rounded-sm transition-all duration-300"></span>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="mobile-menu md:hidden hidden flex-col px-5 pb-5 gap-1 opacity-0 -translate-y-2 transition-all duration-300">
+    <a href="#project-list" class="mobile-link block px-4 py-3 text-slate-700 font-medium text-[0.95rem] rounded-lg hover:bg-sky-50 hover:text-primary-600 transition-colors">專案清單</a>
+    <a href="#know-how" class="mobile-link block px-4 py-3 text-slate-700 font-medium text-[0.95rem] rounded-lg hover:bg-sky-50 hover:text-primary-600 transition-colors">行動指引</a>
+    <a href="#wish-pool" class="mobile-link block px-4 py-3 text-slate-700 font-medium text-[0.95rem] rounded-lg hover:bg-sky-50 hover:text-primary-600 transition-colors">專案許願池</a>
+    <a href="#footer" class="mobile-link block px-4 py-3 text-slate-700 font-medium text-[0.95rem] rounded-lg hover:bg-sky-50 hover:text-primary-600 transition-colors">協作與聯繫</a>
   </div>
 </nav>
 
-<style is:global>
-  /* 啟用全網頁平滑滾動 */
-  html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 80px; /* 防止固定導覽列遮擋標題 */
-  }
-</style>
-
 <style>
-  .navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: transparent;
-    border-bottom: 1px solid transparent;
-    box-sizing: border-box;
+  @reference "../styles/global.css";
+  .scrolled {
+    @apply bg-white/92 backdrop-blur-xl border-slate-200/60;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 24px rgba(0,0,0,0.03);
+  }
+  .scrolled .logo-text {
+    @apply text-slate-900 drop-shadow-none;
+  }
+  .scrolled .nav-link {
+    @apply text-slate-600 drop-shadow-none;
+  }
+  .scrolled .nav-link:hover,
+  .scrolled .nav-link.active {
+    @apply text-primary-600 bg-primary-500/8;
+  }
+  .scrolled .hamburger span {
+    @apply bg-slate-700;
+  }
+  .scrolled .hamburger:hover {
+    @apply bg-slate-100;
   }
 
-  .navbar-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .logo {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #ffffff;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: color 0.3s ease;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 32px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .nav-link {
-    color: rgba(255, 255, 255, 0.85);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 1rem;
-    transition: color 0.3s ease;
-    position: relative;
-    padding: 4px 0;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  }
-
-  .nav-link:hover,
+  /* Nav link active state */
   .nav-link.active {
-    color: #ffffff;
-    text-shadow: none;
+    @apply text-white bg-white/15;
   }
 
-  .nav-link::after {
-    content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: #38bdf8;
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Hamburger open animation */
+  .hamburger.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .hamburger.open span:nth-child(2) {
+    opacity: 0;
+  }
+  .hamburger.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
   }
 
-  .nav-link:hover::after,
-  .nav-link.active::after {
-    transform: scaleX(1);
-    transform-origin: left;
-  }
-
-  /* 滾動後的樣式 (Scrolled State) */
-  .navbar.scrolled {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
-  }
-
-  .navbar.scrolled .navbar-container {
-    padding: 16px 20px;
-  }
-
-  .navbar.scrolled .logo {
-    color: #0f172a;
-    text-shadow: none;
-  }
-
-  .navbar.scrolled .nav-link {
-    color: #475569;
-    text-shadow: none;
-  }
-
-  .navbar.scrolled .nav-link:hover,
-  .navbar.scrolled .nav-link.active {
-    color: #0284c7;
-  }
-
-  .navbar.scrolled .nav-link::after {
-    background-color: #0284c7;
-  }
-
-  /* 響應式調整 */
-  @media (max-width: 640px) {
-    .navbar-container {
-      padding: 16px 16px;
-    }
-
-    .logo {
-      font-size: 1.05rem;
-    }
-
-    .nav-links {
-      gap: 16px;
-    }
-
-    .nav-link {
-      font-size: 0.9rem;
-    }
-
-    .navbar.scrolled .navbar-container {
-      padding: 12px 16px;
-    }
+  /* Mobile menu open */
+  .mobile-menu.open {
+    @apply flex opacity-100 translate-y-0;
   }
 </style>
 
 <script>
-  // 處理滾動背景變色
-  const navbar = document.querySelector(".navbar");
+  const navbar = document.getElementById("navbar");
   const handleScroll = () => {
     if (window.scrollY > 50) {
       navbar?.classList.add("scrolled");
@@ -168,34 +91,42 @@
     }
   };
   window.addEventListener("scroll", handleScroll, { passive: true });
-  // 頁面重新整理時初始化一次
   handleScroll();
 
-  // 處理滾動時自動高亮對應的 nav-link (Intersection Observer)
+  const hamburger = document.getElementById("hamburger");
+  const mobileMenu = document.getElementById("mobile-menu");
+  hamburger?.addEventListener("click", () => {
+    const isOpen = hamburger.classList.toggle("open");
+    mobileMenu?.classList.toggle("open");
+    hamburger.setAttribute("aria-expanded", String(isOpen));
+    if (isOpen) navbar?.classList.add("scrolled");
+    else if (window.scrollY <= 50) navbar?.classList.remove("scrolled");
+  });
+
+  document.querySelectorAll(".mobile-link").forEach((link) => {
+    link.addEventListener("click", () => {
+      hamburger?.classList.remove("open");
+      mobileMenu?.classList.remove("open");
+      hamburger?.setAttribute("aria-expanded", "false");
+    });
+  });
+
   const sections = document.querySelectorAll("section[id], footer[id]");
   const navLinks = document.querySelectorAll(".nav-link");
-
-  const observerOptions = {
-    root: null,
-    rootMargin: "-30% 0px -70% 0px", // 聚焦在螢幕中上區塊時觸發
-    threshold: 0,
-  };
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const id = entry.target.getAttribute("id");
-        navLinks.forEach((link) => {
-          const href = link.getAttribute("href");
-          if (href === `#${id}`) {
-            link.classList.add("active");
-          } else {
-            link.classList.remove("active");
-          }
-        });
-      }
-    });
-  }, observerOptions);
-
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute("id");
+          navLinks.forEach((link) => {
+            const href = link.getAttribute("href");
+            if (href === `#${id}`) link.classList.add("active");
+            else link.classList.remove("active");
+          });
+        }
+      });
+    },
+    { root: null, rootMargin: "-30% 0px -70% 0px", threshold: 0 }
+  );
   sections.forEach((section) => observer.observe(section));
 </script>

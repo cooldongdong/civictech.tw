@@ -1,230 +1,86 @@
 ---
-// 專案清單區塊
 const projectLinks = [
   {
     title: "公民科技專案清單",
     url: "https://airtable.com/app2R1DOrrO9iysOr/shrpB9M1ENAw44ywv",
-    description: "收錄台灣公民科技社群發起的各類專案",
+    description: "收錄台灣公民科技社群發起的各類專案，從開放資料到社會參與，一覽無遺。",
     icon: "🛠️",
+    tag: "Airtable",
   },
   {
     title: "公民科學與群眾參與型計畫清單",
     url: "https://airtable.com/appAilQ8XpcZkvBko/shrJwHQ3VYSb27i4o",
-    description: "匯集公民科學與群眾參與型的研究計畫",
+    description: "匯集公民科學與群眾參與型研究計畫，讓每個人都能為科學貢獻力量。",
     icon: "🔬",
+    tag: "Airtable",
   },
 ];
 
 const aiLink = {
-  title: "試試看「詢問 AI」",
+  title: "詢問 AI 助手",
   url: "https://notebooklm.google.com/notebook/1d609458-7ef5-4b50-afbc-13ad31ea375e",
-  description: "透過 AI 協助，快速查找公民科技相關資訊",
-  icon: "🤖",
+  description: "透過 Google NotebookLM，與 AI 對話探索公民科技知識庫。",
+  icon: "✨",
+  tag: "NotebookLM",
 };
 ---
 
-<section id="project-list" class="projectlist-section">
-  <div class="container">
-    <h2 class="section-title">公民科技專案與公民科學計畫清單</h2>
-    <p class="section-subtitle">
-      探索台灣公民科技與公民科學領域的專案與計畫，或透過 AI 快速查找資訊。
-    </p>
+<section id="project-list" class="py-20 sm:py-24 px-5 bg-gradient-to-b from-slate-50 via-white to-slate-50">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-14">
+      <span class="inline-block text-xs font-semibold text-primary-600 bg-primary-500/8 px-4 py-1.5 rounded-full mb-4 tracking-wide">
+        📋 專案總覽
+      </span>
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 mb-4 leading-snug">
+        公民科技專案與公民科學計畫清單
+      </h2>
+      <p class="text-base text-slate-500 max-w-lg mx-auto leading-relaxed">
+        探索台灣公民科技與公民科學領域的專案與計畫，點擊卡片前往查看完整清單。
+      </p>
+    </div>
 
-    <div class="cards-grid">
-      {
-        projectLinks.map((link) => (
-          <a
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="project-card"
-          >
-            <span class="card-icon">{link.icon}</span>
-            <h3 class="card-title">{link.title}</h3>
-            <p class="card-desc">{link.description}</p>
-            <span class="card-action">
-              前往查看
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" y1="14" x2="21" y2="3" />
-              </svg>
-            </span>
-          </a>
-        ))
-      }
+    <!-- Cards grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {projectLinks.map((link) => (
+        <a href={link.url} target="_blank" rel="noopener noreferrer"
+           class="group flex flex-col p-7 bg-white border border-slate-200 rounded-2xl no-underline text-inherit transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-300">
+          <!-- Top row -->
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-3xl">{link.icon}</span>
+            <span class="text-[0.65rem] font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full tracking-wide">{link.tag}</span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2 leading-snug">{link.title}</h3>
+          <p class="text-sm text-slate-500 leading-relaxed mb-5 flex-1">{link.description}</p>
+          <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 transition-all duration-300 group-hover:gap-3">
+            前往查看
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </span>
+        </a>
+      ))}
 
-      <!-- AI 卡片 -->
-      <a
-        href={aiLink.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="project-card ai-card"
-      >
-        <span class="card-icon">{aiLink.icon}</span>
-        <h3 class="card-title">{aiLink.title}</h3>
-        <p class="card-desc">{aiLink.description}</p>
-        <span class="card-action">
+      <!-- AI Card -->
+      <a href={aiLink.url} target="_blank" rel="noopener noreferrer"
+         class="group flex flex-col p-7 bg-gradient-to-br from-slate-900 to-indigo-950 border border-accent-600/30 rounded-2xl no-underline text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-accent-500/15 hover:border-accent-500/40">
+        <!-- Gradient top line -->
+        <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-500 to-primary-400 rounded-t-2xl"></div>
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-3xl">{aiLink.icon}</span>
+          <span class="text-[0.65rem] font-semibold text-accent-400 bg-accent-500/20 px-2.5 py-1 rounded-full tracking-wide">{aiLink.tag}</span>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2 leading-snug">{aiLink.title}</h3>
+        <p class="text-sm text-white/60 leading-relaxed mb-5 flex-1">{aiLink.description}</p>
+        <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 transition-all duration-300 group-hover:gap-3">
           開始對話
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-            <polyline points="15 3 21 3 21 9" />
-            <line x1="10" y1="14" x2="21" y2="3" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
           </svg>
         </span>
       </a>
     </div>
   </div>
 </section>
-
-<style>
-  .projectlist-section {
-    padding: 80px 20px;
-    background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
-    font-family:
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      sans-serif;
-  }
-
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .section-title {
-    font-size: 2.25rem;
-    color: #0c4a6e;
-    text-align: center;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-  }
-
-  .section-subtitle {
-    font-size: 1.05rem;
-    color: #64748b;
-    text-align: center;
-    margin-bottom: 50px;
-  }
-
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 24px;
-  }
-
-  @media (min-width: 768px) {
-    .cards-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
-  .project-card {
-    display: flex;
-    flex-direction: column;
-    padding: 32px 28px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    text-decoration: none;
-    color: inherit;
-    transition:
-      transform 0.25s ease,
-      box-shadow 0.25s ease,
-      border-color 0.25s ease;
-    cursor: pointer;
-  }
-
-  .project-card:hover {
-    transform: translateY(-4px);
-    box-shadow:
-      0 12px 40px rgba(2, 132, 199, 0.12),
-      0 4px 12px rgba(0, 0, 0, 0.06);
-    border-color: #0284c7;
-  }
-
-  .card-icon {
-    font-size: 2.5rem;
-    margin-bottom: 16px;
-    display: block;
-  }
-
-  .card-title {
-    font-size: 1.35rem;
-    color: #0c4a6e;
-    font-weight: 600;
-    margin: 0 0 10px 0;
-  }
-
-  .card-desc {
-    font-size: 0.95rem;
-    color: #64748b;
-    line-height: 1.6;
-    margin: 0 0 20px 0;
-    flex: 1;
-  }
-
-  .card-action {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.95rem;
-    color: #0284c7;
-    font-weight: 500;
-    transition: gap 0.2s ease;
-  }
-
-  .project-card:hover .card-action {
-    gap: 10px;
-  }
-
-  .card-action svg {
-    transition: transform 0.2s ease;
-  }
-
-  .project-card:hover .card-action svg {
-    transform: translate(2px, -2px);
-  }
-
-  /* AI 卡片特殊樣式 */
-  .ai-card {
-    background: linear-gradient(135deg, #f0f9ff 0%, #ede9fe 100%);
-    border-color: #c4b5fd;
-  }
-
-  .ai-card:hover {
-    border-color: #7c3aed;
-    box-shadow:
-      0 12px 40px rgba(124, 58, 237, 0.12),
-      0 4px 12px rgba(0, 0, 0, 0.06);
-  }
-
-  .ai-card .card-title {
-    color: #5b21b6;
-  }
-
-  .ai-card .card-action {
-    color: #7c3aed;
-  }
-</style>
