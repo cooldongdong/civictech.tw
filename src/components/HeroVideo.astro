@@ -1,33 +1,35 @@
 ---
 import knowHowData from "../content/knowhow/data.json";
 
-const videoSrc = `${import.meta.env.BASE_URL}/videos/hero-background.mp4`.replace(/\/\//g, "/");
-const posterSrc = `${import.meta.env.BASE_URL}/images/hero-poster.png`.replace(/\/\//g, "/");
 const totalCount = knowHowData.length;
+const ytId       = "kitNCWX-aHY";
+const modalSrc   = `https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0&modestbranding=1&playsinline=1`;
 ---
 
 <section id="hero" class="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
-  <!-- Video background -->
-  <div class="absolute inset-0 z-0">
-    <video autoplay loop muted playsinline poster={posterSrc} class="w-full h-full object-cover object-center">
-      <source src={videoSrc} type="video/mp4" />
-    </video>
-    <!-- Overlay: fades with content -->
+
+  <!-- Particle background -->
+  <div class="absolute inset-0 z-0 bg-[#0a1628]">
+    <canvas id="particle-canvas" class="particle-canvas"></canvas>
     <div id="hero-overlay" class="hero-overlay absolute inset-0"></div>
+  </div>
+
+  <!-- Cursor-following button (pointer-events:none; click handled on section) -->
+  <div id="cursor-btn" class="cursor-btn" aria-hidden="true">
+    <svg width="13" height="13" viewBox="0 0 10 12" fill="white">
+      <polygon points="0,0 10,6 0,12"/>
+    </svg>
+    看影片
   </div>
 
   <!-- Content: auto-hides after idle -->
   <div id="hero-content" class="hero-content relative z-10 text-center text-white px-6 w-full max-w-3xl">
-
     <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-5 tracking-tight leading-[1.2]">
       台灣公民科技資料庫
     </h1>
-
     <p class="text-sm sm:text-base text-white/80 mb-8 leading-relaxed max-w-lg mx-auto">
       探索、協作、自主開源，連結數位公民的實踐指南
     </p>
-
-    <!-- Stats row -->
     <div class="flex items-center justify-center gap-8 sm:gap-12 mb-10">
       <div class="text-center">
         <div class="text-2xl sm:text-3xl font-extrabold text-white leading-none mb-1">350+</div>
@@ -39,92 +41,398 @@ const totalCount = knowHowData.length;
         <div class="text-[0.7rem] text-white/50 font-medium tracking-wide uppercase">則行動指引</div>
       </div>
     </div>
-
-    <!-- CTA -->
     <a href="#project-list" class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white px-7 py-3 rounded-full text-sm font-semibold hover:bg-white/25 transition-all duration-300">
       探索專案清單
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <polyline points="19 12 12 19 5 12" />
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <polyline points="19 12 12 19 5 12"/>
       </svg>
     </a>
   </div>
 
-  <!-- Scroll indicator (also auto-hides) -->
+  <!-- Scroll indicator -->
   <div id="hero-scroll" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
     <div class="w-6 h-9 border-2 border-white/25 rounded-xl flex justify-center pt-2">
       <div class="w-0.5 h-2 bg-white/50 rounded-full animate-scroll-down"></div>
     </div>
   </div>
+
 </section>
 
+<!-- Video modal (outside section so clicks don't bubble into hero handler) -->
+<div id="video-modal" class="video-modal" data-src={modalSrc} role="dialog" aria-modal="true" aria-hidden="true" aria-label="背景影片">
+  <div id="modal-backdrop" class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <button id="modal-close" class="modal-close" aria-label="關閉">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <div class="modal-video-wrap">
+      <iframe id="modal-iframe" src="" frameborder="0"
+        allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+    </div>
+    <div class="modal-footer">
+      <span>g0v contributor Sam and the Taiwan Plus media team captured the g0v hackathon through film.</span>
+      <span style="white-space:nowrap">影片來源：<a href={`https://youtu.be/${ytId}`} target="_blank" rel="noopener noreferrer">YouTube</a></span>
+    </div>
+  </div>
+</div>
+
 <style>
-  /* Overlay */
+  /* ── Particle canvas ── */
+  .particle-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* ── Subtle gradient overlay ── */
   .hero-overlay {
     background: linear-gradient(
       180deg,
-      rgba(15, 23, 42, 0.45) 0%,
-      rgba(15, 23, 42, 0.25) 40%,
-      rgba(15, 23, 42, 0.50) 100%
+      rgba(10, 22, 40, 0.55) 0%,
+      rgba(10, 22, 40, 0.05) 40%,
+      rgba(10, 22, 40, 0.50) 100%
     );
-    opacity: 1;
+    z-index: 1;
     transition: opacity 1s ease-out;
   }
+  .hero-overlay.faded { opacity: 0.15; }
 
-  .hero-overlay.faded {
-    opacity: 0.15;
+  /* ── Cursor-following button ── */
+  .cursor-btn {
+    position: absolute;
+    z-index: 20;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px 9px 13px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    user-select: none;
+    top: 0;
+    left: 0;
   }
+  .cursor-btn.visible { opacity: 1; }
 
-  /* Content entrance + transition */
+  /* ── Hero content ── */
   .hero-content {
     animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
     transition: opacity 1s ease-out, transform 1s ease-out;
+    z-index: 10;
   }
-
   .hero-content.hidden-idle {
     opacity: 0;
     transform: translateY(1rem);
     pointer-events: none;
   }
 
-  /* Scroll indicator */
-  #hero-scroll {
-    transition: opacity 1s ease-out;
-  }
+  #hero-scroll { transition: opacity 1s ease-out; z-index: 10; }
+  #hero-scroll.hidden-idle { opacity: 0; }
 
-  #hero-scroll.hidden-idle {
+  /* ── Video modal ── */
+  .video-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
     opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .video-modal.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 10, 25, 0.80);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .modal-dialog {
+    position: relative;
+    width: min(92vw, 900px);
+    z-index: 1;
+  }
+  .modal-close {
+    position: absolute;
+    top: -2.6rem;
+    right: 0;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+  }
+  .modal-close:hover { color: white; }
+  .modal-video-wrap {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+  .modal-video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .modal-footer {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.35);
+  }
+  .modal-footer a {
+    color: rgba(255,255,255,0.55);
+    text-decoration: underline;
   }
 
+  /* ── Keyframes ── */
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes scroll-down {
     0%   { opacity: 1; transform: translateY(0); }
     100% { opacity: 0; transform: translateY(10px); }
   }
-
-  .animate-scroll-down {
-    animation: scroll-down 1.5s infinite;
-  }
+  .animate-scroll-down { animation: scroll-down 1.5s infinite; }
 </style>
 
 <script>
-  const content = document.getElementById("hero-content") as HTMLElement | null;
+  const heroSection     = document.getElementById("hero");
+  const canvas          = document.getElementById("particle-canvas") as HTMLCanvasElement | null;
+  const content         = document.getElementById("hero-content") as HTMLElement | null;
   const scrollIndicator = document.getElementById("hero-scroll");
-  const overlay = document.getElementById("hero-overlay");
-  const heroSection = document.getElementById("hero");
+  const overlay         = document.getElementById("hero-overlay");
+  const cursorBtn       = document.getElementById("cursor-btn") as HTMLElement | null;
+  const videoModal      = document.getElementById("video-modal");
+  const modalIframe     = document.getElementById("modal-iframe") as HTMLIFrameElement | null;
+  const modalClose      = document.getElementById("modal-close");
+  const modalBackdrop   = document.getElementById("modal-backdrop");
+  const modalSrc        = videoModal?.dataset.src ?? "";
 
-  // Remove the entrance animation once it finishes so CSS transitions can take over.
-  // animation-fill-mode: both holds opacity:1 indefinitely and overrides .hidden-idle.
+  // ── Shared state ──
+  let mouseX = 0, mouseY = 0;
+  let mouseInHero = false;
+  let btnX = -9999, btnY = -9999;
+  let burstAt: ((cx: number, cy: number) => void) | undefined;
+
+  // ── Mouse tracking ──
+  heroSection?.addEventListener("mousemove", (e) => {
+    mouseInHero = true;
+    if (canvas) {
+      const r = canvas.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    const target = e.target as HTMLElement;
+    const overInteractive = !!target.closest("a, button");
+    cursorBtn?.classList.toggle("visible", !overInteractive);
+  }, { passive: true });
+
+  heroSection?.addEventListener("mouseleave", () => {
+    mouseInHero = false;
+    cursorBtn?.classList.remove("visible");
+  });
+
+  heroSection?.addEventListener("touchmove", (e) => {
+    if (!canvas || !e.touches[0]) return;
+    const r = canvas.getBoundingClientRect();
+    mouseX = e.touches[0].clientX - r.left;
+    mouseY = e.touches[0].clientY - r.top;
+  }, { passive: true });
+
+  // ── Particle engine ──
+  if (canvas) {
+    const ctx = canvas.getContext("2d")!;
+    let W = 0, H = 0;
+
+    function resize() {
+      W = canvas.width  = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+
+    const COUNT = window.innerWidth < 768 ? 55 : 90;
+    type P = {
+      x: number; y: number; vx: number; vy: number;
+      r: number; a: number; h: number;
+      f1: number; f2: number; p1: number; p2: number; wAmp: number;
+    };
+
+    const pts: P[] = Array.from({ length: COUNT }, () => ({
+      x:    Math.random() * W,
+      y:    Math.random() * H,
+      vx:   (Math.random() - 0.5) * 0.3,
+      vy:   (Math.random() - 0.5) * 0.3,
+      r:    Math.random() * 1.4 + 0.5,
+      a:    Math.random() * 0.5 + 0.3,
+      h:    188 + Math.random() * 24,
+      f1:   0.3 + Math.random() * 0.5,
+      f2:   0.3 + Math.random() * 0.5,
+      p1:   Math.random() * Math.PI * 2,
+      p2:   Math.random() * Math.PI * 2,
+      wAmp: 0.004 + Math.random() * 0.008,
+    }));
+
+    const M_DIST  = 200;
+    const M_FORCE = 0.022;
+    let lastTime  = 0;
+
+    function tick(now: number) {
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      const t  = now / 1000;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // ── Update particles ──
+      for (const p of pts) {
+        p.vx += Math.sin(t * p.f1 + p.p1) * p.wAmp;
+        p.vy += Math.cos(t * p.f2 + p.p2) * p.wAmp;
+
+        if (mouseInHero) {
+          const dx = mouseX - p.x;
+          const dy = mouseY - p.y;
+          const d  = Math.hypot(dx, dy);
+          if (d < M_DIST && d > 0) {
+            const f = ((M_DIST - d) / M_DIST) * M_FORCE;
+            p.vx += dx * f;
+            p.vy += dy * f;
+          }
+        }
+
+        p.vx *= 0.97;
+        p.vy *= 0.97;
+        p.x = (p.x + p.vx + W) % W;
+        p.y = (p.y + p.vy + H) % H;
+      }
+
+      // ── Draw glows (additive) ──
+      ctx.globalCompositeOperation = "lighter";
+      for (const p of pts) {
+        const near = mouseInHero && Math.hypot(mouseX - p.x, mouseY - p.y) < 110;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, (near ? p.r * 2 : p.r) * 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.h},80%,60%,0.035)`;
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+
+      // ── Draw cores ──
+      for (const p of pts) {
+        const near = mouseInHero && Math.hypot(mouseX - p.x, mouseY - p.y) < 110;
+        const a = near ? Math.min(p.a * 2.2, 0.95) : p.a;
+        const r = near ? p.r * 2 : p.r;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.h},85%,${near ? 88 : 70}%,${a})`;
+        ctx.fill();
+      }
+
+      // ── Cursor button lerp ──
+      if (cursorBtn && mouseInHero) {
+        if (Math.hypot(mouseX - btnX, mouseY - btnY) > 250) {
+          btnX = mouseX; btnY = mouseY;
+        } else {
+          btnX += (mouseX - btnX) * 0.12;
+          btnY += (mouseY - btnY) * 0.12;
+        }
+        cursorBtn.style.left = `${btnX}px`;
+        cursorBtn.style.top  = `${btnY}px`;
+      }
+
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    burstAt = (cx, cy) => {
+      for (const p of pts) {
+        const dx = p.x - cx;
+        const dy = p.y - cy;
+        const d  = Math.hypot(dx, dy);
+        if (d < 280 && d > 0) {
+          p.vx += (dx / d) * (1 - d / 280) * 7;
+          p.vy += (dy / d) * (1 - d / 280) * 7;
+        }
+      }
+    };
+  }
+
+  // ── Video modal ──
+  function openModal() {
+    if (!videoModal || !modalIframe) return;
+    modalIframe.src = modalSrc;
+    videoModal.classList.add("open");
+    videoModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    if (!videoModal || !modalIframe) return;
+    videoModal.classList.remove("open");
+    videoModal.setAttribute("aria-hidden", "true");
+    modalIframe.src = "";
+    document.body.style.overflow = "";
+  }
+
+  modalClose?.addEventListener("click", closeModal);
+  modalBackdrop?.addEventListener("click", closeModal);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  // Click on hero background: burst + open modal
+  heroSection?.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("a, button")) return;
+
+    if (burstAt && canvas) {
+      const r = canvas.getBoundingClientRect();
+      burstAt(e.clientX - r.left, e.clientY - r.top);
+    }
+    setTimeout(openModal, 200);
+  });
+
+  // ── Hero content entrance animation cleanup ──
   content?.addEventListener("animationend", () => {
     if (content) content.style.animation = "none";
   }, { once: true });
 
+  // ── Idle hide/show ──
   let idleTimer: ReturnType<typeof setTimeout> | null = null;
-  const IDLE_DELAY = 4000; // 4 秒無動作後隱藏
+  let isHeroVisible = true;
+  const IDLE_DELAY  = 4000;
 
   function showContent() {
     content?.classList.remove("hidden-idle");
@@ -133,45 +441,32 @@ const totalCount = knowHowData.length;
   }
 
   function hideContent() {
+    if (videoModal?.classList.contains("open")) return;
     content?.classList.add("hidden-idle");
     scrollIndicator?.classList.add("hidden-idle");
     overlay?.classList.add("faded");
   }
 
   function resetIdleTimer() {
-    // 只在 hero 區域可見時啟動 idle 計時
     if (!isHeroVisible) return;
     showContent();
     if (idleTimer) clearTimeout(idleTimer);
     idleTimer = setTimeout(hideContent, IDLE_DELAY);
   }
 
-  // Track if hero section is in viewport
-  let isHeroVisible = true;
   const heroObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         isHeroVisible = entry.isIntersecting;
-        if (isHeroVisible) {
-          resetIdleTimer();
-        } else {
-          // 離開 hero 區域時清除計時器，保持內容顯示狀態
-          if (idleTimer) clearTimeout(idleTimer);
-          showContent();
-        }
+        if (isHeroVisible) resetIdleTimer();
+        else { if (idleTimer) clearTimeout(idleTimer); showContent(); }
       });
     },
     { threshold: 0.3 }
   );
-
   if (heroSection) heroObserver.observe(heroSection);
-
-  // 監聽使用者互動事件
-  const events = ["mousemove", "touchstart", "click", "keydown", "scroll"];
-  events.forEach((evt) => {
-    window.addEventListener(evt, resetIdleTimer, { passive: true });
-  });
-
-  // 初始啟動計時器
   resetIdleTimer();
+
+  const events = ["mousemove", "touchstart", "click", "keydown", "scroll"];
+  events.forEach((evt) => window.addEventListener(evt, resetIdleTimer, { passive: true }));
 </script>
