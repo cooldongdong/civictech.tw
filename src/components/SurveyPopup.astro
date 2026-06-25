@@ -1,5 +1,6 @@
 ---
 // src/components/SurveyPopup.astro — 角落滑入式問卷邀請（捲動一段距離後才出現，可關閉）
+// 抽獎截止（7/2 24:00 台灣時間）一過，前端自動把抽獎相關文案降級為純問卷邀請。
 ---
 
 <div
@@ -19,18 +20,22 @@
       </svg>
     </button>
 
-    <span class="inline-block text-xs font-semibold text-primary-600 bg-primary-500/8 px-3 py-1 rounded-full mb-3 tracking-wide">
+    <span id="survey-popup-badge" class="inline-block text-xs font-semibold text-primary-600 bg-primary-500/8 px-3 py-1 rounded-full mb-3 tracking-wide">
       🎁 填問卷．抽好禮
     </span>
     <h3 class="text-base font-bold text-slate-900 mb-1.5 pr-6 leading-snug">
       幫指引補上你的那一塊
     </h3>
-    <p class="text-[0.8rem] text-slate-500 leading-relaxed mb-4">
+    <p id="survey-popup-desc" class="text-[0.8rem] text-slate-500 leading-relaxed mb-2">
       花幾分鐘分享你的公民科技經驗，幫指引長出下一則。<strong class="font-bold text-amber-600">7/2（四）前</strong>完整填答並留下 email，就能參加 g0v jothon 抽獎！
+    </p>
+    <p class="text-[0.7rem] text-slate-400 leading-snug mb-4">
+      問卷將持續開放，隨時歡迎填寫分享 🙌
     </p>
 
     <div class="flex items-center gap-3">
       <a
+        id="survey-popup-cta"
         href="https://forms.gle/u5Vr74hRjxNLm1tr9"
         target="_blank"
         rel="noopener noreferrer"
@@ -39,6 +44,7 @@
         立即填問卷
       </a>
       <a
+        id="survey-popup-draw"
         href="https://g0v.hackmd.io/oGgBQVosTvKs_cdiQUQDaA?view"
         target="_blank"
         rel="noopener noreferrer"
@@ -55,6 +61,19 @@
   const closeBtn = document.getElementById("survey-popup-close");
   const DISMISS_KEY = "survey-popup-dismissed";
   const hiddenClasses = ["translate-y-6", "opacity-0", "pointer-events-none"];
+
+  // 抽獎截止（7/2 24:00 台灣時間）一過，自動把抽獎相關文案降級為純問卷邀請
+  const DRAW_DEADLINE = new Date("2026-07-02T23:59:59+08:00").getTime();
+  if (Date.now() > DRAW_DEADLINE) {
+    const badge = document.getElementById("survey-popup-badge");
+    const desc = document.getElementById("survey-popup-desc");
+    const cta = document.getElementById("survey-popup-cta");
+    const drawLink = document.getElementById("survey-popup-draw");
+    if (badge) badge.textContent = "🌱 邀請你共筆";
+    if (desc) desc.textContent = "花幾分鐘分享你的公民科技經驗，幫指引長出下一則。歡迎完整填答，一起把指引補得更完整。";
+    if (cta) cta.textContent = "填問卷分享";
+    if (drawLink) drawLink.remove();
+  }
 
   if (popup && !sessionStorage.getItem(DISMISS_KEY)) {
     let shown = false;
