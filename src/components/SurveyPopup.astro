@@ -76,20 +76,10 @@
   }
 
   if (popup && !sessionStorage.getItem(DISMISS_KEY)) {
-    let shown = false;
-
-    const reveal = () => {
-      if (shown) return;
-      // 捲過約一個視窗高度（第一屏）才滑出，避免一進站就打擾
-      if (window.scrollY > window.innerHeight * 0.8) {
-        shown = true;
-        popup.classList.remove(...hiddenClasses);
-        window.removeEventListener("scroll", reveal);
-      }
-    };
-
-    window.addEventListener("scroll", reveal, { passive: true });
-    reveal(); // 若載入時已在頁面下方，立即顯示
+    // 這張先滑出；稍後跑咖松卡進來時會像「新訊息」把它往上擠
+    window.setTimeout(() => {
+      popup.classList.remove(...hiddenClasses);
+    }, 800);
 
     closeBtn?.addEventListener("click", () => {
       popup.classList.add(...hiddenClasses);
