@@ -36,6 +36,11 @@
     },
     {
         "category": "地理環境",
+        "title": "想把資料變成一張地圖？臺灣地理資料、地圖工具與 GIS 類專案的做法",
+        "url": "https://g0v.hackmd.io/@jothon/guide/%2FVrb2bjZNQ86sKYglOmUdrA"
+    },
+    {
+        "category": "地理環境",
         "title": "Regional Revitalization 地方發展",
         "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FHaaAkDYnTiWBC2tnvKwHeg%3Fview"
     },
@@ -65,9 +70,9 @@
         "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F7bid8DlMSg2xC8ydTMoYag%3Fview"
     },
     {
-        "category": "地理環境",
-        "title": "Geo Tool 地理資訊工具",
-        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FojGURACoTaO1uOrQ2l34qg%3Fview"
+        "category": "生活與學習",
+        "title": "AI 能幫你的專案做什麼？臺灣公民科技的 AI 應用案例與在地資源",
+        "url": "https://g0v.hackmd.io/@jothon/guide/%2FKYwkcSOMSbKGu2BC2xhTrw"
     },
     {
         "category": "生活與學習",
@@ -98,11 +103,6 @@
         "category": "生活與學習",
         "title": "Disinfo & Scam 錯假訊息與詐騙因應",
         "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F2ff6XXi7QuqrYO6Ytv0UcA%3Fview"
-    },
-    {
-        "category": "生活與學習",
-        "title": "AI 應用相關介紹",
-        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2FZD8a9bWgTquezUh7YoKTzQ%3Fview"
     },
     {
         "category": "與組織營運相關的工具與相關內容",
