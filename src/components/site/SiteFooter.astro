@@ -1,0 +1,50 @@
+---
+const year = new Date().getFullYear();
+
+const links = [
+  { label: "工作文件與共筆", href: "https://g0v.hackmd.io/@jothon/civictech_doc", note: "會議記錄、規劃、正在討論的事" },
+  { label: "開放資料 API", href: "https://data.civictech.tw", note: "整份資料庫的 JSON，免 token、可直接串" },
+  { label: "聯繫 jothon 揪松團", href: "https://jothon.g0v.tw/about/", note: "想加入、想提供資料、想合作" },
+];
+---
+
+<footer id="footer" class="border-t" style="border-color:var(--line);background:var(--surface)">
+  <div class="wrap py-16">
+    <h2 class="m-0 max-w-[20ch] text-[1.6rem] font-semibold" style="color:var(--ink)">
+      這個資料庫是社群一起填的
+    </h2>
+    <p class="mb-10 mt-3 max-w-[54ch] text-[0.95rem] leading-relaxed" style="color:var(--ink-muted)">
+      工作文件全部公開。要補一個專案、修一筆資料、或是把整份資料拿去做別的東西，都不用先問誰。
+    </p>
+
+    <ul class="m-0 grid list-none gap-px overflow-hidden rounded-lg border p-0 sm:grid-cols-3" style="border-color:var(--line);background:var(--line)">
+      {links.map((l) => (
+        <li>
+          <a
+            href={l.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex h-full flex-col gap-1 p-5 no-underline transition-colors"
+            style="background:var(--surface);color:var(--ink)"
+          >
+            <span class="text-[0.95rem] font-medium">{l.label}</span>
+            <span class="text-xs" style="color:var(--ink-muted)">{l.note}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <div class="mt-10 flex flex-wrap items-baseline justify-between gap-3 border-t pt-6 text-xs" style="border-color:var(--line);color:var(--ink-muted)">
+      <p class="m-0">© {year} 台灣公民科技資料庫 · 由 g0v jothon 揪松團維護</p>
+      <p class="m-0">
+        資料 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener noreferrer" style="color:var(--ink-muted)">CC BY 4.0</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  #footer a[target="_blank"]:hover {
+    background: var(--surface-2) !important;
+  }
+</style>

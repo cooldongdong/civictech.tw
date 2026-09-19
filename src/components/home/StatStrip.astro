@@ -1,0 +1,36 @@
+---
+import { stats } from "../../lib/projects";
+
+// 以前這裡寫著「350+ 公民科技專案」，是一個硬寫在 HTML 裡的字串，
+// 而站上使用者當時看得到的專案數是 0。數字要從資料算出來——
+// 手寫的數字只會在寫下的那一天是對的，而且會被查證的人抓到。
+const withoutIntro = stats.total - stats.withIntro;
+
+const items = [
+  { n: stats.total, label: "個專案在資料庫裡" },
+  { n: stats.listed, label: "個在這個站上有自己的頁面" },
+  { n: withoutIntro, label: "個還沒有人寫一句話介紹", gap: true },
+];
+---
+
+<section class="border-y" style="border-color:var(--line);background:var(--surface)">
+  <div class="wrap grid gap-6 py-8 sm:grid-cols-3 sm:py-9">
+    {items.map((it, i) => (
+      <div class="rise flex items-baseline gap-3 sm:flex-col sm:items-start sm:gap-1" style={`--i:${i}`}>
+        <span
+          class="num text-[1.9rem] font-semibold leading-none sm:text-[2.4rem]"
+          style={`color:${it.gap ? "var(--c-disaster)" : "var(--ink)"}`}
+        >
+          {it.n}
+        </span>
+        <span class="text-sm" style="color:var(--ink-muted)">{it.label}</span>
+      </div>
+    ))}
+  </div>
+  <div class="wrap pb-8">
+    <p class="m-0 max-w-[62ch] text-sm" style="color:var(--ink-muted)">
+      最後一個數字是缺口，不是瑕疵——資料庫是社群一起填的，空的欄位就是還沒有人來填的欄位。
+      <a href="/#wish-pool" style="color:var(--accent)">你可以補一筆</a>。
+    </p>
+  </div>
+</section>

@@ -1,35 +1,38 @@
 ---
-import HeroVideo from '../components/HeroVideo.astro';
-import ProjectList from '../components/ProjectList.astro';
-import KnowHow from '../components/KnowHow.astro';
-import WishPool from '../components/WishPool.astro';
-import Footer from '../components/Footer.astro';
-import Navbar from '../components/Navbar.astro';
-import SurveyPopup from '../components/SurveyPopup.astro';
-import EventPopup from '../components/EventPopup.astro';
-import knowHowData from '../content/knowhow/data.json';
-import '../styles/global.css';
+import Base from "../layouts/Base.astro";
+import Hero from "../components/home/Hero.astro";
+import StatStrip from "../components/home/StatStrip.astro";
+import CategoryGrid from "../components/home/CategoryGrid.astro";
+import KnowHow from "../components/KnowHow.astro";
+import WishPool from "../components/WishPool.astro";
+import SurveyPopup from "../components/SurveyPopup.astro";
+import EventPopup from "../components/EventPopup.astro";
+import { stats } from "../lib/projects";
 
-const totalCount = knowHowData.length;
+const description = `台灣公民科技專案的目錄。${stats.listed} 個專案依議題分類，每一個都有自己的頁面，可以直接把連結傳給想拉進來的人。`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "台灣公民科技資料庫",
+  alternateName: "Civic Tech Taiwan",
+  url: "https://civictech.tw",
+  inLanguage: "zh-Hant-TW",
+  description,
+  publisher: {
+    "@type": "Organization",
+    name: "g0v jothon 揪松團",
+    url: "https://jothon.g0v.tw/about/",
+  },
+};
 ---
 
-<html lang="zh-Hant-TW">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="generator" content={Astro.generator} />
-		<title>台灣公民科技資料庫 Civic Tech Taiwan</title>
-		<meta name="description" content={`匯聚 ${totalCount} 則關鍵 Know-how 與公民科技專案的入口平台`} />
-	</head>
-	<body>
-		<Navbar />
-		<HeroVideo />
-		<ProjectList />
-		<KnowHow />
-		<WishPool />
-		<Footer />
-		<SurveyPopup />
-		<EventPopup />
-	</body>
-</html>
+<Base title="台灣公民科技資料庫 Civic Tech Taiwan" description={description} jsonLd={jsonLd}>
+  <Hero />
+  <StatStrip />
+  <CategoryGrid />
+  <KnowHow />
+  <WishPool />
+  <SurveyPopup />
+  <EventPopup />
+</Base>

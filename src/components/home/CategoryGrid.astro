@@ -1,0 +1,126 @@
+---
+import { categories } from "../../data/categories";
+import { countByCategory } from "../../lib/projects";
+
+const cards = categories.map((c) => ({ ...c, count: countByCategory(c.slug) }));
+// 前兩張是大塊：專案數最多、而且最接近「中圈人講得出口的問題」的兩類。
+// 社群自己的工具那張刻意排最後，並且長得不一樣——它本來就不是給第一次來的人看的。
+const [lead, second, ...rest] = cards;
+const community = rest.find((c) => c.slug === "community")!;
+const middle = rest.filter((c) => c.slug !== "community");
+---
+
+<section id="categories" class="py-16 sm:py-20 lg:py-24">
+  <div class="wrap">
+    <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
+      <h2 class="m-0 max-w-[18ch] text-[1.7rem] font-semibold sm:text-[2.1rem]" style="color:var(--ink)">
+        你關心的是哪一件事？
+      </h2>
+      <p class="m-0 text-sm" style="color:var(--ink-muted)">
+        分類草稿，待社群討論 ·
+        <a href="https://g0v.hackmd.io/@jothon/civictech_doc" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">
+          來提意見
+        </a>
+      </p>
+    </div>
+
+    <div class="grid gap-3 lg:grid-cols-6">
+      {[lead, second].map((c, i) => (
+        <a
+          href={`/c/${c.slug}`}
+          class="cat cat-lead rise lg:col-span-3"
+          style={`--i:${i};--tint:var(--c-${c.slug})`}
+        >
+          <span class="num cat-count">{c.count}</span>
+          <h3 class="cat-name">{c.name}</h3>
+          <p class="cat-blurb">{c.blurb}</p>
+        </a>
+      ))}
+
+      {middle.map((c, i) => (
+        <a
+          href={`/c/${c.slug}`}
+          class="cat rise lg:col-span-2"
+          style={`--i:${i + 2};--tint:var(--c-${c.slug})`}
+        >
+          <span class="num cat-count cat-count-sm">{c.count}</span>
+          <h3 class="cat-name cat-name-sm">{c.name}</h3>
+          <p class="cat-blurb cat-blurb-sm">{c.blurb}</p>
+        </a>
+      ))}
+
+      <a href={`/c/${community.slug}`} class="cat cat-aside rise lg:col-span-6" style="--i:7;--tint:var(--c-community)">
+        <div>
+          <h3 class="cat-name cat-name-sm">{community.name}</h3>
+          <p class="cat-blurb cat-blurb-sm">{community.blurb}</p>
+        </div>
+        <span class="num cat-count cat-count-sm">{community.count}</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cat {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    padding: 1.4rem 1.4rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--tint) 7%, transparent) 0%, transparent 62%),
+      var(--surface);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
+  }
+  .cat:hover {
+    border-color: color-mix(in srgb, var(--tint) 55%, var(--line));
+    transform: translateY(-2px);
+  }
+  .cat:active { transform: translateY(0) scale(0.995); }
+
+  .cat-lead { padding: 1.9rem 1.8rem 2rem; }
+
+  .cat-count {
+    display: block;
+    font-size: 2.6rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--tint);
+    margin-bottom: 0.7rem;
+  }
+  .cat-count-sm { font-size: 1.7rem; margin-bottom: 0.5rem; }
+
+  .cat-name {
+    margin: 0 0 0.5rem;
+    font-size: 1.32rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cat-name-sm { font-size: 1.05rem; }
+
+  .cat-blurb {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--ink-muted);
+    max-width: 44ch;
+  }
+  .cat-blurb-sm { font-size: 0.85rem; line-height: 1.7; }
+
+  /* 最後一張橫的：形狀上就跟前七張不同，讓「這一袋不是給你的」看得出來 */
+  .cat-aside {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    background: var(--surface-2);
+  }
+  .cat-aside .cat-count { margin-bottom: 0; }
+
+  @media (max-width: 640px) {
+    .cat-aside { flex-direction: row; align-items: flex-start; }
+  }
+</style>

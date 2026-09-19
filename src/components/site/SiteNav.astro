@@ -1,0 +1,123 @@
+---
+interface Props {
+  current?: "home" | "guide" | "wish" | "about";
+}
+const { current = "home" } = Astro.props;
+
+const links = [
+  { key: "home", label: "找專案", href: "/#categories" },
+  { key: "guide", label: "行動指引", href: "/#know-how" },
+  { key: "wish", label: "許願池", href: "/#wish-pool" },
+  { key: "about", label: "協作與聯繫", href: "/#footer" },
+] as const;
+---
+
+<!-- sentinel：用它決定導覽列要不要變成實心，取代 scroll 監聽器 -->
+<div id="nav-sentinel" aria-hidden="true" style="position:absolute;top:0;height:1px;width:1px"></div>
+
+<header id="site-nav" class="fixed inset-x-0 top-0 z-50 transition-colors duration-300">
+  <div class="wrap flex h-16 items-center justify-between gap-6 sm:h-[68px]">
+    <a href="/" class="group flex items-baseline gap-2 no-underline">
+      <span class="text-[0.95rem] font-semibold tracking-tight" style="color:var(--ink)">
+        台灣公民科技資料庫
+      </span>
+      <span class="hidden text-[0.7rem] sm:inline num" style="color:var(--ink-muted)">civictech.tw</span>
+    </a>
+
+    <nav aria-label="主要導覽">
+      <ul class="m-0 hidden list-none items-center gap-1 p-0 md:flex">
+        {links.map((l) => (
+          <li>
+            <a
+              href={l.href}
+              aria-current={current === l.key ? "page" : undefined}
+              class="rounded-md px-3 py-1.5 text-sm no-underline transition-colors"
+              style={`color:${current === l.key ? "var(--ink)" : "var(--ink-muted)"}`}
+              data-nav-link
+            >
+              {l.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <button
+      id="nav-toggle"
+      type="button"
+      class="-mr-2 flex h-10 w-10 items-center justify-center rounded-md md:hidden"
+      aria-label="開啟選單"
+      aria-expanded="false"
+      aria-controls="nav-drawer"
+      style="color:var(--ink)"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+        <line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="17" x2="21" y2="17" />
+      </svg>
+    </button>
+  </div>
+
+  <div id="nav-drawer" hidden class="md:hidden" style="background:var(--surface);border-bottom:1px solid var(--line)">
+    <ul class="wrap m-0 list-none py-2 pl-0">
+      {links.map((l) => (
+        <li>
+          <a href={l.href} class="block rounded-md px-1 py-3 text-[0.95rem] no-underline" style="color:var(--ink)" data-nav-close>
+            {l.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</header>
+
+<style>
+  #site-nav {
+    background: transparent;
+    border-bottom: 1px solid transparent;
+  }
+  #site-nav.solid {
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom-color: var(--line);
+  }
+  [data-nav-link]:hover {
+    background: var(--surface-2);
+    color: var(--ink) !important;
+  }
+  [data-nav-link][aria-current="page"] {
+    background: var(--accent-soft);
+    color: var(--accent-ink) !important;
+  }
+</style>
+
+<script>
+  const nav = document.getElementById("site-nav");
+  const sentinel = document.getElementById("nav-sentinel");
+
+  // 頁面捲離最頂端時導覽列轉為實心。用 sentinel + IntersectionObserver，
+  // 不用 scroll 事件——那個會在每一個捲動 frame 上跑。
+  if (nav && sentinel) {
+    const io = new IntersectionObserver(
+      ([entry]) => nav.classList.toggle("solid", !entry.isIntersecting),
+      { threshold: 0 },
+    );
+    io.observe(sentinel);
+  }
+
+  const toggle = document.getElementById("nav-toggle");
+  const drawer = document.getElementById("nav-drawer");
+  toggle?.addEventListener("click", () => {
+    const open = drawer?.hasAttribute("hidden");
+    if (open) drawer?.removeAttribute("hidden");
+    else drawer?.setAttribute("hidden", "");
+    toggle.setAttribute("aria-expanded", String(!!open));
+    nav?.classList.toggle("solid", !!open);
+  });
+  document.querySelectorAll("[data-nav-close]").forEach((el) =>
+    el.addEventListener("click", () => {
+      drawer?.setAttribute("hidden", "");
+      toggle?.setAttribute("aria-expanded", "false");
+    }),
+  );
+</script>

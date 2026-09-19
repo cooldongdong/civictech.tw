@@ -1,0 +1,71 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import { categories } from "../../data/categories";
+import { projectsByCategory } from "../../lib/projects";
+
+export function getStaticPaths() {
+  return categories.map((c) => ({ params: { slug: c.slug }, props: { category: c } }));
+}
+
+const { category } = Astro.props;
+const projects = projectsByCategory(category.slug);
+
+// 有簡介的排前面。不是因為它們比較重要，是因為一整牆「還沒有人寫介紹」
+// 會讓人以為這個資料庫是空的——而缺口要看得見，但不必擋在門口。
+const sorted = [...projects].sort((a, b) => Number(!!b.intro) - Number(!!a.intro));
+const missing = projects.filter((p) => !p.intro).length;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: `${category.name}｜台灣公民科技資料庫`,
+  description: category.blurb,
+  inLanguage: "zh-Hant-TW",
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: projects.length,
+    itemListElement: sorted.slice(0, 60).map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: new URL(`/p/${p.slug}`, "https://civictech.tw").href,
+      name: p.name,
+    })),
+  },
+};
+---
+
+<Base
+  title={`${category.name}｜台灣公民科技資料庫`}
+  description={category.blurb}
+  current="home"
+  jsonLd={jsonLd}
+>
+  <header class="pb-10 pt-28 sm:pt-32" style={`background:linear-gradient(180deg, color-mix(in srgb, var(--c-${category.slug}) 9%, transparent), transparent)`}>
+    <div class="wrap">
+      <a href="/#categories" class="text-sm no-underline" style="color:var(--ink-muted)">← 所有議題</a>
+      <div class="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2">
+        <h1 class="m-0 text-[1.9rem] font-semibold sm:text-[2.4rem]" style="color:var(--ink)">{category.name}</h1>
+        <span class="num text-[1.6rem]" style={`color:var(--c-${category.slug})`}>{projects.length}</span>
+      </div>
+      <p class="mt-4 max-w-[58ch] text-[0.98rem] leading-relaxed" style="color:var(--ink-muted)">{category.blurb}</p>
+      <p class="mt-4 text-xs" style="color:var(--ink-muted)">
+        分類草稿，待社群討論。這一類是從「{category.from}」重切出來的。
+      </p>
+    </div>
+  </header>
+
+  <div class="wrap pb-20">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {sorted.map((p, i) => <ProjectCard project={p} index={i} />)}
+    </div>
+
+    {missing > 0 && (
+      <p class="mt-8 rounded-lg border p-4 text-sm" style="border-color:var(--line);background:var(--surface-2);color:var(--ink-muted)">
+        這一類裡有 <span class="num">{missing}</span> 個專案還沒有人寫介紹。
+        資料庫是社群一起填的——你認識其中哪一個，
+        <a href="/#wish-pool" style="color:var(--accent)">就可以幫它補一句話</a>。
+      </p>
+    )}
+  </div>
+</Base>

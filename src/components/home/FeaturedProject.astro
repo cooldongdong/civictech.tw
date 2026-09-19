@@ -1,0 +1,197 @@
+---
+import { featurePool } from "../../lib/projects";
+import { categoryBySlug } from "../../data/categories";
+
+// 池子不是全部 219 個，是「有話可說、也有地方可去」的那些：
+// 簡介至少 60 字、而且至少有一個連結。抽到一個開天窗的專案比沒有隨機更糟。
+const pool = featurePool.map((p) => ({
+  slug: p.slug,
+  name: p.name,
+  intro: p.intro!.length > 96 ? p.intro!.slice(0, 96) + "⋯" : p.intro!,
+  category: categoryBySlug.get(p.category)!.name,
+  categorySlug: p.category,
+}));
+
+// 沒有 JS 時看到的那一張，不要是「社群自己的工具」——那一袋明講過不是給第一次來的人看的。
+// 有 JS 的話進站就會被換掉，這只是保底。
+const first = pool.find((p) => p.categorySlug !== "community") ?? pool[0];
+---
+
+<aside class="featured" aria-label="隨機推薦的專案">
+  <div class="featured-head">
+    <span>今天看看這個</span>
+    <span class="num" id="featured-progress" aria-live="polite">{pool.length} 個可看</span>
+  </div>
+
+  <a class="featured-body" id="featured-link" href={`/p/${first.slug}`}>
+    <span class="featured-cat" id="featured-cat" data-cat={first.categorySlug}>{first.category}</span>
+    <h2 class="featured-name" id="featured-name">{first.name}</h2>
+    <p class="featured-intro" id="featured-intro">{first.intro}</p>
+  </a>
+
+  <div class="featured-foot">
+    <button type="button" id="featured-shuffle" class="featured-shuffle">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" />
+        <polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /><line x1="4" y1="4" x2="9" y2="9" />
+      </svg>
+      換一個
+    </button>
+    <a href="/#categories" class="featured-all">或照議題找 →</a>
+  </div>
+
+  <script type="application/json" id="featured-pool" set:html={JSON.stringify(pool)} />
+</aside>
+
+<style>
+  .featured {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    padding: 1.15rem 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+  .featured-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  .featured-body {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+  .featured-cat {
+    display: inline-block;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    margin-bottom: 0.7rem;
+  }
+  .featured-name {
+    font-size: 1.28rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 0.45rem;
+    line-height: 1.35;
+  }
+  .featured-body:hover .featured-name {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .featured-intro {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.62);
+  }
+  .featured-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.8rem;
+  }
+  .featured-shuffle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 0.2rem 0;
+  }
+  .featured-shuffle:hover { color: #fff; }
+  .featured-shuffle:active { transform: scale(0.97); }
+  .featured-all {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+  }
+  .featured-all:hover { color: rgba(255, 255, 255, 0.85); }
+
+  .swap { animation: swap 0.35s var(--ease-out-expo); }
+  @keyframes swap {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .swap { animation: none; }
+  }
+</style>
+
+<script>
+  // 「隨機獎勵陷阱」搬不過來——拉霸靠三秒一次的回饋，讀一個專案要三十秒，
+  // 那不是多巴胺是作業。所以這裡做的是收集感：記住看過哪些、優先給沒看過的、
+  // 把「你已看過 N / M」寫出來。順帶會產生一個有用的數字：哪些專案從來沒被抽到過。
+  const KEY = "civictech.seen.v1";
+  const el = {
+    link: document.getElementById("featured-link") as HTMLAnchorElement | null,
+    cat: document.getElementById("featured-cat"),
+    name: document.getElementById("featured-name"),
+    intro: document.getElementById("featured-intro"),
+    progress: document.getElementById("featured-progress"),
+    shuffle: document.getElementById("featured-shuffle"),
+    pool: document.getElementById("featured-pool"),
+  };
+
+  type Item = { slug: string; name: string; intro: string; category: string; categorySlug: string };
+  const pool: Item[] = el.pool ? JSON.parse(el.pool.textContent || "[]") : [];
+
+  function readSeen(): string[] {
+    try {
+      const raw = localStorage.getItem(KEY);
+      return raw ? (JSON.parse(raw) as string[]) : [];
+    } catch {
+      return []; // 隱私模式或封鎖儲存時，退化成純隨機，不報錯
+    }
+  }
+  function writeSeen(list: string[]) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(list.slice(-400)));
+    } catch {
+      /* 存不進去就算了 */
+    }
+  }
+
+  function render(item: Item, seenCount: number) {
+    if (!el.link || !el.cat || !el.name || !el.intro || !el.progress) return;
+    el.link.href = `/p/${item.slug}`;
+    el.cat.textContent = item.category;
+    el.cat.setAttribute("data-cat", item.categorySlug);
+    el.name.textContent = item.name;
+    el.intro.textContent = item.intro;
+    el.progress.textContent = seenCount > 0 ? `你已看過 ${seenCount} / ${pool.length}` : `${pool.length} 個可看`;
+    el.link.classList.remove("swap");
+    void el.link.offsetWidth;
+    el.link.classList.add("swap");
+  }
+
+  function pick(markSeen: boolean) {
+    if (pool.length === 0) return;
+    const seen = readSeen();
+    const unseen = pool.filter((p) => !seen.includes(p.slug));
+    const from = unseen.length > 0 ? unseen : pool;
+    const item = from[Math.floor(Math.random() * from.length)];
+    if (markSeen && !seen.includes(item.slug)) {
+      seen.push(item.slug);
+      writeSeen(seen);
+    }
+    render(item, readSeen().length);
+  }
+
+  // 進站先抽一個（覆蓋掉伺服器端那張靜態卡），之後每按一次換一個
+  pick(true);
+  el.shuffle?.addEventListener("click", () => pick(true));
+</script>

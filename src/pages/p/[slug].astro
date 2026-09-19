@@ -1,0 +1,150 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import { listedProjects, projectsByCategory } from "../../lib/projects";
+import { categoryBySlug } from "../../data/categories";
+
+export function getStaticPaths() {
+  return listedProjects.map((p) => ({ params: { slug: p.slug }, props: { project: p } }));
+}
+
+const { project } = Astro.props;
+const category = categoryBySlug.get(project.category)!;
+
+// 同類的其他專案：分類法會刻意切斷跨類連結，這裡至少把同類的鄰居接回來
+const siblings = projectsByCategory(project.category)
+  .filter((p) => p.slug !== project.slug && p.intro)
+  .slice(0, 3);
+
+const description =
+  project.intro?.slice(0, 120) ??
+  `${project.name}——收錄於台灣公民科技資料庫的「${category.name}」分類。`;
+
+// 給爬蟲與 AI 讀的那一份。跟畫面上顯示的是同一批內容，不是藏起來的第二份文字。
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: project.name,
+  alternateName: project.nameEn,
+  description: project.intro,
+  applicationCategory: "CivicTech",
+  inLanguage: "zh-Hant-TW",
+  url: project.website,
+  codeRepository: project.github,
+  keywords: [category.name, ...project.tags].join(", "),
+  isPartOf: {
+    "@type": "Dataset",
+    name: "台灣公民科技資料庫",
+    url: "https://civictech.tw",
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: "https://data.civictech.tw/v0/tech/projects.json",
+    },
+  },
+};
+---
+
+<Base title={`${project.name}｜台灣公民科技資料庫`} description={description} current="home" jsonLd={jsonLd}>
+  <article class="pt-28 sm:pt-32">
+    <header class="wrap">
+      <a href={`/c/${category.slug}`} class="text-sm no-underline" style={`color:var(--c-${category.slug})`}>
+        ← {category.name}
+      </a>
+      <h1 class="mt-5 text-[2rem] font-semibold leading-tight sm:text-[2.6rem]" style="color:var(--ink)">
+        {project.name}
+      </h1>
+      {project.nameEn && (
+        <p class="mt-2 text-base" style="color:var(--ink-muted)">{project.nameEn}</p>
+      )}
+    </header>
+
+    <div class="wrap mt-9 grid gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-14">
+      <div>
+        {project.intro ? (
+          <p class="m-0 max-w-[62ch] text-[1.05rem] leading-[1.9]" style="color:var(--ink-2)">{project.intro}</p>
+        ) : (
+          <div class="rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
+            <p class="m-0 text-[0.95rem]" style="color:var(--ink-muted)">
+              這個專案還沒有人寫介紹。
+              {project.links.length > 0 ? "下面的連結是目前資料庫裡有的全部。" : "資料庫裡目前只有它的名字。"}
+            </p>
+            <p class="mb-0 mt-3 text-sm" style="color:var(--ink-muted)">
+              你認識這個專案嗎？<a href="/#wish-pool" style="color:var(--accent)">幫它補一句話</a>，
+              或直接寫信給 <a href="https://jothon.g0v.tw/about/" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">jothon</a>。
+            </p>
+          </div>
+        )}
+
+        {project.links.length > 0 && (
+          <div class="mt-8">
+            <h2 class="m-0 mb-3 text-sm font-semibold" style="color:var(--ink)">去用它</h2>
+            <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
+              {project.links.map((l) => (
+                <li>
+                  <a
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-sm no-underline transition-colors"
+                    style="border-color:var(--line);background:var(--surface);color:var(--ink)"
+                  >
+                    {l.label}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <aside class="text-sm" style="color:var(--ink-muted)">
+        <dl class="m-0 grid gap-4">
+          <div>
+            <dt class="mb-1 text-xs" style="color:var(--ink-muted)">議題分類</dt>
+            <dd class="m-0">
+              <a href={`/c/${category.slug}`} style={`color:var(--c-${category.slug})`}>{category.name}</a>
+              {project.categoryCurated && <span class="ml-2 text-xs">（人工指定）</span>}
+            </dd>
+          </div>
+
+          {project.tags.length > 0 && (
+            <div>
+              <dt class="mb-1 text-xs">標籤</dt>
+              <dd class="m-0" style="color:var(--ink-2)">{project.tags.join("・")}</dd>
+            </div>
+          )}
+
+          {project.impactCategories.length > 0 && (
+            <div>
+              <dt class="mb-1 text-xs">原始影響力類別</dt>
+              <dd class="m-0" style="color:var(--ink-2)">{project.impactCategories.join("、")}</dd>
+            </div>
+          )}
+
+          <div>
+            <dt class="mb-1 text-xs">這頁的資料從哪來</dt>
+            <dd class="m-0">
+              jothon 維護的 Airtable，每日同步到
+              <a href={`https://data.civictech.tw/v0/tech/projects.json`} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">開放資料 API</a>，
+              網站在 build 時讀那一份。
+            </dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+
+    {siblings.length > 0 && (
+      <section class="wrap mt-16 border-t pt-10 pb-20" style="border-color:var(--line)">
+        <h2 class="m-0 mb-5 text-base font-semibold" style="color:var(--ink)">同一類的其他專案</h2>
+        <div class="grid gap-3 sm:grid-cols-3">
+          {siblings.map((p, i) => <ProjectCard project={p} index={i} />)}
+        </div>
+      </section>
+    )}
+  </article>
+</Base>
