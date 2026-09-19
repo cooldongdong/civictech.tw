@@ -1,36 +1,90 @@
 @import "tailwindcss";
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+/* 拉丁字用 Geist，中文吃系統字。
+   理由是中文 webfont 的代價太高——思源黑體就算 subset 過仍是 MB 級，
+   而這個站的訪客不一定在好網路上。中文的層次改用字重、字距與行高拉，
+   不用下載字型。數字一律走 Geist Mono 的等寬數字，資料型介面才對得齊。 */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap');
 
-/* ==============================
-   Tailwind v4 Theme
-   ============================== */
 @theme {
-  --font-sans: 'Inter', 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
-
-  --color-accent-400: #a78bfa;
-  --color-accent-500: #8b5cf6;
-  --color-accent-600: #7c3aed;
-  --color-accent-800: #5b21b6;
-
+  --font-sans: 'Geist', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', ui-monospace, monospace;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 舊元件（行動指引、許願池）沿用 primary-* 這組名字，
+     值換成新的苔綠，不必逐一改 class 就能跟著改版走。 */
+  --color-primary-50: #eef4f1;
+  --color-primary-100: #dbe9e2;
+  --color-primary-200: #b6d2c5;
+  --color-primary-300: #8bb7a5;
+  --color-primary-400: #5f9a84;
+  --color-primary-500: #3d7a65;
+  --color-primary-600: #1f5a4b;
+  --color-primary-700: #17473b;
+  --color-primary-800: #11352d;
+  --color-primary-900: #0c2721;
 }
 
 /* ==============================
-   Global Reset & Base
-   ============================== */
+   語意色票（淺色為預設，深色在下方覆蓋）
+   ==============================
+   刻意避開藍紫漸層——那是 AI 生成網站最明顯的指紋，而這個站要的是
+   「看起來像有人維護的公共設施」。底色走暖骨白，重點色只有一個：深苔綠。 */
+:root {
+  --paper: #f6f3ec;
+  --surface: #fffefb;
+  --surface-2: #efeae0;
+  --ink: #1b1915;
+  --ink-2: #453f36;
+  --ink-muted: #6e675b;
+  --line: #e0d9cb;
+  --line-strong: #cec5b3;
+  --accent: #1f5a4b;
+  --accent-ink: #143c32;
+  --accent-soft: #e2ece6;
+  --shadow: 27 25 21;
+
+  /* 八個分類的色票：飽和度一律壓低，讓它們在卡牆上可辨識但不互相喊話 */
+  --c-gov: #8a5a2b;
+  --c-land: #3f6b3a;
+  --c-learning: #4a5a8c;
+  --c-rights: #8c4a4a;
+  --c-health: #2f6b6b;
+  --c-disaster: #a2542a;
+  --c-facts: #6b4a7a;
+  --c-community: #5d5a52;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14130f;
+    --surface: #1c1a16;
+    --surface-2: #24211b;
+    --ink: #f3eee4;
+    --ink-2: #d5cec1;
+    --ink-muted: #a09887;
+    --line: #322e26;
+    --line-strong: #453f34;
+    --accent: #79b9a0;
+    --accent-ink: #a6d6c2;
+    --accent-soft: #1e2f28;
+    --shadow: 0 0 0;
+
+    --c-gov: #d3a071;
+    --c-land: #8fbd86;
+    --c-learning: #9aabdd;
+    --c-rights: #dd9a9a;
+    --c-health: #7ec0c0;
+    --c-disaster: #e0a06f;
+    --c-facts: #bb9acc;
+    --c-community: #b0aca1;
+
+    color-scheme: dark;
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -40,11 +94,94 @@
   }
 
   body {
-    @apply font-sans text-slate-800 bg-slate-50 leading-relaxed overflow-x-hidden;
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* 大標的中文在預設字距下太鬆，收一點才有重量 */
+  h1, h2, h3 {
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   ::selection {
-    background-color: rgba(14, 165, 233, 0.2);
-    color: #0f172a;
+    background-color: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* 鍵盤使用者的跳過導覽 */
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 100;
+    background: var(--surface);
+    color: var(--ink);
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    transition: top 0.2s ease;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+}
+
+@layer components {
+  .wrap {
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .wrap { padding-inline: 2rem; }
+  }
+
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+
+  /* 進場：只做位移與透明度，交給 IntersectionObserver 加 class */
+  .rise {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
+    transition-delay: calc(var(--i, 0) * 60ms);
+  }
+  .rise.in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rise {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
