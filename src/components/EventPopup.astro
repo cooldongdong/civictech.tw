@@ -1,7 +1,18 @@
 ---
 // src/components/EventPopup.astro — 角落滑入式活動報名邀請，可關閉。
 // 在問卷卡之後才滑出，像「新訊息」進來，並把問卷卡往上擠。
+//
+// EXPIRES_AT 是 2026-09-19 補的。這張卡 6/29 上線、辦完之後沒有人回來關它，
+// 到 9/15 盤點時已經對每一個進站的人跳了將近三個月。
+// 旁邊那張 SurveyPopup 從第一天就有自動降級的邏輯，這張漏了——
+// 教訓是限時元件的過期條件要跟元件一起寫，補做的那一次通常不會發生。
+//
+// 活動結束後改這一行就好；日期是台灣時間的當天結束。
+const EXPIRES_AT = "2026-06-30";
+const expired = Date.now() > new Date(`${EXPIRES_AT}T23:59:59+08:00`).getTime();
 ---
+
+{!expired && (
 
 <div
   id="event-popup"
@@ -32,10 +43,8 @@
       </svg>
     </button>
 
-    <span
-      class="inline-block text-xs font-semibold text-primary-600 bg-primary-500/8 px-3 py-1 rounded-full mb-3 tracking-wide"
-    >
-      ☕ 活動報名
+    <span class="mb-3 inline-block rounded-full px-2.5 py-1 text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">
+      活動報名
     </span>
     <h3 class="text-base font-bold text-slate-900 mb-1.5 pr-6 leading-snug">
       公民科技跑咖松
@@ -54,6 +63,7 @@
     </a>
   </div>
 </div>
+)}
 
 <script>
   const popup = document.getElementById("event-popup");
