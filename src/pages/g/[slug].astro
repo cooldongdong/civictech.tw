@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { getCollection, render } from "astro:content";
+import { getGuides } from "../../lib/guides";
 
 export async function getStaticPaths() {
   const guides = await getCollection("guides");
@@ -8,15 +9,17 @@ export async function getStaticPaths() {
 }
 
 const { guide } = Astro.props;
-const { title, section, source, tags, syncedAt } = guide.data;
+const { title, source, tags, syncedAt } = guide.data;
+const { bySlug, groupOf } = await getGuides();
+const group = groupOf(guide.id);
 const { Content, headings } = await render(guide);
 
 // 大綱只收 h2、h3：h2 是「這篇能回答你／資源清單／使用提醒」這一層，
 // h3 多半是資源清單裡的個別工具——想直接跳到某個工具的人，要的正是這一層
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
-// 內文第一行固定是「核心主題：……」，拿來當摘要剛好
-const summary = guide.body?.match(/核心(?:主題|方法)：(.+)/)?.[1]?.trim();
+// 內文第一行固定是「核心主題／核心方法：……」，拿來當摘要剛好
+const summary = bySlug.get(guide.id)?.summary;
 const description = summary ?? `${title}——g0v 揪松團整理的公民科技行動指引。`;
 const synced = syncedAt.toISOString().slice(0, 10);
 
@@ -43,8 +46,8 @@ const jsonLd = {
 <Base title={`${title}｜公民科技行動指引`} description={description} current="guide" jsonLd={jsonLd}>
   <article class="pt-28 sm:pt-32">
     <header class="wrap">
-      <a href="/#know-how" class="text-sm no-underline" style="color:var(--ink-muted)">
-        ← 行動指引・{section}
+      <a href={`/g#${group.key}`} class="text-sm no-underline" style="color:var(--ink-muted)">
+        ← 行動指引・{group.title}
       </a>
       <h1 class="mt-5 max-w-[30ch] text-[1.9rem] font-semibold leading-tight sm:text-[2.4rem]" style="color:var(--ink)">
         {title}
