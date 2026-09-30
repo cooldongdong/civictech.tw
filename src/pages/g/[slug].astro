@@ -9,7 +9,11 @@ export async function getStaticPaths() {
 
 const { guide } = Astro.props;
 const { title, section, source, tags, syncedAt } = guide.data;
-const { Content } = await render(guide);
+const { Content, headings } = await render(guide);
+
+// 大綱只收 h2、h3：h2 是「這篇能回答你／資源清單／使用提醒」這一層，
+// h3 多半是資源清單裡的個別工具——想直接跳到某個工具的人，要的正是這一層
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
 // 內文第一行固定是「核心主題：……」，拿來當摘要剛好
 const summary = guide.body?.match(/核心(?:主題|方法)：(.+)/)?.[1]?.trim();
@@ -48,11 +52,35 @@ const jsonLd = {
     </header>
 
     <div class="wrap mt-9 grid gap-10 pb-20 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-14">
-      <div class="guide-body max-w-[68ch]">
-        <Content />
+      <div class="min-w-0">
+        {toc.length > 0 && (
+          <details class="toc-mobile mb-8 rounded-lg border lg:hidden" style="border-color:var(--line);background:var(--surface-2)">
+            <summary class="cursor-pointer px-5 py-3 text-sm font-semibold" style="color:var(--ink)">本文大綱</summary>
+            <nav aria-label="本文大綱" class="px-5 pb-4">
+              <ol class="toc m-0 list-none p-0">
+                {toc.map((h) => (
+                  <li class={h.depth === 3 ? "pl-4" : ""}><a href={`#${h.slug}`}>{h.text}</a></li>
+                ))}
+              </ol>
+            </nav>
+          </details>
+        )}
+        <div class="guide-body max-w-[68ch]">
+          <Content />
+        </div>
       </div>
 
-      <aside class="text-sm lg:sticky lg:top-32 lg:self-start" style="color:var(--ink-muted)">
+      <aside class="grid gap-6 text-sm lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto" style="color:var(--ink-muted)">
+        {toc.length > 0 && (
+          <nav aria-label="本文大綱" class="hidden lg:block">
+            <p class="m-0 mb-2 text-xs">本文大綱</p>
+            <ol class="toc m-0 list-none border-l p-0" style="border-color:var(--line)" data-toc>
+              {toc.map((h) => (
+                <li class={h.depth === 3 ? "pl-7" : "pl-4"}><a href={`#${h.slug}`} data-toc-link={h.slug}>{h.text}</a></li>
+              ))}
+            </ol>
+          </nav>
+        )}
         <dl class="m-0 grid gap-4 rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
           <div>
             <dt class="mb-1 text-xs">原文</dt>
@@ -76,6 +104,30 @@ const jsonLd = {
   </article>
 </Base>
 
+<script>
+  // 大綱標出目前讀到哪一節。用 IntersectionObserver，不掛 scroll 監聽器（跟 Base 的進場動畫同一個做法）
+  const links = new Map(
+    [...document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")].map((a) => [a.dataset.tocLink!, a]),
+  );
+  if (links.size > 0) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          links.forEach((a) => a.removeAttribute("aria-current"));
+          links.get(e.target.id)?.setAttribute("aria-current", "true");
+        }
+      },
+      // 只看畫面上緣往下那一條帶子：標題一滑進來就算讀到那一節
+      { rootMargin: "-90px 0px -70% 0px" },
+    );
+    for (const id of links.keys()) {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    }
+  }
+</script>
+
 <style>
   /* 內文是從 HackMD 來的 markdown，Tailwind 的 preflight 把清單和標題的樣式都歸零了，這裡補回來 */
   .guide-body {
@@ -97,6 +149,11 @@ const jsonLd = {
     font-weight: 600;
     color: var(--ink);
   }
+  /* 從大綱跳過來時，標題別貼著導覽列下緣 */
+  .guide-body :global(h2),
+  .guide-body :global(h3) {
+    scroll-margin-top: 1.25rem;
+  }
   .guide-body :global(p) {
     margin: 0 0 1rem;
   }
@@ -114,12 +171,39 @@ const jsonLd = {
   .guide-body :global(li) {
     margin: 0.3rem 0;
   }
+  /* 連結要一眼看得出來：光靠顏色在深色模式跟內文差太少，一律加底線 */
   .guide-body :global(a) {
     color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
     text-underline-offset: 3px;
+    cursor: pointer;
   }
-  .guide-body :global(h3 a) {
+  .guide-body :global(a:hover) {
+    color: var(--accent-ink);
+    text-decoration-thickness: 2px;
+  }
+
+  .toc :global(a) {
+    display: block;
+    padding: 0.3rem 0;
+    color: var(--ink-muted);
+    text-decoration: none;
+    line-height: 1.5;
+  }
+  .toc :global(a:hover) {
     color: var(--ink);
+  }
+  [data-toc] :global(li) {
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+  }
+  [data-toc] :global(li:has(a[aria-current])) {
+    border-left-color: var(--accent);
+  }
+  [data-toc] :global(a[aria-current]) {
+    color: var(--ink);
+    font-weight: 600;
   }
   .guide-body :global(blockquote) {
     margin: 0 0 1rem;
