@@ -18,7 +18,17 @@ const OUT = new URL("../src/content/guides/", import.meta.url);
 
 // 站內網址。HackMD 的 id 不好讀，也不好口頭轉述；沒列到的先用 id 頂著
 const SLUGS = {
+  rkM1ynawzl: "data-visualization",
+  B1thBMlOfx: "data-driven-tactics",
+  uzYt0oODRXe7kwdCnIxuBQ: "reaching-users",
+  B14KGLsUze: "crowdsourced-reporting",
+  Bk1bE0MOfe: "prototype-to-policy",
   S1TaMf4Izx: "government-budget",
+  HkklOCBIGg: "legislation-tracking",
+  ByUrwHv8Ge: "public-participation",
+  HkQhtOdvze: "regional-revitalization",
+  Vrb2bjZNQ86sKYglOmUdrA: "maps-and-gis",
+  KYwkcSOMSbKGu2BC2xhTrw: "ai-applications",
 };
 
 async function fetchMarkdown(url) {
@@ -40,7 +50,8 @@ function parseBook(md) {
     if (/^# 工作區/.test(line)) break;
     const h = line.match(/^#{2,4}\s+(.+)/);
     if (h) {
-      section = h[1].replace(/<br>/g, " ").replace(/_(指引文章|素材筆記區)$/, "").trim();
+      // 章節名只取第一段：「公私協力怎麼談<br>公部門和民間合作的方法<br>…」放在返回連結上太長
+      section = h[1].split("<br>")[0].replace(/_(指引文章|素材筆記區)$/, "").trim();
       continue;
     }
     const link = line.match(/^\s*-\s*\[(.+?)\]\((\S+?)\)/);
@@ -78,8 +89,12 @@ let changed = 0;
 
 for (const a of targets) {
   const { yaml, body: raw } = stripFrontmatter(await fetchMarkdown(a.url));
-  // 標題由頁面自己排，內文裡的 H1 拿掉，避免一頁兩個 h1
-  const body = raw.replace(/^\s*#\s+.+\n+/, "").trimEnd() + "\n";
+  // 標題由頁面自己排，內文開頭的標題拿掉，避免同一個標題出現兩次。
+  // 大多數篇用 #，但資料視覺化那篇用的是 ##
+  let body = raw.replace(/^\s*#{1,2}\s+.+\n+/, "").trimEnd() + "\n";
+  // 頁面的 h1 已經是文章標題，章節要從 h2 開始；法案那篇章節用 #，整篇往下降一級，
+  // 不然一頁會有好幾個 h1，大綱也抓不到
+  if (/^#\s/m.test(body)) body = body.replace(/^(#{1,5})\s/gm, "#$1 ");
   const tags = (yaml.match(/^tags:\s*(.+)$/m)?.[1] ?? "")
     .split(/[,、]/)
     .map((t) => t.trim())
