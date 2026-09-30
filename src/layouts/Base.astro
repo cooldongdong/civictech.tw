@@ -26,7 +26,7 @@ const pageTitle = isPreview ? `【預覽版】${title}` : title;
 ---
 
 <!doctype html>
-<html lang="zh-Hant-TW">
+<html lang="zh-Hant-TW" data-preview={isPreview ? "" : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
