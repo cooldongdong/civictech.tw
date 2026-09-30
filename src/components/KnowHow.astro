@@ -28,7 +28,7 @@ const categoriesOrder = [
         知道怎麼做的人，寫下來了
       </h2>
       <p class="m-0 max-w-[40ch] text-sm" style="color:var(--ink-muted)">
-        社群整理的實作指引，點了會離開這個站、前往 HackMD 共筆。持續增加中。
+        社群整理的實作指引。標「全文」的可以直接在這裡讀，其餘會前往 HackMD 共筆。持續增加中。
       </p>
     </div>
 
@@ -46,12 +46,15 @@ const categoriesOrder = [
 
             <!-- Items -->
             <ul class="flex flex-col gap-0.5 list-none m-0 p-0">
-              {items.map((item) => (
+              {items.map((item) => {
+                // 站內的指引文章（/g/…）不開新分頁，也不掛外連圖示
+                const internal = item.url?.startsWith("/");
+                return (
                 <li>
                   <a
                     href={item.url || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target={internal ? undefined : "_blank"}
+                    rel={internal ? undefined : "noopener noreferrer"}
                     style={item.url ? "color:var(--ink-2)" : "color:var(--ink-muted)"}
                     class={`flex items-center gap-2 px-2 py-[7px] rounded-md text-sm leading-snug no-underline transition-colors duration-150 ${
                       item.url
@@ -61,7 +64,11 @@ const categoriesOrder = [
                     title={!item.url ? "共筆連結整理中" : `前往查看：${item.title}`}
                   >
                     <span class="flex-1">{item.title}</span>
-                    {item.url ? (
+                    {internal ? (
+                      <span class="shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold" style="background:var(--accent-soft);color:var(--accent-ink)">
+                        全文
+                      </span>
+                    ) : item.url ? (
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-slate-400 transition-all duration-150 hover:text-primary-500">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                         <polyline points="15 3 21 3 21 9" />
@@ -74,7 +81,8 @@ const categoriesOrder = [
                     )}
                   </a>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         );
