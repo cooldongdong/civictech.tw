@@ -1,0 +1,156 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const guides = await getCollection("guides");
+  return guides.map((g) => ({ params: { slug: g.id }, props: { guide: g } }));
+}
+
+const { guide } = Astro.props;
+const { title, section, source, tags, syncedAt } = guide.data;
+const { Content } = await render(guide);
+
+// 內文第一行固定是「核心主題：……」，拿來當摘要剛好
+const summary = guide.body?.match(/核心(?:主題|方法)：(.+)/)?.[1]?.trim();
+const description = summary ?? `${title}——g0v 揪松團整理的公民科技行動指引。`;
+const synced = syncedAt.toISOString().slice(0, 10);
+
+// 這篇是別人寫的、CC BY 4.0 授權，搬進來的義務是把作者、授權、原文三樣講清楚。
+// 給機器讀的這一份也要講，不然 AI 引用時只會記得 civictech.tw。
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: title,
+  description,
+  inLanguage: "zh-Hant-TW",
+  keywords: tags.join(", "),
+  author: [
+    { "@type": "Person", name: "Claire Cheng", url: "https://claire-cheng.com/zh" },
+    { "@type": "Organization", name: "g0v jothon 揪松團", url: "https://jothon.g0v.tw/about/" },
+  ],
+  license: "https://creativecommons.org/licenses/by/4.0/",
+  isBasedOn: source,
+  dateModified: synced,
+  isPartOf: { "@type": "WebSite", name: "台灣公民科技資料庫", url: "https://civictech.tw" },
+};
+---
+
+<Base title={`${title}｜公民科技行動指引`} description={description} current="guide" jsonLd={jsonLd}>
+  <article class="pt-28 sm:pt-32">
+    <header class="wrap">
+      <a href="/#know-how" class="text-sm no-underline" style="color:var(--ink-muted)">
+        ← 行動指引・{section}
+      </a>
+      <h1 class="mt-5 max-w-[30ch] text-[1.9rem] font-semibold leading-tight sm:text-[2.4rem]" style="color:var(--ink)">
+        {title}
+      </h1>
+    </header>
+
+    <div class="wrap mt-9 grid gap-10 pb-20 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-14">
+      <div class="guide-body max-w-[68ch]">
+        <Content />
+      </div>
+
+      <aside class="text-sm lg:sticky lg:top-32 lg:self-start" style="color:var(--ink-muted)">
+        <dl class="m-0 grid gap-4 rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
+          <div>
+            <dt class="mb-1 text-xs">原文</dt>
+            <dd class="m-0">
+              <a href={source} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">g0v HackMD 共筆</a>，這裡是 <span class="num">{synced}</span> 拷貝過來的一份。兩邊不一致時以原文為準。
+            </dd>
+          </div>
+          <div>
+            <dt class="mb-1 text-xs">作者</dt>
+            <dd class="m-0" style="color:var(--ink-2)">Claire Cheng 與 g0v jothon 揪松團</dd>
+          </div>
+          <div>
+            <dt class="mb-1 text-xs">授權</dt>
+            <dd class="m-0">
+              <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">CC BY 4.0</a>，轉載請標示出處。
+            </dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </article>
+</Base>
+
+<style>
+  /* 內文是從 HackMD 來的 markdown，Tailwind 的 preflight 把清單和標題的樣式都歸零了，這裡補回來 */
+  .guide-body {
+    color: var(--ink-2);
+    font-size: 1.02rem;
+    line-height: 1.9;
+  }
+  .guide-body :global(h2) {
+    margin: 2.6rem 0 0.9rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--line);
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .guide-body :global(h3) {
+    margin: 1.8rem 0 0.5rem;
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .guide-body :global(p) {
+    margin: 0 0 1rem;
+  }
+  .guide-body :global(ul),
+  .guide-body :global(ol) {
+    margin: 0 0 1rem;
+    padding-left: 1.3rem;
+  }
+  .guide-body :global(ul) {
+    list-style: disc;
+  }
+  .guide-body :global(ol) {
+    list-style: decimal;
+  }
+  .guide-body :global(li) {
+    margin: 0.3rem 0;
+  }
+  .guide-body :global(a) {
+    color: var(--accent);
+    text-underline-offset: 3px;
+  }
+  .guide-body :global(h3 a) {
+    color: var(--ink);
+  }
+  .guide-body :global(blockquote) {
+    margin: 0 0 1rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--line);
+    color: var(--ink-muted);
+  }
+  .guide-body :global(table) {
+    display: block;
+    overflow-x: auto;
+    margin: 0 0 1rem;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .guide-body :global(th),
+  .guide-body :global(td) {
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--line);
+    text-align: left;
+  }
+  .guide-body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+  /* 第一段是「核心主題／涵蓋資源／作者…」的後設資訊清單，縮小一級，跟正文分開 */
+  .guide-body > :global(ul:first-child) {
+    padding: 1rem 1.2rem 1rem 2.2rem;
+    border-radius: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-size: 0.92rem;
+    color: var(--ink-muted);
+  }
+</style>
