@@ -131,6 +131,13 @@ export const allProjects: Project[] = (raw.records as AirtableRecord[])
   })
   .filter((p) => p.name.length > 0);
 
+// 覆蓋清單是按名稱比對的：Airtable 上一改名，那一筆就會安靜地掉回預設分類。讓它在 build 時掛掉
+const knownNames = new Set(allProjects.map((p) => p.name));
+const staleOverrides = Object.keys(overrides).filter((n) => !knownNames.has(n));
+if (staleOverrides.length > 0) {
+  throw new Error(`覆蓋清單裡有對不上任何專案的名稱：${staleOverrides.join("、")}`);
+}
+
 /**
  * 端得上桌的：有名字，而且至少有簡介或一個連結。
  * 其餘的仍然存在於資料庫，只是站上沒有東西可以給人看。
