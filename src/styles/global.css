@@ -44,14 +44,24 @@
   --accent-soft: #e2ece6;
   --shadow: 27 25 21;
 
-  /* 八個分類的色票：飽和度一律壓低，讓它們在卡牆上可辨識但不互相喊話 */
-  --c-gov: #8a5a2b;
-  --c-land: #3f6b3a;
-  --c-learning: #4a5a8c;
-  --c-rights: #8c4a4a;
-  --c-health: #2f6b6b;
-  --c-disaster: #a2542a;
+  /* 十七個分類的色票：飽和度一律壓低，讓它們在卡牆上可辨識但不互相喊話。
+     同一家族的類用相近色相：錢與法是褐，環境是綠與藍，人的生活是紅 */
+  --c-budget: #8a5a2b;
+  --c-law: #7a4f63;
+  --c-democracy: #6a6a2e;
   --c-facts: #6b4a7a;
+  --c-local: #9a6a1f;
+  --c-disaster: #a2542a;
+  --c-housing: #8c4a4a;
+  --c-rights: #8c4a6a;
+  --c-pollution: #5a5f38;
+  --c-ecology: #3f6b3a;
+  --c-energy: #56753a;
+  --c-water: #2f5f7a;
+  --c-landuse: #7a6a4a;
+  --c-transport: #4f5f6f;
+  --c-health: #2f6b6b;
+  --c-learning: #4a5a8c;
   --c-community: #5d5a52;
 
   color-scheme: light;
@@ -72,13 +82,22 @@
     --accent-soft: #1e2f28;
     --shadow: 0 0 0;
 
-    --c-gov: #d3a071;
-    --c-land: #8fbd86;
-    --c-learning: #9aabdd;
-    --c-rights: #dd9a9a;
-    --c-health: #7ec0c0;
-    --c-disaster: #e0a06f;
+    --c-budget: #d3a071;
+    --c-law: #cf9ab2;
+    --c-democracy: #c2c27a;
     --c-facts: #bb9acc;
+    --c-local: #e0b36a;
+    --c-disaster: #e0a06f;
+    --c-housing: #dd9a9a;
+    --c-rights: #dd9abb;
+    --c-pollution: #b5bb85;
+    --c-ecology: #8fbd86;
+    --c-energy: #a8c98a;
+    --c-water: #86b6d0;
+    --c-landuse: #c8b690;
+    --c-transport: #a5b5c5;
+    --c-health: #7ec0c0;
+    --c-learning: #9aabdd;
     --c-community: #b0aca1;
 
     color-scheme: dark;

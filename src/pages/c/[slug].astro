@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import ProjectCard from "../../components/ProjectCard.astro";
-import { categories } from "../../data/categories";
+import { categories, surveyRate, SURVEY_RESPONDENTS } from "../../data/categories";
 import { projectsByCategory } from "../../lib/projects";
 
 export function getStaticPaths() {
@@ -50,7 +50,10 @@ const jsonLd = {
       </div>
       <p class="mt-4 max-w-[58ch] text-[0.98rem] leading-relaxed" style="color:var(--ink-muted)">{category.blurb}</p>
       <p class="mt-4 text-xs" style="color:var(--ink-muted)">
-        分類草稿，待社群討論。這一類是從「{category.from}」重切出來的。
+        分類草稿，待社群討論。
+        {category.survey
+          ? `這一類對應 2026-07 需求問卷的「${category.survey.label}」，還沒做過專案的 ${SURVEY_RESPONDENTS} 人裡有 ${surveyRate(category.survey)}% 想先看。`
+          : "問卷沒問到這一類，是為了讓這些專案有地方放而補的。"}
       </p>
     </div>
   </header>

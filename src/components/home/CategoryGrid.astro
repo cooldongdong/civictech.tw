@@ -1,13 +1,14 @@
 ---
-import { categories } from "../../data/categories";
+import { categories, surveyRate, SURVEY_RESPONDENTS } from "../../data/categories";
 import { countByCategory } from "../../lib/projects";
 
 const cards = categories.map((c) => ({ ...c, count: countByCategory(c.slug) }));
-// 前兩張是大塊：專案數最多、而且最接近「中圈人講得出口的問題」的兩類。
-// 社群自己的工具那張刻意排最後，並且長得不一樣——它本來就不是給第一次來的人看的。
-const [lead, second, ...rest] = cards;
-const community = rest.find((c) => c.slug === "community")!;
-const middle = rest.filter((c) => c.slug !== "community");
+// 順序是 categories.ts 算好的：問卷勾選率高的在前。首頁只擺前六張，其餘收進下面的清單。
+// 前兩張是大塊。社群自己的工具那張刻意排最後，並且長得不一樣——它本來就不是給第一次來的人看的。
+const community = cards.find((c) => c.slug === "community")!;
+const ranked = cards.filter((c) => c.slug !== "community");
+const [lead, second, ...others] = ranked.slice(0, 6);
+const more = ranked.slice(6);
 ---
 
 <section id="categories" class="py-16 sm:py-20 lg:py-24">
@@ -17,39 +18,60 @@ const middle = rest.filter((c) => c.slug !== "community");
         你關心的是哪一件事？
       </h2>
       <p class="m-0 text-sm" style="color:var(--ink-muted)">
-        分類草稿，待社群討論 ·
+        依
+        <a href="https://report.claire-cheng.com/#rec-1-2" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">2026-07 需求問卷</a>
+        中還沒做過專案的 {SURVEY_RESPONDENTS} 人排序 · 分類草稿，待社群討論 ·
         <a href="https://g0v.hackmd.io/@jothon/civictech_doc" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">
           來提意見
         </a>
       </p>
     </div>
 
-    <div class="grid gap-3 lg:grid-cols-6">
+    <div class="grid gap-3 lg:grid-cols-12">
       {[lead, second].map((c, i) => (
         <a
           href={`/c/${c.slug}`}
-          class="cat cat-lead rise lg:col-span-3"
+          class="cat cat-lead rise lg:col-span-6"
           style={`--i:${i};--tint:var(--c-${c.slug})`}
         >
           <span class="num cat-count">{c.count}</span>
           <h3 class="cat-name">{c.name}</h3>
           <p class="cat-blurb">{c.blurb}</p>
+          <p class="cat-rate">{surveyRate(c.survey!)}% 的人想先看</p>
         </a>
       ))}
 
-      {middle.map((c, i) => (
+      {others.map((c, i) => (
         <a
           href={`/c/${c.slug}`}
-          class="cat rise lg:col-span-2"
+          class="cat rise lg:col-span-3"
           style={`--i:${i + 2};--tint:var(--c-${c.slug})`}
         >
           <span class="num cat-count cat-count-sm">{c.count}</span>
           <h3 class="cat-name cat-name-sm">{c.name}</h3>
           <p class="cat-blurb cat-blurb-sm">{c.blurb}</p>
+          <p class="cat-rate">{surveyRate(c.survey!)}% 的人想先看</p>
         </a>
       ))}
 
-      <a href={`/c/${community.slug}`} class="cat cat-aside rise lg:col-span-6" style="--i:7;--tint:var(--c-community)">
+      <div class="more rise lg:col-span-12" style="--i:6">
+        <h3 class="more-title">其他 {more.length} 類</h3>
+        <ul class="more-list">
+          {more.map((c) => (
+            <li>
+              <a href={`/c/${c.slug}`} class="more-link" style={`--tint:var(--c-${c.slug})`}>
+                <span class="more-name">{c.name}</span>
+                <span class="more-meta">
+                  {c.survey ? `${surveyRate(c.survey)}% · ` : "問卷沒問 · "}
+                  <span class="num">{c.count}</span> 個專案
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <a href={`/c/${community.slug}`} class="cat cat-aside rise lg:col-span-12" style="--i:7;--tint:var(--c-community)">
         <div>
           <h3 class="cat-name cat-name-sm">{community.name}</h3>
           <p class="cat-blurb cat-blurb-sm">{community.blurb}</p>
@@ -110,7 +132,55 @@ const middle = rest.filter((c) => c.slug !== "community");
   }
   .cat-blurb-sm { font-size: 0.85rem; line-height: 1.7; }
 
-  /* 最後一張橫的：形狀上就跟前七張不同，讓「這一袋不是給你的」看得出來 */
+  .cat-rate {
+    margin: 0.9rem 0 0;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  .more {
+    padding: 1.2rem 1.4rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  .more-title {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .more-list {
+    display: grid;
+    gap: 0 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 640px) { .more-list { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .more-list { grid-template-columns: repeat(3, 1fr); } }
+  .more-link {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    border-left: 3px solid var(--tint);
+    text-decoration: none;
+    color: var(--ink);
+    transition: background-color 0.2s ease;
+  }
+  .more-link:hover { background: color-mix(in srgb, var(--tint) 8%, transparent); }
+  .more-name { font-size: 0.92rem; }
+  .more-meta {
+    flex-shrink: 0;
+    padding-right: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  /* 最後一張橫的：形狀上就跟上面的卡片不同，讓「這一袋不是給你的」看得出來 */
   .cat-aside {
     display: flex;
     align-items: center;
