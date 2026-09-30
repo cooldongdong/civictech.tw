@@ -7,12 +7,12 @@
     {
         "category": "政策治理",
         "title": "法案走到哪了？立法歷程與議會監督的查詢工具整理",
-        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F%40claire%2FHkklOCBIGg"
+        "url": "/g/legislation-tracking"
     },
     {
         "category": "政策治理",
         "title": "一群人的意見怎麼收斂成共識？公民參與管道與討論工具整理",
-        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F%40claire%2FByUrwHv8Ge"
+        "url": "/g/public-participation"
     },
     {
         "category": "政策治理",
@@ -37,12 +37,12 @@
     {
         "category": "地理環境",
         "title": "想把資料變成一張地圖？臺灣地理資料、地圖工具與 GIS 類專案的做法",
-        "url": "https://g0v.hackmd.io/@jothon/guide/%2FVrb2bjZNQ86sKYglOmUdrA"
+        "url": "/g/maps-and-gis"
     },
     {
         "category": "地理環境",
         "title": "地方創生的資料從哪裡查？臺灣地方創生資料庫與社群專案指南",
-        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F%40claire%2FHkQhtOdvze"
+        "url": "/g/regional-revitalization"
     },
     {
         "category": "地理環境",
@@ -72,7 +72,7 @@
     {
         "category": "生活與學習",
         "title": "AI 能幫你的專案做什麼？臺灣公民科技的 AI 應用案例與在地資源",
-        "url": "https://g0v.hackmd.io/@jothon/guide/%2FKYwkcSOMSbKGu2BC2xhTrw"
+        "url": "/g/ai-applications"
     },
     {
         "category": "生活與學習",
@@ -132,7 +132,12 @@
     {
         "category": "資料驅動對策手法 Data-driven",
         "title": "專案的大量資料怎麼轉成好懂的圖表？資料視覺化工具清單整理",
-        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F%40claire%2FrkM1ynawzl"
+        "url": "/g/data-visualization"
+    },
+    {
+        "category": "資料驅動對策手法 Data-driven",
+        "title": "資料卡住了怎麼辦？公民科技專案的資料驅動實戰手法",
+        "url": "/g/data-driven-tactics"
     },
     {
         "category": "資料驅動對策手法 Data-driven",
@@ -142,12 +147,12 @@
     {
         "category": "捲動使用者的方法 TA = Take Action",
         "title": "公民科技專案上線卻無人問津？精準觸及使用者與降低協作門檻的策略",
-        "url": "https://g0v.hackmd.io/@jothon/guide/%2FuzYt0oODRXe7kwdCnIxuBQ"
+        "url": "/g/reaching-users"
     },
     {
         "category": "捲動使用者的方法 TA = Take Action",
         "title": "如何把零星舉報變成實用資訊？群眾回報專案與工具",
-        "url": "https://g0v.hackmd.io/@jothon/guide/https%3A%2F%2Fg0v.hackmd.io%2F%40claire%2FB14KGLsUze"
+        "url": "/g/crowdsourced-reporting"
     },
     {
         "category": "捲動使用者的方法 TA = Take Action",
