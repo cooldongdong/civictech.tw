@@ -68,11 +68,15 @@ const jsonLd = {
         <div class="guide-body max-w-[68ch]">
           <Content />
         </div>
+        <!-- 作者與授權內文第一段已經寫了，這裡只補內文沒有的那一樣：原文在哪 -->
+        <p class="mb-0 mt-12 max-w-[68ch] border-t pt-5 text-sm" style="border-color:var(--line);color:var(--ink-muted)">
+          原文在 <a href={source} target="_blank" rel="noopener noreferrer" class="underline underline-offset-[3px]" style="color:var(--accent)">g0v HackMD</a>，本頁於 <span class="num">{synced}</span> 拷貝；兩邊不一致時以原文為準。
+        </p>
       </div>
 
-      <aside class="grid gap-6 text-sm lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto" style="color:var(--ink-muted)">
+      <aside class="hidden text-sm lg:sticky lg:top-28 lg:block lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto" style="color:var(--ink-muted)">
         {toc.length > 0 && (
-          <nav aria-label="本文大綱" class="hidden lg:block">
+          <nav aria-label="本文大綱">
             <p class="m-0 mb-2 text-xs">本文大綱</p>
             <ol class="toc m-0 list-none border-l p-0" style="border-color:var(--line)" data-toc>
               {toc.map((h) => (
@@ -81,24 +85,6 @@ const jsonLd = {
             </ol>
           </nav>
         )}
-        <dl class="m-0 grid gap-4 rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
-          <div>
-            <dt class="mb-1 text-xs">原文</dt>
-            <dd class="m-0">
-              <a href={source} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">g0v HackMD 共筆</a>，這裡是 <span class="num">{synced}</span> 拷貝過來的一份。兩邊不一致時以原文為準。
-            </dd>
-          </div>
-          <div>
-            <dt class="mb-1 text-xs">作者</dt>
-            <dd class="m-0" style="color:var(--ink-2)">Claire Cheng 與 g0v jothon 揪松團</dd>
-          </div>
-          <div>
-            <dt class="mb-1 text-xs">授權</dt>
-            <dd class="m-0">
-              <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">CC BY 4.0</a>，轉載請標示出處。
-            </dd>
-          </div>
-        </dl>
       </aside>
     </div>
   </article>
