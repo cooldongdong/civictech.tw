@@ -1,0 +1,84 @@
+---
+import type { Guide } from "../lib/guides";
+
+interface Props {
+  guide: Guide;
+  index?: number;
+  /** 首頁「從這幾篇開始」用大一號的版本 */
+  large?: boolean;
+}
+const { guide, index = 0, large = false } = Astro.props;
+
+// 「4 個查詢平台（中央政府總預算案…、OpenBudget…）與 4 篇延伸閱讀」——括號裡的清單放卡片上太長，拿掉
+const covers = guide.covers?.replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim();
+---
+
+<a href={`/g/${guide.slug}`} class:list={["gcard rise", { "gcard-lg": large }]} style={`--i:${Math.min(index, 8)}`}>
+  <h3 class="gcard-title">{guide.title}</h3>
+  {guide.summary && <p class="gcard-summary">{guide.summary}</p>}
+  <div class="gcard-foot">
+    <span class="gcard-covers">{covers ?? "閱讀全文"}</span>
+    <span class="gcard-go" aria-hidden="true">→</span>
+  </div>
+</a>
+
+<style>
+  .gcard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 1.1rem 1.2rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, transform 0.2s var(--ease-out-expo);
+  }
+  .gcard:hover {
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+    transform: translateY(-2px);
+  }
+  .gcard-title {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .gcard-lg .gcard-title {
+    font-size: 1.15rem;
+  }
+  /* 摘要最多三行：「核心方法」那幾篇的第一句很長，整段放上來卡片會高低不齊 */
+  .gcard-summary {
+    margin: 0;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.86rem;
+    line-height: 1.7;
+    color: var(--ink-muted);
+  }
+  .gcard-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.3rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--line);
+  }
+  .gcard-covers {
+    font-size: 0.74rem;
+    color: var(--ink-muted);
+  }
+  .gcard-go {
+    color: var(--accent);
+    transition: transform 0.2s ease;
+  }
+  .gcard:hover .gcard-go {
+    transform: translateX(3px);
+  }
+</style>

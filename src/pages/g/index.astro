@@ -1,0 +1,67 @@
+---
+import Base from "../../layouts/Base.astro";
+import GuideCard from "../../components/GuideCard.astro";
+import { getGuides, GUIDE_SOURCE_BOOK } from "../../lib/guides";
+
+const { all, groups, featured } = await getGuides();
+
+const description = `g0v 揪松團整理的公民科技行動指引，${all.length} 篇完整文章：找工具、做專案的方法、各領域的資料與專案。`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "公民科技行動指引｜台灣公民科技資料庫",
+  description,
+  inLanguage: "zh-Hant-TW",
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: all.length,
+    itemListElement: groups
+      .flatMap((g) => g.guides)
+      .map((g, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: new URL(`/g/${g.slug}`, "https://civictech.tw").href,
+        name: g.title,
+      })),
+  },
+};
+---
+
+<Base title="公民科技行動指引｜台灣公民科技資料庫" description={description} current="guide" jsonLd={jsonLd}>
+  <header class="pb-8 pt-28 sm:pt-32">
+    <div class="wrap">
+      <h1 class="m-0 text-[1.9rem] font-semibold sm:text-[2.4rem]" style="color:var(--ink)">公民科技行動指引</h1>
+      <p class="mt-4 max-w-[52ch] text-[0.98rem] leading-relaxed" style="color:var(--ink-muted)">
+        做過公民科技專案的人，把工具、方法與踩過的坑寫下來了。不知道從哪讀起，就從最上面三篇開始。
+      </p>
+    </div>
+  </header>
+
+  <div class="wrap pb-20">
+    <section aria-labelledby="start">
+      <h2 id="start" class="m-0 mb-4 text-base font-semibold" style="color:var(--ink)">從這幾篇開始</h2>
+      <div class="grid gap-3 md:grid-cols-3">
+        {featured.map((g, i) => <GuideCard guide={g} index={i} large />)}
+      </div>
+    </section>
+
+    {groups.map((group) => (
+      <section id={group.key} aria-labelledby={`${group.key}-title`} class="mt-14 border-t pt-8" style="border-color:var(--line)">
+        <div class="mb-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <h2 id={`${group.key}-title`} class="m-0 text-[1.3rem] font-semibold" style="color:var(--ink)">{group.title}</h2>
+          <p class="m-0 text-sm" style="color:var(--ink-muted)">{group.blurb}</p>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {group.guides.map((g, i) => <GuideCard guide={g} index={i} />)}
+        </div>
+      </section>
+    ))}
+
+    <p class="mb-0 mt-14 rounded-lg border p-4 text-sm" style="border-color:var(--line);background:var(--surface-2);color:var(--ink-muted)">
+      這裡只放寫完的文章。還在整理中的素材筆記，在
+      <a href={GUIDE_SOURCE_BOOK} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">g0v HackMD 的行動指引共筆</a>，
+      歡迎一起補。
+    </p>
+  </div>
+</Base>
