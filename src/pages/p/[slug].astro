@@ -16,13 +16,16 @@ const siblings = projectsByCategory(project.category)
   .filter((p) => p.slug !== project.slug && p.intro)
   .slice(0, 3);
 
-// 修改建議表單（Airtable）。預填「對應專案」並藏起來，填的人不用自己找是哪一筆。
+// 修改建議表單（Airtable）。預填「對應專案」，填的人不用自己找是哪一筆。
+// 刻意不藏起來：一次想改好幾個專案的人，要在表單上看得到現在這張是在講哪一個。
 // 帶 record ID 而不是名稱：5 筆名稱尾端有空白或換行，帶名稱實測對不上；ID 也不怕 Airtable 上改名。
 // 對不上時那格會靜靜變空、但照樣送得出去，所以那一欄在 Airtable 上刻意不設必填
 const SUGGEST_FORM = "https://airtable.com/app2R1DOrrO9iysOr/pag8PhiBFiltvE3LU/form";
-const suggestUrl =
-  `${SUGGEST_FORM}?prefill_${encodeURIComponent("對應專案")}=${project.id}` +
-  `&hide_${encodeURIComponent("對應專案")}=true`;
+function suggestUrl(field?: string) {
+  const q = new URLSearchParams({ prefill_對應專案: project.id });
+  if (field) q.set("prefill_哪一欄", field);
+  return `${SUGGEST_FORM}?${q}`;
+}
 
 const description =
   project.intro?.slice(0, 120) ??
@@ -78,7 +81,7 @@ const jsonLd = {
               {project.links.length > 0 ? "下面的連結是目前資料庫裡有的全部。" : "資料庫裡目前只有它的名字。"}
             </p>
             <p class="mb-0 mt-3 text-sm" style="color:var(--ink-muted)">
-              你認識這個專案嗎？<a href="/#wish-pool" style="color:var(--accent)">幫它補一句話</a>，
+              你認識這個專案嗎？<a href={suggestUrl("簡介")} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">幫它補一句話</a>，
               或直接寫信給 <a href="https://jothon.g0v.tw/about/" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">jothon</a>。
             </p>
           </div>
@@ -146,7 +149,7 @@ const jsonLd = {
           <div>
             <dt class="mb-1 text-xs">這筆資料有錯或過時？</dt>
             <dd class="m-0">
-              <a href={suggestUrl} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">建議修改</a>，
+              <a href={suggestUrl()} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">建議修改</a>，
               小編人工審核，通過後隔天同步上線。
             </dd>
           </div>
