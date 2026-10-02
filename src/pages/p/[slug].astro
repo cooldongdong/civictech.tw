@@ -16,6 +16,14 @@ const siblings = projectsByCategory(project.category)
   .filter((p) => p.slug !== project.slug && p.intro)
   .slice(0, 3);
 
+// 修改建議表單（Airtable）。預填「對應專案」並藏起來，填的人不用自己找是哪一筆。
+// 帶 record ID 而不是名稱：5 筆名稱尾端有空白或換行，帶名稱實測對不上；ID 也不怕 Airtable 上改名。
+// 對不上時那格會靜靜變空、但照樣送得出去，所以那一欄在 Airtable 上刻意不設必填
+const SUGGEST_FORM = "https://airtable.com/app2R1DOrrO9iysOr/pag8PhiBFiltvE3LU/form";
+const suggestUrl =
+  `${SUGGEST_FORM}?prefill_${encodeURIComponent("對應專案")}=${project.id}` +
+  `&hide_${encodeURIComponent("對應專案")}=true`;
+
 const description =
   project.intro?.slice(0, 120) ??
   `${project.name}——收錄於台灣公民科技資料庫的「${category.name}」分類。`;
@@ -132,6 +140,14 @@ const jsonLd = {
               jothon 維護的 Airtable，每日同步到
               <a href={`https://data.civictech.tw/v0/tech/projects.json`} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">開放資料 API</a>，
               網站在 build 時讀那一份。
+            </dd>
+          </div>
+
+          <div>
+            <dt class="mb-1 text-xs">這筆資料有錯或過時？</dt>
+            <dd class="m-0">
+              <a href={suggestUrl} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">建議修改</a>，
+              小編人工審核，通過後隔天同步上線。
             </dd>
           </div>
         </dl>
