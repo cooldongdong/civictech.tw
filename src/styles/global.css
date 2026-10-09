@@ -1,10 +1,12 @@
+/* 字型的 @import 一定要排在檔案最前面：CSS 規定 @import 必須在所有規則之前，
+   排在 tailwindcss 後面會被整行丟掉，而且不會報錯（2026-10 才發現 Geist 從來沒載入過）。 */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap');
 @import "tailwindcss";
 
 /* 拉丁字用 Geist，中文吃系統字。
    理由是中文 webfont 的代價太高——思源黑體就算 subset 過仍是 MB 級，
    而這個站的訪客不一定在好網路上。中文的層次改用字重、字距與行高拉，
    不用下載字型。數字一律走 Geist Mono 的等寬數字，資料型介面才對得齊。 */
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap');
 
 @theme {
   --font-sans: 'Geist', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', system-ui, sans-serif;
