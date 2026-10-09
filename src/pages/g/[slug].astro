@@ -1,0 +1,229 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getCollection, render } from "astro:content";
+import { getGuides } from "../../lib/guides";
+
+export async function getStaticPaths() {
+  const guides = await getCollection("guides");
+  return guides.map((g) => ({ params: { slug: g.id }, props: { guide: g } }));
+}
+
+const { guide } = Astro.props;
+const { title, source, tags, syncedAt } = guide.data;
+const { bySlug, groupOf } = await getGuides();
+const group = groupOf(guide.id);
+const { Content, headings } = await render(guide);
+
+// 大綱只收 h2、h3：h2 是「這篇能回答你／資源清單／使用提醒」這一層，
+// h3 多半是資源清單裡的個別工具——想直接跳到某個工具的人，要的正是這一層
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+// 內文第一行固定是「核心主題／核心方法：……」，拿來當摘要剛好
+const summary = bySlug.get(guide.id)?.summary;
+const description = summary ?? `${title}——g0v 揪松團整理的公民科技行動指引。`;
+const synced = syncedAt.toISOString().slice(0, 10);
+
+// 這篇是別人寫的、CC BY 4.0 授權，搬進來的義務是把作者、授權、原文三樣講清楚。
+// 給機器讀的這一份也要講，不然 AI 引用時只會記得 civictech.tw。
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: title,
+  description,
+  inLanguage: "zh-Hant-TW",
+  keywords: tags.join(", "),
+  author: [
+    { "@type": "Person", name: "Claire Cheng", url: "https://claire-cheng.com/zh" },
+    { "@type": "Organization", name: "g0v jothon 揪松團", url: "https://jothon.g0v.tw/about/" },
+  ],
+  license: "https://creativecommons.org/licenses/by/4.0/",
+  isBasedOn: source,
+  dateModified: synced,
+  isPartOf: { "@type": "WebSite", name: "台灣公民科技資料庫", url: "https://civictech.tw" },
+};
+---
+
+<Base title={`${title}｜公民科技行動指引`} description={description} current="guide" jsonLd={jsonLd}>
+  <article class="pt-28 sm:pt-32">
+    <header class="wrap">
+      <a href={`/g#${group.key}`} class="text-sm no-underline" style="color:var(--ink-muted)">
+        ← 行動指引・{group.title}
+      </a>
+      <h1 class="mt-5 max-w-[30ch] text-[1.9rem] font-semibold leading-tight sm:text-[2.4rem]" style="color:var(--ink)">
+        {title}
+      </h1>
+    </header>
+
+    <div class="wrap mt-9 grid gap-10 pb-20 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-14">
+      <div class="min-w-0">
+        {toc.length > 0 && (
+          <details class="toc-mobile mb-8 rounded-lg border lg:hidden" style="border-color:var(--line);background:var(--surface-2)">
+            <summary class="cursor-pointer px-5 py-3 text-sm font-semibold" style="color:var(--ink)">本文大綱</summary>
+            <nav aria-label="本文大綱" class="px-5 pb-4">
+              <ol class="toc m-0 list-none p-0">
+                {toc.map((h) => (
+                  <li class={h.depth === 3 ? "pl-4" : ""}><a href={`#${h.slug}`}>{h.text}</a></li>
+                ))}
+              </ol>
+            </nav>
+          </details>
+        )}
+        <div class="guide-body max-w-[68ch]">
+          <Content />
+        </div>
+        <!-- 作者與授權內文第一段已經寫了，這裡只補內文沒有的那一樣：原文在哪 -->
+        <p class="mb-0 mt-12 max-w-[68ch] border-t pt-5 text-sm" style="border-color:var(--line);color:var(--ink-muted)">
+          原文在 <a href={source} target="_blank" rel="noopener noreferrer" class="underline underline-offset-[3px]" style="color:var(--accent)">g0v HackMD</a>，本頁於 <span class="num">{synced}</span> 拷貝；兩邊不一致時以原文為準。
+        </p>
+      </div>
+
+      <aside class="hidden text-sm lg:sticky lg:top-28 lg:block lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto" style="color:var(--ink-muted)">
+        {toc.length > 0 && (
+          <nav aria-label="本文大綱">
+            <p class="m-0 mb-2 text-xs">本文大綱</p>
+            <ol class="toc m-0 list-none border-l p-0" style="border-color:var(--line)" data-toc>
+              {toc.map((h) => (
+                <li class={h.depth === 3 ? "pl-7" : "pl-4"}><a href={`#${h.slug}`} data-toc-link={h.slug}>{h.text}</a></li>
+              ))}
+            </ol>
+          </nav>
+        )}
+      </aside>
+    </div>
+  </article>
+</Base>
+
+<script>
+  // 大綱標出目前讀到哪一節。用 IntersectionObserver，不掛 scroll 監聽器（跟 Base 的進場動畫同一個做法）
+  const links = new Map(
+    [...document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")].map((a) => [a.dataset.tocLink!, a]),
+  );
+  if (links.size > 0) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          links.forEach((a) => a.removeAttribute("aria-current"));
+          links.get(e.target.id)?.setAttribute("aria-current", "true");
+        }
+      },
+      // 只看畫面上緣往下那一條帶子：標題一滑進來就算讀到那一節
+      { rootMargin: "-90px 0px -70% 0px" },
+    );
+    for (const id of links.keys()) {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    }
+  }
+</script>
+
+<style>
+  /* 內文是從 HackMD 來的 markdown，Tailwind 的 preflight 把清單和標題的樣式都歸零了，這裡補回來 */
+  .guide-body {
+    color: var(--ink-2);
+    font-size: 1.02rem;
+    line-height: 1.9;
+  }
+  .guide-body :global(h2) {
+    margin: 2.6rem 0 0.9rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--line);
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .guide-body :global(h3) {
+    margin: 1.8rem 0 0.5rem;
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  /* 從大綱跳過來時，標題別貼著導覽列下緣 */
+  .guide-body :global(h2),
+  .guide-body :global(h3) {
+    scroll-margin-top: 1.25rem;
+  }
+  .guide-body :global(p) {
+    margin: 0 0 1rem;
+  }
+  .guide-body :global(ul),
+  .guide-body :global(ol) {
+    margin: 0 0 1rem;
+    padding-left: 1.3rem;
+  }
+  .guide-body :global(ul) {
+    list-style: disc;
+  }
+  .guide-body :global(ol) {
+    list-style: decimal;
+  }
+  .guide-body :global(li) {
+    margin: 0.3rem 0;
+  }
+  /* 連結要一眼看得出來：光靠顏色在深色模式跟內文差太少，一律加底線 */
+  .guide-body :global(a) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .guide-body :global(a:hover) {
+    color: var(--accent-ink);
+    text-decoration-thickness: 2px;
+  }
+
+  .toc :global(a) {
+    display: block;
+    padding: 0.3rem 0;
+    color: var(--ink-muted);
+    text-decoration: none;
+    line-height: 1.5;
+  }
+  .toc :global(a:hover) {
+    color: var(--ink);
+  }
+  [data-toc] :global(li) {
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+  }
+  [data-toc] :global(li:has(a[aria-current])) {
+    border-left-color: var(--accent);
+  }
+  [data-toc] :global(a[aria-current]) {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .guide-body :global(blockquote) {
+    margin: 0 0 1rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--line);
+    color: var(--ink-muted);
+  }
+  .guide-body :global(table) {
+    display: block;
+    overflow-x: auto;
+    margin: 0 0 1rem;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .guide-body :global(th),
+  .guide-body :global(td) {
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--line);
+    text-align: left;
+  }
+  .guide-body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+  /* 第一段是「核心主題／涵蓋資源／作者…」的後設資訊清單，縮小一級，跟正文分開 */
+  .guide-body > :global(ul:first-child) {
+    padding: 1rem 1.2rem 1rem 2.2rem;
+    border-radius: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-size: 0.92rem;
+    color: var(--ink-muted);
+  }
+</style>

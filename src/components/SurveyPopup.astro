@@ -7,12 +7,12 @@
   id="survey-popup"
   class="fixed bottom-5 right-5 z-50 w-[calc(100%-2.5rem)] sm:w-[336px] translate-y-6 opacity-0 pointer-events-none transition-all duration-500 ease-out"
 >
-  <div class="relative bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-900/10 p-5">
+  <div class="popup-card relative rounded-2xl p-5">
     <button
       id="survey-popup-close"
       type="button"
       aria-label="關閉"
-      class="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+      class="popup-close absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-full transition-colors"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" />
@@ -20,16 +20,16 @@
       </svg>
     </button>
 
-    <span id="survey-popup-badge" class="inline-block text-xs font-semibold text-primary-600 bg-primary-500/8 px-3 py-1 rounded-full mb-3 tracking-wide">
+    <span id="survey-popup-badge" class="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 tracking-wide" style="background:var(--accent-soft);color:var(--accent-ink)">
       🎁 填問卷．抽好禮
     </span>
-    <h3 class="text-base font-bold text-slate-900 mb-1.5 pr-6 leading-snug">
+    <h3 class="text-base font-bold mb-1.5 pr-6 leading-snug" style="color:var(--ink)">
       幫指引補上你的那一塊
     </h3>
-    <p id="survey-popup-desc" class="text-[0.8rem] text-slate-500 leading-relaxed mb-2">
-      花幾分鐘分享你的公民科技經驗，幫指引長出下一則。<strong class="font-bold text-amber-600">7/2（四）前</strong>完整填答並留下 email，就能參加 g0v jothon 抽獎！
+    <p id="survey-popup-desc" class="text-[0.8rem] leading-relaxed mb-2" style="color:var(--ink-2)">
+      花幾分鐘分享你的公民科技經驗，幫指引長出下一則。<strong class="font-bold" style="color:var(--gap)">7/2（四）前</strong>完整填答並留下 email，就能參加 g0v jothon 抽獎！
     </p>
-    <p class="text-[0.7rem] text-slate-400 leading-snug mb-4">
+    <p class="text-[0.7rem] leading-snug mb-4" style="color:var(--ink-muted)">
       問卷將持續開放，隨時歡迎填寫分享 🙌
     </p>
 
@@ -39,7 +39,7 @@
         href="https://forms.gle/u5Vr74hRjxNLm1tr9"
         target="_blank"
         rel="noopener noreferrer"
-        class="flex-1 inline-flex items-center justify-center gap-1.5 bg-gradient-to-br from-primary-600 to-primary-700 text-white py-2.5 px-4 text-xs font-semibold rounded-lg shadow-sm shadow-primary-600/20 hover:from-primary-700 hover:to-primary-800 hover:-translate-y-0.5 transition-all duration-300 no-underline"
+        class="flex-1 inline-flex items-center justify-center gap-1.5 btn-fill py-2.5 px-4 text-xs font-semibold rounded-lg hover:-translate-y-0.5 transition-all duration-300 no-underline"
       >
         立即填問卷
       </a>
@@ -48,7 +48,7 @@
         href="https://g0v.hackmd.io/oGgBQVosTvKs_cdiQUQDaA?view"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-[0.7rem] text-slate-400 hover:text-primary-600 transition-colors whitespace-nowrap"
+        class="popup-link text-[0.7rem] transition-colors whitespace-nowrap"
       >
         抽獎辦法 →
       </a>

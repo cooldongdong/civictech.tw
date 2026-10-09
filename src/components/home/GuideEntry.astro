@@ -1,0 +1,39 @@
+---
+// 首頁的行動指引入口。只放「從這幾篇開始」與三組的入口，完整列表在 /g。
+// id 留著 know-how：舊版就是這個錨點，外面可能有人貼過 civictech.tw/#know-how
+import GuideCard from "../GuideCard.astro";
+import { getGuides } from "../../lib/guides";
+
+const { all, groups, featured } = await getGuides();
+---
+
+<section id="know-how" class="py-16 sm:py-20 lg:py-24">
+  <div class="wrap">
+    <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
+      <h2 class="m-0 max-w-[20ch] text-[1.7rem] font-semibold sm:text-[2.1rem]" style="color:var(--ink)">
+        知道怎麼做的人，寫下來了
+      </h2>
+      <p class="m-0 max-w-[40ch] text-sm" style="color:var(--ink-muted)">
+        做過專案的人整理的工具、方法與各領域資料。不知道從哪讀起，就從這三篇開始。
+      </p>
+    </div>
+
+    <div class="grid gap-3 md:grid-cols-3">
+      {featured.map((g, i) => <GuideCard guide={g} index={i} large />)}
+    </div>
+
+    <nav aria-label="行動指引分類" class="mt-8 flex flex-wrap items-center gap-2">
+      {groups.map((group) => (
+        <a
+          href={`/g#${group.key}`}
+          class="inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-sm no-underline transition-colors hover:bg-[var(--surface-2)]"
+          style="border-color:var(--line);background:var(--paper);color:var(--ink-2)"
+        >
+          {group.title}
+          <span class="num text-xs" style="color:var(--ink-muted)">{group.guides.length}</span>
+        </a>
+      ))}
+      <a href="/g" class="ml-auto text-sm" style="color:var(--accent)">看全部 {all.length} 篇 →</a>
+    </nav>
+  </div>
+</section>

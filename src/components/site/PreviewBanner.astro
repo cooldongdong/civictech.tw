@@ -1,0 +1,62 @@
+---
+// 預覽站的常駐標示。只在 build 時帶 PUBLIC_PREVIEW=1 才會被 Base.astro 掛上來，
+// 所以正式站的 build 不會有這段（也不必在 merge 回 master 前手動拆掉）。
+//
+// 刻意不做「關閉」按鈕：這條橫幅的用途是防止拿到連結的人誤以為是正式站，
+// 一個關得掉的警告等於沒有警告。
+const prodUrl = "https://civictech.tw";
+---
+
+<div id="preview-banner" role="note">
+  <div class="wrap flex h-10 items-center justify-between gap-3">
+    <p class="m-0 flex min-w-0 items-center gap-2 text-[0.78rem] leading-tight sm:text-[0.82rem]">
+      <span aria-hidden="true">⚠</span>
+      <span class="truncate">
+        <strong class="font-semibold">改版預覽</strong>
+        <span class="hidden sm:inline">｜版面與內容都還在調整，這不是正式網站</span>
+        <span class="sm:hidden">｜調整中，非正式版</span>
+      </span>
+    </p>
+    <a href={prodUrl} class="shrink-0 whitespace-nowrap text-[0.78rem] no-underline sm:text-[0.82rem]">
+      正式版 civictech.tw →
+    </a>
+  </div>
+</div>
+
+<style is:global>
+  #preview-banner {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 60;
+    /* 警示用琥珀色，跟「缺口」數字同一個 token：在一片石油藍裡唯一的暖色，一眼就跳出來。
+       字用 --paper：淺色模式是近白、深色模式是近黑，兩邊對比都過 4.5 */
+    background: var(--gap);
+    color: var(--paper);
+    border-bottom: 1px solid rgb(0 0 0 / 0.25);
+  }
+  #preview-banner a {
+    color: var(--paper);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    opacity: 0.9;
+  }
+  #preview-banner a:hover {
+    opacity: 1;
+  }
+
+  /* 導覽列是 fixed top-0，所以整站往下讓出橫幅的高度，
+     否則兩層會疊在一起。
+     一定要掛在 html[data-preview] 底下：is:global 的樣式不管元件有沒有被渲染，
+     都會被打包進全站 CSS。沒有這層條件，正式站會在 nav 上方空出 40px，內文從那裡穿過去。 */
+  html[data-preview] body {
+    padding-top: 2.5rem;
+  }
+  html[data-preview] #site-nav {
+    top: 2.5rem;
+  }
+  /* 錨點捲動時把橫幅與導覽列的高度一起算進去 */
+  html[data-preview] {
+    scroll-padding-top: 6.75rem;
+  }
+</style>

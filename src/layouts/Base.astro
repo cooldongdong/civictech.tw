@@ -1,0 +1,97 @@
+---
+import "../styles/global.css";
+import SiteNav from "../components/site/SiteNav.astro";
+import SiteFooter from "../components/site/SiteFooter.astro";
+import PreviewBanner from "../components/site/PreviewBanner.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  /** 導覽列上要標示為目前位置的項目 */
+  current?: "home" | "guide" | "wish" | "about";
+  /** 額外塞進 <head> 的結構化資料 */
+  jsonLd?: unknown;
+  canonical?: string;
+}
+
+const { title, description, current = "home", jsonLd, canonical } = Astro.props;
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site ?? "https://civictech.tw").href;
+
+// 預覽站旗標。build 時帶 PUBLIC_PREVIEW=1 才成立，正式站的 build 不帶就自動消失，
+// 所以這條分支 merge 回 master 不會把預覽標示一起帶上正式站。
+const isPreview = import.meta.env.PUBLIC_PREVIEW === "1";
+// 分享到 LINE／Slack 時顯示的是 title，預覽標示要跟著進卡片，
+// 否則最容易被誤認成正式站的正是那一刻。
+const pageTitle = isPreview ? `【預覽版】${title}` : title;
+---
+
+<!doctype html>
+<html lang="zh-Hant-TW" data-preview={isPreview ? "" : undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 主題要在第一個畫面出來之前決定，否則每換一頁都會先閃一下淺色。
+         所以這段是 inline、放在 head 最前面，不能等打包後的 script。
+         順序：使用者按過切換按鈕 → 用他選的；沒按過 → 跟系統，系統切換時跟著換。 -->
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        var mq = window.matchMedia("(prefers-color-scheme: dark)");
+        function stored() {
+          try { return localStorage.getItem("theme"); } catch (e) { return null; }
+        }
+        function apply() {
+          var s = stored();
+          var theme = s === "light" || s === "dark" ? s : mq.matches ? "dark" : "light";
+          if (root.dataset.theme === theme) return;
+          root.dataset.theme = theme;
+          document.dispatchEvent(new CustomEvent("themechange", { detail: theme }));
+        }
+        apply();
+        mq.addEventListener("change", apply);
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="台灣公民科技資料庫" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="zh_TW" />
+    <meta name="twitter:card" content="summary" />
+    {isPreview && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="generator" content={Astro.generator} />
+    {jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
+  </head>
+  <body>
+    {isPreview && <PreviewBanner />}
+    <a class="skip-link" href="#main">跳到主要內容</a>
+    <SiteNav current={current} />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter />
+
+    <script>
+      // 進場動畫：IntersectionObserver，不掛 scroll 監聽器
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add("in");
+              io.unobserve(e.target);
+            }
+          }
+        },
+        { rootMargin: "0px 0px -8% 0px", threshold: 0.05 },
+      );
+      document.querySelectorAll(".rise").forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

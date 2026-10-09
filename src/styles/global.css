@@ -1,36 +1,115 @@
+/* 字型的 @import 一定要排在檔案最前面：CSS 規定 @import 必須在所有規則之前，
+   排在 tailwindcss 後面會被整行丟掉，而且不會報錯（2026-10 才發現 Geist 從來沒載入過）。 */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap');
 @import "tailwindcss";
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+/* 拉丁字用 Geist，中文吃系統字。
+   理由是中文 webfont 的代價太高——思源黑體就算 subset 過仍是 MB 級，
+   而這個站的訪客不一定在好網路上。中文的層次改用字重、字距與行高拉，
+   不用下載字型。數字一律走 Geist Mono 的等寬數字，資料型介面才對得齊。 */
 
-/* ==============================
-   Tailwind v4 Theme
-   ============================== */
 @theme {
-  --font-sans: 'Inter', 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
-
-  --color-accent-400: #a78bfa;
-  --color-accent-500: #8b5cf6;
-  --color-accent-600: #7c3aed;
-  --color-accent-800: #5b21b6;
-
+  --font-sans: 'Geist', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', ui-monospace, monospace;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ==============================
-   Global Reset & Base
-   ============================== */
+   語意色票（淺色為預設，深色在下方覆蓋）
+   ==============================
+   刻意避開藍紫漸層——那是 AI 生成網站最明顯的指紋，而這個站要的是
+   「看起來像有人維護的公共設施」。底色走冷灰白，重點色只有一個：石油藍。
+   2026-10 從暖骨白＋深苔綠換過來：暖棕黑的深色模式在螢幕上讀起來是「髒」。
+
+   深色模式掛在 html[data-theme="dark"] 上，不直接用 prefers-color-scheme：
+   Base.astro 的 <head> 裡有一小段 inline script，在畫面出來之前依「使用者選過的 → 系統設定」
+   決定 data-theme，這樣手動切換和跟系統走共用同一組色票，不必把深色色票寫兩份。
+   代價是關掉 JavaScript 的人永遠看到淺色。
+
+   --accent 是連結與文字用的強調色，--accent-fill 是按鈕底色。
+   淺色模式兩者同值；深色模式連結要提亮才讀得到，按鈕則維持同一個石油藍配白字，
+   所以拆成兩個 token。 */
+:root {
+  --paper: #f4f7f7;
+  --surface: #ffffff;
+  --surface-2: #e9eff0;
+  --ink: #0f1a1d;
+  --ink-2: #33434a;
+  --ink-muted: #56676e;
+  --line: #dde5e7;
+  --line-strong: #c6d2d5;
+  --accent: #0d5f74;
+  --accent-fill: #0d5f74;
+  --on-accent: #ffffff;
+  --accent-ink: #094656;
+  --accent-soft: #e0eef1;
+  --gap: #b45309;
+  --shadow: rgb(15 26 29 / 0.1);
+
+  /* 十七個分類的色票：飽和度一律壓低，讓它們在卡牆上可辨識但不互相喊話。
+     同一家族的類用相近色相：錢與法是褐，環境是綠與藍，人的生活是紅。
+     明度統一（OKLCH L 0.485），對白底都在 5.7:1 以上，可以直接當文字色。
+     為了跟冷底同一個色溫，暖色相的彩度再壓兩成，中性灰改成冷灰。 */
+  --c-budget: #7c5632;
+  --c-law: #7b5064;
+  --c-democracy: #626235;
+  --c-facts: #715080;
+  --c-local: #7b5720;
+  --c-disaster: #864f33;
+  --c-housing: #834e4d;
+  --c-rights: #834a65;
+  --c-pollution: #5e6244;
+  --c-ecology: #426b3d;
+  --c-energy: #4d6934;
+  --c-water: #356580;
+  --c-landuse: #6a5d44;
+  --c-transport: #516171;
+  --c-health: #2e6a6a;
+  --c-learning: #4d5c8e;
+  --c-community: #576165;
+
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --paper: #0e1319;
+  --surface: #161d26;
+  --surface-2: #1d2631;
+  --ink: #e8eef5;
+  --ink-2: #c3ccd8;
+  --ink-muted: #93a0b2;
+  --line: #263140;
+  --line-strong: #35424f;
+  --accent: #2e9cb8;
+  --accent-fill: #0d5f74;
+  --on-accent: #ffffff;
+  --accent-ink: #9fd6e4;
+  --accent-soft: #0f3340;
+  --gap: #f2b94b;
+  --shadow: rgb(0 0 0 / 0.35);
+
+  /* 同一組色相，明度拉到 OKLCH L 0.775，對深底都在 8:1 以上 */
+  --c-budget: #d7ac87;
+  --c-law: #d6a6bb;
+  --c-democracy: #b9ba89;
+  --c-facts: #c9a7d9;
+  --c-local: #d5af7c;
+  --c-disaster: #e1a78a;
+  --c-housing: #e0a4a2;
+  --c-rights: #dea1bc;
+  --c-pollution: #b4ba98;
+  --c-ecology: #99c394;
+  --c-energy: #a3c18c;
+  --c-water: #8bbddb;
+  --c-landuse: #c2b499;
+  --c-transport: #a6b8ca;
+  --c-health: #86c3c2;
+  --c-learning: #a2b4ea;
+  --c-community: #adb8bd;
+
+  color-scheme: dark;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -40,11 +119,114 @@
   }
 
   body {
-    @apply font-sans text-slate-800 bg-slate-50 leading-relaxed overflow-x-hidden;
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* 大標的中文在預設字距下太鬆，收一點才有重量 */
+  h1, h2, h3 {
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   ::selection {
-    background-color: rgba(14, 165, 233, 0.2);
-    color: #0f172a;
+    background-color: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* 鍵盤使用者的跳過導覽 */
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 100;
+    background: var(--surface);
+    color: var(--ink);
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    transition: top 0.2s ease;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+}
+
+@layer components {
+  .wrap {
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .wrap { padding-inline: 2rem; }
+  }
+
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+
+  /* 按鈕底色：深色模式也維持同一個石油藍配白字 */
+  .btn-fill {
+    background: var(--accent-fill);
+    color: var(--on-accent);
+  }
+  .btn-fill:hover {
+    background: color-mix(in srgb, var(--accent-fill) 85%, black);
+  }
+
+  /* 角落滑入的邀請卡（問卷、活動） */
+  .popup-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow);
+  }
+  .popup-close { color: var(--ink-muted); }
+  .popup-close:hover { color: var(--ink); background: var(--surface-2); }
+  .popup-link { color: var(--ink-muted); }
+  .popup-link:hover { color: var(--accent); }
+
+  /* 進場：只做位移與透明度，交給 IntersectionObserver 加 class */
+  .rise {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
+    transition-delay: calc(var(--i, 0) * 60ms);
+  }
+  .rise.in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rise {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
