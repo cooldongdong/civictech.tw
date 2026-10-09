@@ -44,9 +44,10 @@ const first = pool.find((p) => p.categorySlug !== "community") ?? pool[0];
 </aside>
 
 <style>
+  /* 疊在 hero 的粒子場上，所以底是半透明的卡片色；hero 跟著主題走，這裡也只吃色票 */
   .featured {
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
     backdrop-filter: blur(10px);
     border-radius: 14px;
     padding: 1.15rem 1.25rem 1rem;
@@ -60,7 +61,7 @@ const first = pool.find((p) => p.categorySlug !== "community") ?? pool[0];
     justify-content: space-between;
     gap: 1rem;
     font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--ink-muted);
   }
   .featured-body {
     display: block;
@@ -70,8 +71,8 @@ const first = pool.find((p) => p.categorySlug !== "community") ?? pool[0];
   .featured-cat {
     display: inline-block;
     font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--ink-2);
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
     padding: 0.15rem 0.6rem;
     margin-bottom: 0.7rem;
@@ -79,7 +80,7 @@ const first = pool.find((p) => p.categorySlug !== "community") ?? pool[0];
   .featured-name {
     font-size: 1.28rem;
     font-weight: 600;
-    color: #fff;
+    color: var(--ink);
     margin: 0 0 0.45rem;
     line-height: 1.35;
   }
@@ -91,14 +92,14 @@ const first = pool.find((p) => p.categorySlug !== "community") ?? pool[0];
     margin: 0;
     font-size: 0.88rem;
     line-height: 1.7;
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--ink-2);
   }
   .featured-foot {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--line);
     padding-top: 0.8rem;
   }
   .featured-shuffle {
@@ -107,19 +108,19 @@ const first = pool.find((p) => p.categorySlug !== "community") ?? pool[0];
     gap: 0.4rem;
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--ink-2);
     font-size: 0.82rem;
     cursor: pointer;
     padding: 0.2rem 0;
   }
-  .featured-shuffle:hover { color: #fff; }
+  .featured-shuffle:hover { color: var(--ink); }
   .featured-shuffle:active { transform: scale(0.97); }
   .featured-all {
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--accent);
     text-decoration: none;
   }
-  .featured-all:hover { color: rgba(255, 255, 255, 0.85); }
+  .featured-all:hover { text-decoration: underline; text-underline-offset: 3px; }
 
   .swap { animation: swap 0.35s var(--ease-out-expo); }
   @keyframes swap {
