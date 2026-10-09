@@ -43,6 +43,13 @@ function clean(v: unknown): string | undefined {
   return s.length > 0 ? s : undefined;
 }
 
+// 連結欄是人手填的：有人貼進看不見的零寬字元，也有人只打了一個字母。
+// 不是 http(s) 開頭的就不放上站——一個點了會 404 的「原始碼」比沒有更糟。
+function cleanUrl(v: unknown): string | undefined {
+  const s = clean(typeof v === "string" ? v.replace(/[\u200B-\u200D\uFEFF]/g, "") : v);
+  return s && /^https?:\/\//.test(s) ? s : undefined;
+}
+
 function isLatin(s?: string): boolean {
   return !!s && /^[\x20-\x7e]+$/.test(s);
 }
@@ -99,10 +106,10 @@ export const allProjects: Project[] = (raw.records as AirtableRecord[])
     seen.set(slug, dupe + 1);
     if (dupe > 0) slug = `${slug}-${dupe + 1}`;
 
-    const website = clean(f["Website URL"]) ?? (introIsBareUrl ? introRaw : undefined);
-    const github = clean(f.github);
-    const document = clean(f.document);
-    const facebook = clean(f["Facebook Page Link"]);
+    const website = cleanUrl(f["Website URL"]) ?? (introIsBareUrl ? introRaw : undefined);
+    const github = cleanUrl(f.github);
+    const document = cleanUrl(f.document);
+    const facebook = cleanUrl(f["Facebook Page Link"]);
 
     const links = [
       website && { label: "官方網站", url: website },
