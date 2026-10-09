@@ -1,5 +1,6 @@
 ---
 import { stats } from "../../lib/projects";
+import { suggestEditEnabled, suggestUrl } from "../../lib/suggest";
 
 // 以前這裡寫著「350+ 公民科技專案」，是一個硬寫在 HTML 裡的字串，
 // 而站上使用者當時看得到的專案數是 0。數字要從資料算出來——
@@ -30,7 +31,7 @@ const items = [
   <div class="wrap pb-8">
     <p class="m-0 max-w-[62ch] text-sm" style="color:var(--ink-muted)">
       最後一個數字是缺口，不是瑕疵——資料庫是社群一起填的，空的欄位就是還沒有人來填的欄位。
-      <a href="/#wish-pool" style="color:var(--accent)">你可以補一筆</a>。
+      {suggestEditEnabled && <><a href={suggestUrl()} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">你可以補一筆</a>。</>}
     </p>
   </div>
 </section>

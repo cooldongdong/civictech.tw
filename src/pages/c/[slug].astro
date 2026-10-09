@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import ProjectCard from "../../components/ProjectCard.astro";
 import { categories, surveyRate, SURVEY_RESPONDENTS } from "../../data/categories";
 import { projectsByCategory } from "../../lib/projects";
+import { suggestEditEnabled, suggestUrl } from "../../lib/suggest";
 
 export function getStaticPaths() {
   return categories.map((c) => ({ params: { slug: c.slug }, props: { category: c } }));
@@ -66,8 +67,9 @@ const jsonLd = {
     {missing > 0 && (
       <p class="mt-8 rounded-lg border p-4 text-sm" style="border-color:var(--line);background:var(--surface-2);color:var(--ink-muted)">
         這一類裡有 <span class="num">{missing}</span> 個專案還沒有人寫介紹。
-        資料庫是社群一起填的——你認識其中哪一個，
-        <a href="/#wish-pool" style="color:var(--accent)">就可以幫它補一句話</a>。
+        資料庫是社群一起填的{suggestEditEnabled ? (
+          <>——你認識其中哪一個，<a href={suggestUrl({ field: "簡介" })} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">就可以幫它補一句話</a>。</>
+        ) : "。"}
       </p>
     )}
   </div>
