@@ -1,4 +1,6 @@
 ---
+import ThemeToggle from "./ThemeToggle.astro";
+
 interface Props {
   current?: "home" | "guide" | "wish" | "about";
 }
@@ -24,37 +26,41 @@ const links = [
       <span class="hidden text-[0.7rem] sm:inline num" style="color:var(--ink-muted)">civictech.tw</span>
     </a>
 
-    <nav aria-label="主要導覽">
-      <ul class="m-0 hidden list-none items-center gap-1 p-0 md:flex">
-        {links.map((l) => (
-          <li>
-            <a
-              href={l.href}
-              aria-current={current === l.key ? "page" : undefined}
-              class="rounded-md px-3 py-1.5 text-sm no-underline transition-colors"
-              style={`color:${current === l.key ? "var(--ink)" : "var(--ink-muted)"}`}
-              data-nav-link
-            >
-              {l.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <div class="flex items-center gap-1">
+      <nav aria-label="主要導覽">
+        <ul class="m-0 hidden list-none items-center gap-1 p-0 md:flex">
+          {links.map((l) => (
+            <li>
+              <a
+                href={l.href}
+                aria-current={current === l.key ? "page" : undefined}
+                class="rounded-md px-3 py-1.5 text-sm no-underline transition-colors"
+                style={`color:${current === l.key ? "var(--ink)" : "var(--ink-muted)"}`}
+                data-nav-link
+              >
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-    <button
-      id="nav-toggle"
-      type="button"
-      class="-mr-2 flex h-10 w-10 items-center justify-center rounded-md md:hidden"
-      aria-label="開啟選單"
-      aria-expanded="false"
-      aria-controls="nav-drawer"
-      style="color:var(--ink)"
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
-        <line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="17" x2="21" y2="17" />
-      </svg>
-    </button>
+      <ThemeToggle />
+
+      <button
+        id="nav-toggle"
+        type="button"
+        class="-mr-2 flex h-10 w-10 items-center justify-center rounded-md md:hidden"
+        aria-label="開啟選單"
+        aria-expanded="false"
+        aria-controls="nav-drawer"
+        style="color:var(--ink)"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+          <line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="17" x2="21" y2="17" />
+        </svg>
+      </button>
+    </div>
   </div>
 
   <div id="nav-drawer" hidden class="md:hidden" style="background:var(--surface);border-bottom:1px solid var(--line)">

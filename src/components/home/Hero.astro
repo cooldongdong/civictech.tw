@@ -146,8 +146,8 @@ const modalSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&re
   if (canvas && hero) {
     const ctx = canvas.getContext("2d")!;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const darkMq = window.matchMedia("(prefers-color-scheme: dark)");
-    let dark = darkMq.matches;
+    // 主題由 <html data-theme> 決定（跟系統或使用者手動切換），不直接看 prefers-color-scheme
+    let dark = document.documentElement.dataset.theme === "dark";
     let W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
     let mouseX = -9999, mouseY = -9999, mouseIn = false;
     let running = false, rafId = 0, last = 0;
@@ -225,9 +225,9 @@ const modalSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&re
       rafId = requestAnimationFrame(step);
     }
 
-    // 使用者在頁面開著的時候切換系統主題，粒子跟著換
-    darkMq.addEventListener("change", (e) => {
-      dark = e.matches;
+    // 頁面開著的時候切換主題（按鈕或系統），粒子跟著換
+    document.addEventListener("themechange", () => {
+      dark = document.documentElement.dataset.theme === "dark";
       if (reduced) draw(0);
     });
 

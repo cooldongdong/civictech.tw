@@ -30,6 +30,27 @@ const pageTitle = isPreview ? `【預覽版】${title}` : title;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 主題要在第一個畫面出來之前決定，否則每換一頁都會先閃一下淺色。
+         所以這段是 inline、放在 head 最前面，不能等打包後的 script。
+         順序：使用者按過切換按鈕 → 用他選的；沒按過 → 跟系統，系統切換時跟著換。 -->
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        var mq = window.matchMedia("(prefers-color-scheme: dark)");
+        function stored() {
+          try { return localStorage.getItem("theme"); } catch (e) { return null; }
+        }
+        function apply() {
+          var s = stored();
+          var theme = s === "light" || s === "dark" ? s : mq.matches ? "dark" : "light";
+          if (root.dataset.theme === theme) return;
+          root.dataset.theme = theme;
+          document.dispatchEvent(new CustomEvent("themechange", { detail: theme }));
+        }
+        apply();
+        mq.addEventListener("change", apply);
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <title>{pageTitle}</title>
