@@ -11,7 +11,7 @@
     "label": "公民科技專案",
     "id": "tblDkM54gu9kbmAbW"
   },
-  "recordCount": 219,
+  "recordCount": 226,
   "fields": [
     {
       "id": "fldRxrQ1qAuQfqDOS",
@@ -147,6 +147,11 @@
       "id": "fld6zObfhQx94P6yu",
       "name": "non-slack",
       "type": "singleLineText"
+    },
+    {
+      "id": "fld3WMyp7bWDduKO0",
+      "name": "[空白5]",
+      "type": "multipleRecordLinks"
     }
   ],
   "records": [
@@ -3014,6 +3019,12 @@
       "id": "rec3auAvXNtmNjPME",
       "createdTime": "2026-04-21T02:49:02.000Z",
       "fields": {
+        "影響力類別": [
+          {
+            "id": "rec56rkC5crJWGGdh",
+            "name": "20-開放資料與開源社群基礎建設"
+          }
+        ],
         "Intro": "https://www.facebook.com/share/p/17rNZM9bx3/",
         "project name": "差旅費計算網頁",
         "標籤": [
@@ -3147,6 +3158,12 @@
       "id": "recPTz3ELsK8ovLQz",
       "createdTime": "2026-04-21T02:49:04.000Z",
       "fields": {
+        "影響力類別": [
+          {
+            "id": "rec56rkC5crJWGGdh",
+            "name": "20-開放資料與開源社群基礎建設"
+          }
+        ],
         "project name": "手開發票檢查小幫手_查詢公司全名、檢查統編、計算稅額",
         "標籤": [
           {
@@ -3915,6 +3932,12 @@
       "id": "recQfHjbnXyItIUEH",
       "createdTime": "2026-05-02T20:59:46.000Z",
       "fields": {
+        "影響力類別": [
+          {
+            "id": "rec56rkC5crJWGGdh",
+            "name": "20-開放資料與開源社群基礎建設"
+          }
+        ],
         "document": "https://g0v.hackmd.io/NXETiuIcRaeJ6qlntGBtuA?view",
         "project name": "How Internet Works 網路治理介紹素材",
         "標籤": [
@@ -3954,6 +3977,12 @@
       "id": "reczbsfxNG6XsGDet",
       "createdTime": "2026-05-02T20:59:46.000Z",
       "fields": {
+        "影響力類別": [
+          {
+            "id": "recaRe0BPGfeCMFXC",
+            "name": "19-新聞訊息與媒體識讀"
+          }
+        ],
         "document": "https://g0v.hackmd.io/T4Sq-imZTsSmzVqKI_Xnhg?view",
         "project name": "詐騙因應對策_情境經驗蒐集_專案",
         "標籤": [
@@ -4395,6 +4424,31 @@
       }
     },
     {
+      "id": "receGir7uvqkGVgwb",
+      "createdTime": "2026-05-02T21:00:05.000Z",
+      "fields": {
+        "影響力類別": [
+          {
+            "id": "recOjCFAJLMF0vXek",
+            "name": "3-SDGS-健全生活品質"
+          }
+        ],
+        "Intro": "拍照、填一填，做出一頁搬家公司看了就能報價的家當說明。不用一家一家約看屋，也不用在電話裡比手畫腳。免費、免註冊、免安裝。資料只存在你自己的電腦裡。一頁寫清楚，搬家公司最想知道的全部。",
+        "project name": "我想搬出去！一頁寫清楚，搬家公司最想知道的全部",
+        "標籤": [
+          {
+            "id": "reci9n1U0vYnaoDG8",
+            "name": "搬家"
+          },
+          {
+            "id": "rec1WnkgnlgORJwfF",
+            "name": "居住"
+          }
+        ],
+        "Website URL": "https://great-moving-era.ddio.io/"
+      }
+    },
+    {
       "id": "receoKxCvuhU3QF76",
       "createdTime": "2026-05-02T21:00:05.000Z",
       "fields": {
@@ -4485,6 +4539,56 @@
       }
     },
     {
+      "id": "recozJV0EMIUvfwiv",
+      "createdTime": "2026-05-02T21:00:05.000Z",
+      "fields": {
+        "影響力類別": [
+          {
+            "id": "recOjCFAJLMF0vXek",
+            "name": "3-SDGS-健全生活品質"
+          }
+        ],
+        "Intro": "光復生活重建聯合服務平台，了解光復鄉的最新重建動態，看看哪些團隊正在努力，以及您曾經幫助的地方，現在變得如何了。",
+        "project name": "光復生活重建聯合服務平台_一起回到日常",
+        "標籤": [
+          {
+            "id": "recz7luUrceNu2NAp",
+            "name": "防災"
+          },
+          {
+            "id": "recOBdKS6cY37PRr1",
+            "name": "復原重建"
+          }
+        ],
+        "Website URL": "https://guangfu.tw/"
+      }
+    },
+    {
+      "id": "recPJDA3bOxNccyA1",
+      "createdTime": "2026-05-02T21:00:05.000Z",
+      "fields": {
+        "影響力類別": [
+          {
+            "id": "recA06noUkZx5JfI9",
+            "name": "15-SDGS-陸域生態"
+          },
+          {
+            "id": "recmJe11qu62phpnQ",
+            "name": "14-SDGS-海洋生態"
+          }
+        ],
+        "Intro": "動物直播網站\n\nhttps://www.facebook.com/share/p/1BonD9cgDV/",
+        "project name": "全球動物現場 Animalia Live",
+        "標籤": [
+          {
+            "id": "recsY2z4EIqi7mjMS",
+            "name": "生物物種保育"
+          }
+        ],
+        "Website URL": "https://animalia-live.vercel.app"
+      }
+    },
+    {
       "id": "recqd9WUAkrk1u3lm",
       "createdTime": "2026-05-02T21:00:05.000Z",
       "fields": {
@@ -4553,6 +4657,105 @@
             "name": "審議工具"
           }
         ]
+      }
+    },
+    {
+      "id": "recrjM2nl4LJZt5Qw",
+      "createdTime": "2026-05-02T21:00:05.000Z",
+      "fields": {
+        "影響力類別": [
+          {
+            "id": "recSzTednNMwt2hpM",
+            "name": "11-SDGS-永續城鄉"
+          }
+        ],
+        "Intro": "https://www.facebook.com/share/p/193wCN5qBB/",
+        "project name": "看懂山腳斷層",
+        "標籤": [
+          {
+            "id": "recz7luUrceNu2NAp",
+            "name": "防災"
+          }
+        ],
+        "Website URL": "https://shanjiao-fault-safety-0916.c1115025.chatgpt.site/"
+      }
+    },
+    {
+      "id": "recrjmjBicL4IKNOt",
+      "createdTime": "2026-05-02T21:00:05.000Z",
+      "fields": {
+        "影響力類別": [
+          {
+            "id": "recSzTednNMwt2hpM",
+            "name": "11-SDGS-永續城鄉"
+          },
+          {
+            "id": "recOjCFAJLMF0vXek",
+            "name": "3-SDGS-健全生活品質"
+          },
+          {
+            "id": "recDx2rCzsNcaRbyQ",
+            "name": "9-SDGS-工業化、創新及基礎建設"
+          }
+        ],
+        "project name": "肇事地理資訊系統GO",
+        "標籤": [
+          {
+            "id": "rec3reaBKniF5ebDo",
+            "name": "交通 / MRT"
+          }
+        ],
+        "Website URL": "https://sites.google.com/view/traffic-accident-gisview/%E9%A6%96%E9%A0%81%E8%88%87%E8%AA%AA%E6%98%8E"
+      }
+    },
+    {
+      "id": "recVc8JtkANdA8IcQ",
+      "createdTime": "2026-05-02T21:00:05.000Z",
+      "fields": {
+        "影響力類別": [
+          {
+            "id": "rec56rkC5crJWGGdh",
+            "name": "20-開放資料與開源社群基礎建設"
+          }
+        ],
+        "Intro": "看見社群進展，找到協作起點。來自社群現場的消息，附上原文與參與線索，來自 g0v、Code for Korea、Code for Japan 等公民科技社群。",
+        "project name": "rep0rter",
+        "標籤": [
+          {
+            "id": "reccfTvsPvkXCFDpx",
+            "name": "小幫手"
+          },
+          {
+            "id": "recWP7QajlDtcrze7",
+            "name": "摘要整理"
+          }
+        ],
+        "Website URL": "https://rep0rter.observe.tw/"
+      }
+    },
+    {
+      "id": "recyP4ob4gi3Opuln",
+      "createdTime": "2026-05-02T21:00:05.000Z",
+      "fields": {
+        "影響力類別": [
+          {
+            "id": "recaRe0BPGfeCMFXC",
+            "name": "19-新聞訊息與媒體識讀"
+          }
+        ],
+        "Intro": "https://www.facebook.com/share/19KXvUftfd/",
+        "project name": "查無此人_幫照片人物加上動物頭像",
+        "標籤": [
+          {
+            "id": "recoq9E6bzdnOrPK9",
+            "name": "資安 / 資訊安全"
+          },
+          {
+            "id": "recauMVte1aZzNAq7",
+            "name": "NGO 會務"
+          }
+        ],
+        "Website URL": "https://no-such-person.ddio.io/"
       }
     }
   ]
