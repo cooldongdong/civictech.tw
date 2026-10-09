@@ -10,19 +10,6 @@
   --font-sans: 'Geist', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'SF Mono', ui-monospace, monospace;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-
-  /* 舊元件（行動指引、許願池）沿用 primary-* 這組名字，
-     值換成新的苔綠，不必逐一改 class 就能跟著改版走。 */
-  --color-primary-50: #eef4f1;
-  --color-primary-100: #dbe9e2;
-  --color-primary-200: #b6d2c5;
-  --color-primary-300: #8bb7a5;
-  --color-primary-400: #5f9a84;
-  --color-primary-500: #3d7a65;
-  --color-primary-600: #1f5a4b;
-  --color-primary-700: #17473b;
-  --color-primary-800: #11352d;
-  --color-primary-900: #0c2721;
 }
 
 /* ==============================
@@ -191,6 +178,26 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.03em;
   }
+
+  /* 按鈕底色：深色模式也維持同一個石油藍配白字 */
+  .btn-fill {
+    background: var(--accent-fill);
+    color: var(--on-accent);
+  }
+  .btn-fill:hover {
+    background: color-mix(in srgb, var(--accent-fill) 85%, black);
+  }
+
+  /* 角落滑入的邀請卡（問卷、活動） */
+  .popup-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 25px -5px rgb(var(--shadow) / 0.1), 0 8px 10px -6px rgb(var(--shadow) / 0.1);
+  }
+  .popup-close { color: var(--ink-muted); }
+  .popup-close:hover { color: var(--ink); background: var(--surface-2); }
+  .popup-link { color: var(--ink-muted); }
+  .popup-link:hover { color: var(--accent); }
 
   /* 進場：只做位移與透明度，交給 IntersectionObserver 加 class */
   .rise {

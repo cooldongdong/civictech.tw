@@ -123,8 +123,10 @@
   }
   .flip-card-back {
     @apply items-start text-left;
-    color: #f3eee4;
-    background: linear-gradient(140deg, #1b2b25 0%, #12110d 100%);
+    /* 背面用強調色淡底，翻過來一眼看得出是另一面，淺色深色都成立 */
+    color: var(--ink);
+    background: linear-gradient(140deg, var(--accent-soft) 0%, var(--surface-2) 100%);
+    border: 1px solid var(--line);
     transform: rotateY(180deg);
   }
   .card-badge {
@@ -134,7 +136,7 @@
   }
   .avatar-placeholder {
     @apply w-14 h-14 rounded-full flex items-center justify-center text-2xl;
-    background: linear-gradient(135deg, #3d7a65, #8a5a2b);
+    background: linear-gradient(135deg, var(--accent-fill), var(--c-health));
   }
   .card-wish-title {
     @apply text-lg font-semibold my-2;
@@ -146,8 +148,8 @@
   }
   .back-title {
     @apply text-base font-semibold mb-3 pb-2.5 w-full;
-    color: #79b9a0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: var(--accent-ink);
+    border-bottom: 1px solid var(--line-strong);
   }
   .back-content {
     @apply text-sm leading-relaxed flex-1;
@@ -156,13 +158,15 @@
     @apply mb-2.5;
   }
   .back-content strong {
-    @apply text-sky-400;
+    color: var(--accent-ink);
   }
   .flip-hint {
-    @apply text-xs text-slate-400;
+    @apply text-xs;
+    color: var(--ink-muted);
   }
   .flip-hint-back {
-    @apply text-xs text-white/40 self-center;
+    @apply text-xs self-center;
+    color: var(--ink-muted);
   }
 </style>
 
@@ -226,7 +230,7 @@
       loadingStatus.classList.add('hidden');
 
       if (wishes.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center text-slate-500 py-12 text-sm">目前尚無審核通過的許願專案，快來當第一個許願者吧！</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-12 text-sm" style="color:var(--ink-muted)">目前尚無審核通過的許願專案，快來當第一個許願者吧！</div>`;
         return;
       }
 
