@@ -29,76 +29,90 @@
    語意色票（淺色為預設，深色在下方覆蓋）
    ==============================
    刻意避開藍紫漸層——那是 AI 生成網站最明顯的指紋，而這個站要的是
-   「看起來像有人維護的公共設施」。底色走暖骨白，重點色只有一個：深苔綠。 */
+   「看起來像有人維護的公共設施」。底色走冷灰白，重點色只有一個：石油藍。
+   2026-10 從暖骨白＋深苔綠換過來：暖棕黑的深色模式在螢幕上讀起來是「髒」。
+
+   --accent 是連結與文字用的強調色，--accent-fill 是按鈕底色。
+   淺色模式兩者同值；深色模式連結要提亮才讀得到，按鈕則維持同一個石油藍配白字，
+   所以拆成兩個 token。 */
 :root {
-  --paper: #f6f3ec;
-  --surface: #fffefb;
-  --surface-2: #efeae0;
-  --ink: #1b1915;
-  --ink-2: #453f36;
-  --ink-muted: #6e675b;
-  --line: #e0d9cb;
-  --line-strong: #cec5b3;
-  --accent: #1f5a4b;
-  --accent-ink: #143c32;
-  --accent-soft: #e2ece6;
-  --shadow: 27 25 21;
+  --paper: #f4f7f7;
+  --surface: #ffffff;
+  --surface-2: #e9eff0;
+  --ink: #0f1a1d;
+  --ink-2: #33434a;
+  --ink-muted: #56676e;
+  --line: #dde5e7;
+  --line-strong: #c6d2d5;
+  --accent: #0d5f74;
+  --accent-fill: #0d5f74;
+  --on-accent: #ffffff;
+  --accent-ink: #094656;
+  --accent-soft: #e0eef1;
+  --gap: #b45309;
+  --shadow: 15 26 29;
 
   /* 十七個分類的色票：飽和度一律壓低，讓它們在卡牆上可辨識但不互相喊話。
-     同一家族的類用相近色相：錢與法是褐，環境是綠與藍，人的生活是紅 */
-  --c-budget: #8a5a2b;
-  --c-law: #7a4f63;
-  --c-democracy: #6a6a2e;
-  --c-facts: #6b4a7a;
-  --c-local: #9a6a1f;
-  --c-disaster: #a2542a;
-  --c-housing: #8c4a4a;
-  --c-rights: #8c4a6a;
-  --c-pollution: #5a5f38;
-  --c-ecology: #3f6b3a;
-  --c-energy: #56753a;
-  --c-water: #2f5f7a;
-  --c-landuse: #7a6a4a;
-  --c-transport: #4f5f6f;
-  --c-health: #2f6b6b;
-  --c-learning: #4a5a8c;
-  --c-community: #5d5a52;
+     同一家族的類用相近色相：錢與法是褐，環境是綠與藍，人的生活是紅。
+     明度統一（OKLCH L 0.485），對白底都在 5.7:1 以上，可以直接當文字色。
+     為了跟冷底同一個色溫，暖色相的彩度再壓兩成，中性灰改成冷灰。 */
+  --c-budget: #7c5632;
+  --c-law: #7b5064;
+  --c-democracy: #626235;
+  --c-facts: #715080;
+  --c-local: #7b5720;
+  --c-disaster: #864f33;
+  --c-housing: #834e4d;
+  --c-rights: #834a65;
+  --c-pollution: #5e6244;
+  --c-ecology: #426b3d;
+  --c-energy: #4d6934;
+  --c-water: #356580;
+  --c-landuse: #6a5d44;
+  --c-transport: #516171;
+  --c-health: #2e6a6a;
+  --c-learning: #4d5c8e;
+  --c-community: #576165;
 
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #14130f;
-    --surface: #1c1a16;
-    --surface-2: #24211b;
-    --ink: #f3eee4;
-    --ink-2: #d5cec1;
-    --ink-muted: #a09887;
-    --line: #322e26;
-    --line-strong: #453f34;
-    --accent: #79b9a0;
-    --accent-ink: #a6d6c2;
-    --accent-soft: #1e2f28;
+    --paper: #0e1319;
+    --surface: #161d26;
+    --surface-2: #1d2631;
+    --ink: #e8eef5;
+    --ink-2: #c3ccd8;
+    --ink-muted: #93a0b2;
+    --line: #263140;
+    --line-strong: #35424f;
+    --accent: #2e9cb8;
+    --accent-fill: #0d5f74;
+    --on-accent: #ffffff;
+    --accent-ink: #9fd6e4;
+    --accent-soft: #0f3340;
+    --gap: #f2b94b;
     --shadow: 0 0 0;
 
-    --c-budget: #d3a071;
-    --c-law: #cf9ab2;
-    --c-democracy: #c2c27a;
-    --c-facts: #bb9acc;
-    --c-local: #e0b36a;
-    --c-disaster: #e0a06f;
-    --c-housing: #dd9a9a;
-    --c-rights: #dd9abb;
-    --c-pollution: #b5bb85;
-    --c-ecology: #8fbd86;
-    --c-energy: #a8c98a;
-    --c-water: #86b6d0;
-    --c-landuse: #c8b690;
-    --c-transport: #a5b5c5;
-    --c-health: #7ec0c0;
-    --c-learning: #9aabdd;
-    --c-community: #b0aca1;
+    /* 同一組色相，明度拉到 OKLCH L 0.775，對深底都在 8:1 以上 */
+    --c-budget: #d7ac87;
+    --c-law: #d6a6bb;
+    --c-democracy: #b9ba89;
+    --c-facts: #c9a7d9;
+    --c-local: #d5af7c;
+    --c-disaster: #e1a78a;
+    --c-housing: #e0a4a2;
+    --c-rights: #dea1bc;
+    --c-pollution: #b4ba98;
+    --c-ecology: #99c394;
+    --c-energy: #a3c18c;
+    --c-water: #8bbddb;
+    --c-landuse: #c2b499;
+    --c-transport: #a6b8ca;
+    --c-health: #86c3c2;
+    --c-learning: #a2b4ea;
+    --c-community: #adb8bd;
 
     color-scheme: dark;
   }
