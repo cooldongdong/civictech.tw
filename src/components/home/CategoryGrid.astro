@@ -90,9 +90,9 @@ const more = ranked.slice(6);
     padding: 1.4rem 1.4rem 1.5rem;
     border: 1px solid var(--line);
     border-radius: 12px;
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--tint) 7%, transparent) 0%, transparent 62%),
-      var(--surface);
+    /* 分類色只放在數字與 hover 邊框。原本頂端還疊一層 7% 的分類色漸層，
+       暖色相的類（錢、法、災害）在冷白卡上會變成髒髒的米色、粉色，每張卡色偏不同像色差 */
+    background: var(--surface);
     text-decoration: none;
     color: inherit;
     transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
