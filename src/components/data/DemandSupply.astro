@@ -1,0 +1,146 @@
+---
+// 需求對照供給：左邊是問卷裡「想先看這一類」的比例，右邊是站上這一類的專案數。
+//
+// 兩個量的單位不同（% 跟個），所以分成兩欄、各自一把尺，不疊在同一張圖上用兩個 y 軸——
+// 雙軸的兩把尺怎麼對齊是任意的，會畫出資料裡沒有的相關。
+// 兩欄共用同一列的類名，往右看一眼就能比。
+//
+// 只有「缺口」那幾列上色，其餘退成淡色：這張圖要講的就是那幾列。
+import { demandRows, isGap } from "../../lib/dataviz";
+
+const rows = demandRows();
+const maxDemand = Math.max(...rows.map((r) => r.demand));
+const maxSupply = Math.max(...rows.map((r) => r.supply));
+const pct = (v: number, max: number) => `${(v / max) * 100}%`;
+---
+
+<div class="ds">
+  <div class="ds-head" aria-hidden="true">
+    <span></span>
+    <span>想先看這一類的人</span>
+    <span>站上的專案數</span>
+  </div>
+  <ul class="ds-rows">
+    {rows.map((r) => {
+      const gap = isGap(r);
+      return (
+        <li class:list={["ds-row", { gap }]}>
+          <a href={`/c/${r.slug}`} class="ds-name">
+            {r.name}
+            {gap && <span class="badge">缺口</span>}
+          </a>
+          <div
+            class="ds-cell"
+            tabindex="0"
+            data-tip-value={`${r.demand}%`}
+            data-tip-label={`${r.name}：想先看的人`}
+            data-tip-note={`需求第 ${r.demandRank} 名`}
+          >
+            <span class="bar" style={`width:${pct(r.demand, maxDemand)}`}></span>
+            <span class="v num">{r.demand}%</span>
+          </div>
+          <div
+            class="ds-cell"
+            tabindex="0"
+            data-tip-value={`${r.supply} 個專案`}
+            data-tip-label={r.name}
+            data-tip-note={`專案數第 ${r.supplyRank} 名`}
+          >
+            <span class="bar" style={`width:${pct(r.supply, maxSupply)}`}></span>
+            <span class="v num">{r.supply}</span>
+          </div>
+        </li>
+      );
+    })}
+  </ul>
+</div>
+
+<style>
+  .ds-head,
+  .ds-row {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, 1.1fr) 1fr 1fr;
+    gap: 0.5rem 1rem;
+    align-items: center;
+  }
+  @media (max-width: 559px) {
+    /* 手機上類名獨佔一行，兩條長條並排在下面 */
+    .ds-head,
+    .ds-row {
+      grid-template-columns: 1fr 1fr;
+    }
+    .ds-head span:first-child {
+      display: none;
+    }
+    .ds-name {
+      grid-column: 1 / -1;
+    }
+  }
+  .ds-head {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .ds-rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .ds-row {
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .ds-name {
+    font-size: 0.88rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .ds-name:hover {
+    color: var(--accent);
+  }
+  .gap .ds-name {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    border: 1px solid var(--gap);
+    color: var(--ink);
+  }
+  .ds-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 24px;
+    border-radius: 4px;
+    outline-offset: 2px;
+  }
+  /* 長條：14px 粗，起點方、終點 4px 圓角 */
+  .bar {
+    height: 14px;
+    min-width: 2px;
+    border-radius: 0 4px 4px 0;
+    background: color-mix(in srgb, var(--accent) 40%, var(--surface));
+    transition: filter 0.15s ease;
+  }
+  .gap .bar {
+    background: var(--gap);
+  }
+  .ds-cell:hover .bar,
+  .ds-cell[data-tip-active] .bar {
+    filter: brightness(1.15);
+  }
+  .v {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+</style>
