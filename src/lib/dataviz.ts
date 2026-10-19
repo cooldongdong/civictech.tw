@@ -409,3 +409,168 @@ export function repoActivity() {
     missing: withRepo.filter((r) => r.missing).length,
   };
 }
+
+// ── 標籤共現網絡 ──────────────────────────────────────────
+
+export interface TagNode {
+  id: string;
+  tag: string;
+  count: number;
+  x: number;
+  y: number;
+  r: number;
+  neighbors: string[];
+}
+
+export interface TagEdge {
+  a: TagNode;
+  b: TagNode;
+  weight: number;
+}
+
+/**
+ * 兩個標籤同時貼在同一個專案上，就連一條線。只畫至少連到一個別人的標籤；
+ * 從來沒跟別的標籤一起出現過的另外計數。
+ *
+ * 版面用最陽春的 force-directed（Fruchterman–Reingold），在 build 時跑完。
+ * 起始位置是固定的圓周排列，不用亂數——每次 build 長得一樣，diff 才不會整張圖亂跳。
+ */
+export function tagNetwork(width: number, height: number) {
+  const count = new Map<string, number>();
+  const pairs = new Map<string, number>();
+  for (const p of projects) {
+    const tags = [...new Set(p.tags)].sort();
+    for (const t of tags) count.set(t, (count.get(t) ?? 0) + 1);
+    for (let i = 0; i < tags.length; i++)
+      for (let j = i + 1; j < tags.length; j++) {
+        const key = `${tags[i]}\u0000${tags[j]}`;
+        pairs.set(key, (pairs.get(key) ?? 0) + 1);
+      }
+  }
+
+  const connected = [...new Set([...pairs.keys()].flatMap((k) => k.split("\u0000")))].sort(
+    (a, b) => count.get(b)! - count.get(a)! || a.localeCompare(b),
+  );
+  const nodes = new Map<string, TagNode>(
+    connected.map((tag, i) => {
+      const angle = (i / connected.length) * Math.PI * 2;
+      return [
+        tag,
+        {
+          id: `g${i}`,
+          tag,
+          count: count.get(tag)!,
+          x: width / 2 + Math.cos(angle) * width * 0.3,
+          y: height / 2 + Math.sin(angle) * height * 0.3,
+          r: 4 + Math.sqrt(count.get(tag)!) * 2.6,
+          neighbors: [],
+        },
+      ];
+    }),
+  );
+  const edges: TagEdge[] = [...pairs].map(([key, weight]) => {
+    const [a, b] = key.split("\u0000");
+    nodes.get(a)!.neighbors.push(nodes.get(b)!.id);
+    nodes.get(b)!.neighbors.push(nodes.get(a)!.id);
+    return { a: nodes.get(a)!, b: nodes.get(b)!, weight };
+  });
+
+  const list = [...nodes.values()];
+  const k = Math.sqrt((width * height) / list.length) * 0.75;
+  let temp = width / 8;
+  for (let iter = 0; iter < 600; iter++) {
+    const dx = new Map<TagNode, number>(list.map((n) => [n, 0]));
+    const dy = new Map<TagNode, number>(list.map((n) => [n, 0]));
+    for (let i = 0; i < list.length; i++)
+      for (let j = i + 1; j < list.length; j++) {
+        const a = list[i];
+        const b = list[j];
+        const ox = a.x - b.x;
+        const oy = a.y - b.y;
+        // 字是畫在點右邊的，水平方向多推一點，標籤比較不會疊在一起
+        const d = Math.max(1, Math.hypot(ox * 0.6, oy));
+        const f = (k * k) / d;
+        dx.set(a, dx.get(a)! + (ox / d) * f);
+        dy.set(a, dy.get(a)! + (oy / d) * f);
+        dx.set(b, dx.get(b)! - (ox / d) * f);
+        dy.set(b, dy.get(b)! - (oy / d) * f);
+      }
+    for (const e of edges) {
+      const ox = e.a.x - e.b.x;
+      const oy = e.a.y - e.b.y;
+      const d = Math.max(1, Math.hypot(ox, oy));
+      const f = (d * d) / k;
+      dx.set(e.a, dx.get(e.a)! - (ox / d) * f);
+      dy.set(e.a, dy.get(e.a)! - (oy / d) * f);
+      dx.set(e.b, dx.get(e.b)! + (ox / d) * f);
+      dy.set(e.b, dy.get(e.b)! + (oy / d) * f);
+    }
+    for (const n of list) {
+      // 往中心拉一點，不然沒連在一起的小群會一路飄出畫面
+      dx.set(n, dx.get(n)! + (width / 2 - n.x) * 0.05 * k * 0.1);
+      dy.set(n, dy.get(n)! + (height / 2 - n.y) * 0.05 * k * 0.1);
+      const d = Math.max(1, Math.hypot(dx.get(n)!, dy.get(n)!));
+      n.x += (dx.get(n)! / d) * Math.min(d, temp);
+      n.y += (dy.get(n)! / d) * Math.min(d, temp);
+    }
+    temp *= 0.992;
+  }
+
+  // 縮放到畫布裡，右邊留出標籤的寬度
+  const PAD = 24;
+  const LABEL = 110;
+  const xs = list.map((n) => n.x);
+  const ys = list.map((n) => n.y);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  for (const n of list) {
+    n.x = PAD + ((n.x - x0) / (x1 - x0 || 1)) * (width - PAD * 2 - LABEL);
+    n.y = PAD + ((n.y - y0) / (y1 - y0 || 1)) * (height - PAD * 2);
+  }
+
+  // 力導向只管點不管字。再跑一輪：把「點＋右邊的標籤」當成一個方框，疊到的就上下推開
+  const LABEL_CH = 12.5;
+  const box = (n: TagNode) => ({
+    l: n.x - n.r - 2,
+    r: n.x + n.r + 5 + n.tag.length * LABEL_CH + 2,
+    t: n.y - Math.max(n.r, 9) - 2,
+    b: n.y + Math.max(n.r, 9) + 2,
+  });
+  for (let iter = 0; iter < 400; iter++) {
+    let moved = false;
+    for (let i = 0; i < list.length; i++)
+      for (let j = i + 1; j < list.length; j++) {
+        const A = box(list[i]);
+        const B = box(list[j]);
+        const ox = Math.min(A.r, B.r) - Math.max(A.l, B.l);
+        const oy = Math.min(A.b, B.b) - Math.max(A.t, B.t);
+        if (ox <= 0 || oy <= 0) continue;
+        moved = true;
+        // 推重疊比較少的那個方向；字是橫的，通常是上下推比較省
+        if (oy < ox) {
+          const s = list[i].y < list[j].y ? -1 : 1;
+          list[i].y += (s * oy) / 2 + s * 0.5;
+          list[j].y -= (s * oy) / 2 + s * 0.5;
+        } else {
+          const s = list[i].x < list[j].x ? -1 : 1;
+          list[i].x += (s * ox) / 2 + s * 0.5;
+          list[j].x -= (s * ox) / 2 + s * 0.5;
+        }
+      }
+    for (const n of list) {
+      n.x = Math.min(Math.max(n.x, PAD), width - PAD - n.tag.length * LABEL_CH);
+      n.y = Math.min(Math.max(n.y, PAD), height - PAD);
+    }
+    if (!moved) break;
+  }
+
+  const hub = [...list].sort((a, b) => b.neighbors.length - a.neighbors.length)[0];
+  return {
+    nodes: list,
+    edges,
+    hub,
+    tagged: projects.filter((p) => p.tags.length > 0).length,
+    multiTagged: projects.filter((p) => new Set(p.tags).size > 1).length,
+    totalTags: count.size,
+    isolated: count.size - list.length,
+  };
+}
