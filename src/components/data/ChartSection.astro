@@ -1,0 +1,126 @@
+---
+// 每張圖的外框：標題、一句話導讀、圖、可展開的表格。
+//
+// 表格不是附錄，是這張圖的另一個版本：讀不到顏色、用螢幕報讀器、或只是想抄數字的人，
+// 都從這裡拿到跟圖一模一樣的資料。
+interface Props {
+  id: string;
+  /** 小標，例如「1 / 6」 */
+  eyebrow: string;
+  title: string;
+  /** 表格的欄名 */
+  columns: string[];
+  rows: (string | number)[][];
+  /** 數字欄靠右對齊；傳欄位索引 */
+  numeric?: number[];
+}
+
+const { id, eyebrow, title, columns, rows, numeric = [] } = Astro.props;
+---
+
+<section id={id} class="chart-section rise" data-chart>
+  <p class="eyebrow num">{eyebrow}</p>
+  <h2 class="chart-title">{title}</h2>
+  <div class="chart-lede"><slot name="lede" /></div>
+  <div class="chart-body"><slot /></div>
+  <div class="chart-foot"><slot name="foot" /></div>
+  <details class="chart-table">
+    <summary>看表格（{rows.length} 列）</summary>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>{columns.map((c, i) => <th class:list={{ r: numeric.includes(i) }}>{c}</th>)}</tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr>{row.map((v, i) => <td class:list={{ r: numeric.includes(i), num: numeric.includes(i) }}>{v}</td>)}</tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</section>
+
+<style>
+  .chart-section {
+    padding-block: 3.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .eyebrow {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+  .chart-title {
+    margin: 0.4rem 0 0;
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  @media (min-width: 640px) {
+    .chart-title {
+      font-size: 1.7rem;
+    }
+  }
+  .chart-lede {
+    margin-top: 0.75rem;
+    max-width: 62ch;
+    font-size: 0.95rem;
+    color: var(--ink-2);
+  }
+  .chart-lede :global(p) {
+    margin: 0 0 0.5rem;
+  }
+  .chart-body {
+    margin-top: 1.75rem;
+  }
+  .chart-foot {
+    margin-top: 0.9rem;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    max-width: 70ch;
+  }
+  .chart-foot :global(p) {
+    margin: 0 0 0.35rem;
+  }
+  .chart-table {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+  }
+  .chart-table summary {
+    cursor: pointer;
+    color: var(--accent);
+    width: fit-content;
+  }
+  .table-scroll {
+    margin-top: 0.75rem;
+    max-height: 26rem;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    padding: 0.45rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
+  }
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--surface-2);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .r {
+    text-align: right;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+</style>

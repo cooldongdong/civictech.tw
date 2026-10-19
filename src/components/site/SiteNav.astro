@@ -2,13 +2,14 @@
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
-  current?: "home" | "guide" | "wish" | "about";
+  current?: "home" | "guide" | "data" | "wish" | "about";
 }
 const { current = "home" } = Astro.props;
 
 const links = [
   { key: "home", label: "找專案", href: "/#categories" },
   { key: "guide", label: "行動指引", href: "/g" },
+  { key: "data", label: "資料總覽", href: "/data" },
   { key: "wish", label: "許願池", href: "/#wish-pool" },
   { key: "about", label: "協作與聯繫", href: "/#footer" },
 ] as const;

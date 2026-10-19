@@ -1,0 +1,57 @@
+---
+import Base from "../layouts/Base.astro";
+import ChartTip from "../components/data/ChartTip.astro";
+import ChartSection from "../components/data/ChartSection.astro";
+import Treemap from "../components/data/Treemap.astro";
+import { stats } from "../lib/projects";
+import { categoryCounts, outsideSdg, projects } from "../lib/dataviz";
+
+const description = `用幾張圖看台灣公民科技資料庫：${projects.length} 個專案分在哪些議題、對應哪些 SDGs、哪裡最缺人。`;
+
+// 頁首的數字跟首頁 StatStrip 一樣從資料算，不手寫
+const leads = [
+  { n: projects.length, label: "個專案，以下每張圖都數這些" },
+  { n: categoryCounts.length, label: "個議題分類" },
+  { n: outsideSdg, label: "個專案的影響力類別不在 SDGs 裡" },
+];
+---
+
+<Base title="資料總覽｜台灣公民科技資料庫" description={description} current="data">
+  <header class="pb-6 pt-28 sm:pt-32">
+    <div class="wrap">
+      <h1 class="m-0 text-[1.9rem] font-semibold sm:text-[2.4rem]" style="color:var(--ink)">資料總覽</h1>
+      <p class="mt-4 max-w-[60ch] text-[0.98rem] leading-relaxed" style="color:var(--ink-muted)">
+        同一批專案，換幾種方式看。資料庫裡共有 <span class="num">{stats.total}</span> 筆，
+        其中 <span class="num">{stats.listed}</span> 筆有簡介或連結、在站上有自己的頁面——下面的圖都只數這 {stats.listed} 筆，
+        跟分類頁的數字對得上。
+      </p>
+      <div class="mt-8 grid gap-6 sm:grid-cols-3">
+        {leads.map((it) => (
+          <div class="flex items-baseline gap-3 sm:flex-col sm:items-start sm:gap-1">
+            <span class="text-[2rem] font-semibold leading-none sm:text-[2.6rem]" style="color:var(--ink)">{it.n}</span>
+            <span class="text-sm" style="color:var(--ink-muted)">{it.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap pb-20">
+    <ChartSection
+      id="categories"
+      eyebrow="議題"
+      title="每一類有多少專案"
+      columns={["議題", "專案數"]}
+      rows={categoryCounts.map((c) => [c.name, c.count])}
+      numeric={[1]}
+    >
+      <p slot="lede">
+        一格是一個議題，面積是專案數。點任何一格，就會進到那一類的專案清單。
+      </p>
+      <Treemap />
+      <p slot="foot">分類是站上的「人話分類」草稿，規則與人工覆蓋清單見 GitHub 上的 <code>src/data/classification.ts</code>。</p>
+    </ChartSection>
+  </div>
+
+  <ChartTip />
+</Base>
