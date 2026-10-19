@@ -8,6 +8,7 @@
 
 import { categories, categoryBySlug, surveyRate, type CategorySlug } from "../data/categories";
 import { listedProjects } from "./projects";
+import githubData from "../data/github.json";
 
 export const projects = listedProjects;
 
@@ -332,5 +333,79 @@ export function sankey(opts: { height: number; left: number; right: number; node
     sources: [...srcNodes.values()],
     targets: [...tgtIds.map((id) => ({ slug: id, node: tgtNodes.get(id)! }))],
     links,
+  };
+}
+
+// ── GitHub repo 還有沒有在動 ────────────────────────────────
+
+interface RepoInfo {
+  fullName?: string;
+  pushedAt?: string;
+  archived?: boolean;
+  stars?: number;
+  missing?: boolean;
+}
+
+/** 跟 scripts/sync-github.mjs 的 repoKey 同一條規則，兩邊要一起改 */
+function repoKey(url?: string): string | undefined {
+  const m = url?.match(/github\.com\/([^/\s?#]+)\/([^/\s?#]+)/i);
+  return m ? `${m[1]}/${m[2].replace(/\.git$/i, "")}`.toLowerCase() : undefined;
+}
+
+export interface RepoProject {
+  name: string;
+  slug: string;
+  repo: string;
+  pushedAt?: Date;
+  archived: boolean;
+  missing: boolean;
+}
+
+export function repoActivity() {
+  const synced = new Date(githubData.syncedAt);
+  const repos = githubData.repos as Record<string, RepoInfo>;
+  const withRepo: RepoProject[] = [];
+  let orgOnly = 0;
+  for (const p of projects) {
+    if (!p.github) continue;
+    const key = repoKey(p.github);
+    const info = key ? repos[key] : undefined;
+    if (!key || !info) {
+      // 只連到組織首頁、或是同步之後才新加的 repo
+      orgOnly++;
+      continue;
+    }
+    withRepo.push({
+      name: p.name,
+      slug: p.slug,
+      repo: info.fullName ?? key,
+      pushedAt: info.pushedAt ? new Date(info.pushedAt) : undefined,
+      archived: !!info.archived,
+      missing: !!info.missing,
+    });
+  }
+  withRepo.sort((a, b) => (b.pushedAt?.getTime() ?? 0) - (a.pushedAt?.getTime() ?? 0));
+
+  const dated = withRepo.filter((r) => r.pushedAt);
+  const years = dated.map((r) => r.pushedAt!.getFullYear());
+  const first = Math.min(...years);
+  const last = synced.getFullYear();
+  const byYear = Array.from({ length: last - first + 1 }, (_, i) => {
+    const year = first + i;
+    return { year, items: dated.filter((r) => r.pushedAt!.getFullYear() === year) };
+  });
+
+  const YEAR = 365 * 24 * 3600 * 1000;
+  const age = (r: RepoProject) => synced.getTime() - r.pushedAt!.getTime();
+  return {
+    synced,
+    withRepo,
+    byYear,
+    orgOnly,
+    withoutGithub: projects.length - withRepo.length - orgOnly,
+    activeLastYear: dated.filter((r) => age(r) <= YEAR).length,
+    quietFiveYears: dated.filter((r) => age(r) > 5 * YEAR).length,
+    archived: withRepo.filter((r) => r.archived).length,
+    missing: withRepo.filter((r) => r.missing).length,
   };
 }

@@ -6,8 +6,9 @@ import Treemap from "../components/data/Treemap.astro";
 import SdgGrid from "../components/data/SdgGrid.astro";
 import Sankey from "../components/data/Sankey.astro";
 import DemandSupply from "../components/data/DemandSupply.astro";
+import RepoActivity from "../components/data/RepoActivity.astro";
 import { stats } from "../lib/projects";
-import { categoryCounts, demandRows, GAP_THRESHOLD, impactCells, isGap, outsideSdg, projects, sankey } from "../lib/dataviz";
+import { categoryCounts, demandRows, repoActivity, GAP_THRESHOLD, impactCells, isGap, outsideSdg, projects, sankey } from "../lib/dataviz";
 import { SURVEY_RESPONDENTS } from "../data/categories";
 
 const description = `用幾張圖看台灣公民科技資料庫：${projects.length} 個專案分在哪些議題、對應哪些 SDGs、哪裡最缺人。`;
@@ -40,6 +41,14 @@ const [mostSplit, mostSplitN] = [...split].sort((a, b) => b[1] - a[1])[0];
 const demand = demandRows();
 const gaps = demand.filter(isGap);
 const top = demand[0];
+
+const repo = repoActivity();
+const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+const repoTiles = [
+  { n: repo.activeLastYear, label: "個一年內有更新" },
+  { n: repo.quietFiveYears, label: "個超過五年沒動" },
+  { n: repo.archived, label: "個已經封存" },
+];
 ---
 
 <Base title="資料總覽｜台灣公民科技資料庫" description={description} current="data">
@@ -133,6 +142,39 @@ const top = demand[0];
         問卷只問了 12 個議題，站上另外 5 類沒有需求數字，不在這張圖上。
         「缺口」＝需求名次比專案數名次前面 {GAP_THRESHOLD} 名以上。問卷報告：
         <a href="https://report.claire-cheng.com/#rec-1-2" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">report.claire-cheng.com</a>
+      </p>
+    </ChartSection>
+
+    <ChartSection
+      id="repos"
+      eyebrow="原始碼"
+      title="程式碼最後一次更新是什麼時候"
+      columns={["專案", "repo", "最後一次 push", "狀態"]}
+      rows={repo.withRepo.map((r) => [
+        r.name,
+        r.repo,
+        r.pushedAt ? fmtDate(r.pushedAt) : "—",
+        r.missing ? "找不到" : r.archived ? "已封存" : "",
+      ])}
+    >
+      <p slot="lede">
+        有 <span class="num">{repo.withRepo.length}</span> 個專案在資料庫裡連到自己的 GitHub repo。
+        照最後一次 push 的年份排，可以粗看這些程式碼還有沒有人在動。
+        沒在動不代表專案死了——做完就不必再改的工具很多——但它是一個值得去問一聲的訊號。
+      </p>
+      <div class="mb-6 grid gap-4 sm:grid-cols-3">
+        {repoTiles.map((t) => (
+          <div class="flex items-baseline gap-2">
+            <span class="text-[1.6rem] font-semibold leading-none" style="color:var(--ink)">{t.n}</span>
+            <span class="text-sm" style="color:var(--ink-muted)">{t.label}</span>
+          </div>
+        ))}
+      </div>
+      <RepoActivity />
+      <p slot="foot">
+        GitHub 資料同步於 {fmtDate(repo.synced)}。另有 {repo.orgOnly} 個專案只連到 GitHub 組織首頁、看不出是哪個 repo，
+        {repo.withoutGithub} 個沒有填 GitHub，都不在這張圖上。
+        {repo.missing > 0 && `有 ${repo.missing} 個 repo 已經找不到（被刪除或改成私有）。`}
       </p>
     </ChartSection>
   </div>

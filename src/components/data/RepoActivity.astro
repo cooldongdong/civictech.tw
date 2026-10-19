@@ -1,0 +1,96 @@
+---
+// 每個專案的 GitHub repo 最後一次 push 在哪一年。
+//
+// 「最後一次 push」不等於「專案還活著」：有的工具做完就不用再改，網站照樣在跑；
+// 有的 repo 一直有機器人在推，人早就走了。所以這張圖只講 repo 的動靜，標題也這樣寫。
+// 資料是 scripts/sync-github.mjs 手動同步的快照，同步日期印在圖下。
+import { repoActivity } from "../../lib/dataviz";
+
+const { byYear } = repoActivity();
+const max = Math.max(...byYear.map((y) => y.items.length));
+const latest = byYear[byYear.length - 1].year;
+
+// tooltip 裡列幾個專案名稱就好，完整清單在表格
+const SHOW = 5;
+const names = (items: { name: string }[]) =>
+  items.length === 0
+    ? "這一年沒有"
+    : items.slice(0, SHOW).map((i) => i.name).join("、") + (items.length > SHOW ? ` 等 ${items.length} 個` : "");
+---
+
+<div class="cols" role="img" aria-label="各年份最後一次更新的 repo 數，詳細清單見下方表格">
+  {byYear.map((y) => (
+    <div
+      class:list={["col", { current: y.year === latest }]}
+      tabindex="0"
+      data-tip-value={`${y.items.length} 個專案`}
+      data-tip-label={`最後一次 push 在 ${y.year} 年`}
+      data-tip-note={names(y.items)}
+    >
+      <div class="plot">
+        {y.items.length > 0 && <span class="v num">{y.items.length}</span>}
+        <span class="bar" style={`height:${(y.items.length / max) * 100}%`}></span>
+      </div>
+      <span class="year num"><span class="century">{String(y.year).slice(0, 2)}</span>{String(y.year).slice(2)}</span>
+    </div>
+  ))}
+</div>
+
+<style>
+  .cols {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    padding-top: 1.5rem;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .plot {
+    position: relative;
+    height: 11rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  /* 欄寬上限 24px，剩下的讓它空著 */
+  .bar {
+    width: min(24px, 70%);
+    border-radius: 4px 4px 0 0;
+    background: color-mix(in srgb, var(--accent) 45%, var(--surface));
+    transition: filter 0.15s ease;
+  }
+  .current .bar {
+    background: var(--accent);
+  }
+  .col:hover .bar,
+  .col[data-tip-active] .bar {
+    filter: brightness(1.15);
+  }
+  .v {
+    font-size: 0.75rem;
+    color: var(--ink-2);
+    margin-bottom: 0.2rem;
+  }
+  .year {
+    margin-top: 0.4rem;
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+  }
+  /* 手機上只寫後兩位：'14、'15…，13 個年份才排得下 */
+  @media (max-width: 559px) {
+    .century {
+      display: none;
+    }
+    .year::before {
+      content: "’";
+    }
+  }
+</style>
