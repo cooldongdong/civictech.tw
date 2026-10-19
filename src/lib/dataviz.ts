@@ -7,7 +7,7 @@
 // 樹狀圖點下去會進分類頁，分類頁數的是 listedProjects，兩邊的數字要對得上。
 
 import { categories, categoryBySlug, surveyRate, type CategorySlug } from "../data/categories";
-import { listedProjects, type Project } from "./projects";
+import { listedProjects } from "./projects";
 
 export const projects = listedProjects;
 
@@ -204,5 +204,133 @@ export function demandRows(): DemandRow[] {
 export const GAP_THRESHOLD = 4;
 export const isGap = (r: DemandRow) => r.supplyRank - r.demandRank >= GAP_THRESHOLD;
 
-export { categoryBySlug };
-export type { Project };
+
+// ── 影響力類別 → 人話分類的桑基圖 ─────────────────────────────
+
+export interface SankeyNode {
+  id: string;
+  label: string;
+  value: number;
+  x: number;
+  y: number;
+  h: number;
+}
+
+export interface SankeyLink {
+  source: SankeyNode;
+  target: SankeyNode;
+  targetSlug: CategorySlug;
+  value: number;
+  /** 帶子在左右兩端的中線 y */
+  y0: number;
+  y1: number;
+  /** 帶子的粗細 */
+  w: number;
+}
+
+/**
+ * 每個專案只算它的第一個影響力類別——classification.ts 推預設分類時也是看第一個，
+ * 這樣左右兩邊的總數都等於專案數，帶子不會憑空多出來。
+ */
+export function sankey(opts: { height: number; left: number; right: number; nodeW: number; pad: number }) {
+  const { height, left, right, nodeW, pad } = opts;
+
+  const flows = new Map<string, number>();
+  const srcVal = new Map<number, number>();
+  const srcName = new Map<number, string>();
+  const tgtVal = new Map<CategorySlug, number>();
+  for (const p of projects) {
+    const first = p.impactCategories[0];
+    if (!first) continue;
+    const imp = parseImpact(first);
+    srcName.set(imp.num, imp.name);
+    srcVal.set(imp.num, (srcVal.get(imp.num) ?? 0) + 1);
+    tgtVal.set(p.category, (tgtVal.get(p.category) ?? 0) + 1);
+    const key = `${imp.num}|${p.category}`;
+    flows.set(key, (flows.get(key) ?? 0) + 1);
+  }
+
+  const srcIds = [...srcVal.keys()].sort((a, b) => a - b);
+  const total = [...srcVal.values()].reduce((a, b) => a + b, 0);
+
+  // 右邊的順序用重心法排：每一類放在「它的來源平均位置」，交叉最少，圖才讀得懂
+  const srcIndex = new Map(srcIds.map((id, i) => [id, i]));
+  const tgtIds = [...tgtVal.keys()].sort((a, b) => {
+    const center = (t: CategorySlug) => {
+      let s = 0;
+      for (const [k, v] of flows) {
+        const [src, tgt] = k.split("|");
+        if (tgt === t) s += srcIndex.get(Number(src))! * v;
+      }
+      return s / tgtVal.get(t)!;
+    };
+    return center(a) - center(b);
+  });
+
+  const k = Math.min(
+    (height - pad * (srcIds.length - 1)) / total,
+    (height - pad * (tgtIds.length - 1)) / total,
+  );
+
+  const column = <T>(ids: T[], val: (id: T) => number, x: number, label: (id: T) => string, prefix: string) => {
+    const used = ids.reduce((s, id) => s + val(id) * k, 0) + pad * (ids.length - 1);
+    let y = (height - used) / 2;
+    return new Map(
+      ids.map((id) => {
+        const h = val(id) * k;
+        const node: SankeyNode = { id: `${prefix}${id}`, label: label(id), value: val(id), x, y, h };
+        y += h + pad;
+        return [id, node];
+      }),
+    );
+  };
+
+  const srcNodes = column(srcIds, (id) => srcVal.get(id)!, left, (id) => `${id} ${srcName.get(id)}`, "s");
+  const tgtNodes = column(
+    tgtIds,
+    (id) => tgtVal.get(id)!,
+    right - nodeW,
+    (id) => categoryBySlug.get(id)!.name,
+    "t",
+  );
+
+  // 帶子在節點裡的排法：來源端照目標的上下順序排，目標端照來源的順序排，才不會在節點裡打結
+  const tgtOrder = new Map(tgtIds.map((id, i) => [id, i]));
+  const entries = [...flows].map(([key, value]) => {
+    const [src, tgt] = key.split("|");
+    return { src: Number(src), tgt: tgt as CategorySlug, value };
+  });
+  const srcOffset = new Map<number, number>();
+  const tgtOffset = new Map<CategorySlug, number>();
+  const links: SankeyLink[] = [];
+
+  const bySrc = [...entries].sort((a, b) => a.src - b.src || tgtOrder.get(a.tgt)! - tgtOrder.get(b.tgt)!);
+  const y0s = new Map<string, number>();
+  for (const e of bySrc) {
+    const node = srcNodes.get(e.src)!;
+    const off = srcOffset.get(e.src) ?? 0;
+    y0s.set(`${e.src}|${e.tgt}`, node.y + off + (e.value * k) / 2);
+    srcOffset.set(e.src, off + e.value * k);
+  }
+  const byTgt = [...entries].sort((a, b) => tgtOrder.get(a.tgt)! - tgtOrder.get(b.tgt)! || a.src - b.src);
+  for (const e of byTgt) {
+    const node = tgtNodes.get(e.tgt)!;
+    const off = tgtOffset.get(e.tgt) ?? 0;
+    links.push({
+      source: srcNodes.get(e.src)!,
+      target: node,
+      targetSlug: e.tgt,
+      value: e.value,
+      y0: y0s.get(`${e.src}|${e.tgt}`)!,
+      y1: node.y + off + (e.value * k) / 2,
+      w: e.value * k,
+    });
+    tgtOffset.set(e.tgt, off + e.value * k);
+  }
+
+  return {
+    sources: [...srcNodes.values()],
+    targets: [...tgtIds.map((id) => ({ slug: id, node: tgtNodes.get(id)! }))],
+    links,
+  };
+}

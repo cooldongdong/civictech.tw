@@ -1,0 +1,153 @@
+---
+// SDGs 十七格方陣，外加揪松自己補的三類。
+//
+// 顏色只有一個色相（石油藍），越深＝專案越多，20 格共用同一把尺——
+// 刻意不給 SDGs 跟自訂類各自一把，因為這張圖要講的正是「自訂的那三格比 SDGs 大」。
+// 數字放在色塊下方的底色上，不疊在色塊裡，深淺怎麼變字都讀得到。
+import { impactCells, type ImpactCell } from "../../lib/dataviz";
+
+const { sdg, extra } = impactCells();
+const max = Math.max(...[...sdg, ...extra].map((c) => c.count));
+
+// 有專案的格子最淡也給 8%，不然 1 跟 0 看起來一樣
+const mix = (n: number) => (n === 0 ? 0 : Math.round(8 + (n / max) * 82));
+
+const cell = (c: ImpactCell) => ({
+  ...c,
+  code: c.isSdg ? `SDG ${c.num}` : `自訂 ${c.num}`,
+  style: `--mix:${mix(c.count)}%`,
+});
+---
+
+<div class="sdg">
+  <div class="sdg-grid">
+    {sdg.map(cell).map((c) => (
+      <div
+        class:list={["cell", { empty: c.count === 0 }]}
+        style={c.style}
+        tabindex="0"
+        data-tip-value={`${c.count} 個專案`}
+        data-tip-label={`${c.code}・${c.name}`}
+      >
+        <div class="swatch" aria-hidden="true"></div>
+        <div class="meta">
+          <span class="n">{c.count}</span>
+          <span class="code num">{c.code}</span>
+          <span class="name">{c.name}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <p class="extra-title">揪松自己補的三類（不在 SDGs 裡）</p>
+  <div class="sdg-grid extra">
+    {extra.map(cell).map((c) => (
+      <div
+        class="cell"
+        style={c.style}
+        tabindex="0"
+        data-tip-value={`${c.count} 個專案`}
+        data-tip-label={`${c.code}・${c.name}`}
+      >
+        <div class="swatch" aria-hidden="true"></div>
+        <div class="meta">
+          <span class="n">{c.count}</span>
+          <span class="code num">{c.code}</span>
+          <span class="name">{c.name}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div class="scale" aria-hidden="true">
+    <span class="num">0</span>
+    <span class="bar"></span>
+    <span class="num">{max}</span>
+    <span class="unit">個專案</span>
+  </div>
+</div>
+
+<style>
+  .sdg-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  @media (min-width: 560px) {
+    .sdg-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 900px) {
+    .sdg-grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  .cell {
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    outline-offset: 2px;
+    transition: border-color 0.15s ease;
+  }
+  .cell:hover,
+  .cell[data-tip-active] {
+    border-color: var(--accent);
+  }
+  .swatch {
+    height: 2.75rem;
+    background: color-mix(in srgb, var(--accent) var(--mix), var(--surface));
+  }
+  /* 0 個專案的格子：不給顏色，給斜線，讓「空」看起來是刻意的 */
+  .empty .swatch {
+    background: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 7px);
+  }
+  .meta {
+    padding: 0.55rem 0.7rem 0.7rem;
+    display: grid;
+    gap: 0.1rem;
+  }
+  .n {
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+  .code {
+    font-size: 0.7rem;
+    color: var(--ink-muted);
+  }
+  .name {
+    font-size: 0.82rem;
+    line-height: 1.35;
+    color: var(--ink-2);
+  }
+
+  .extra-title {
+    margin: 1.75rem 0 0.6rem;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+  }
+
+  .scale {
+    margin-top: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+  .bar {
+    width: 8rem;
+    height: 0.5rem;
+    border-radius: 4px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent) 8%, var(--surface)),
+      color-mix(in srgb, var(--accent) 90%, var(--surface))
+    );
+    border: 1px solid var(--line);
+  }
+</style>

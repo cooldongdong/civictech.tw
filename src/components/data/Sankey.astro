@@ -1,0 +1,137 @@
+---
+// 桑基圖：左邊是 Airtable 的影響力類別（SDGs＋揪松自訂），右邊是站上的人話分類。
+// 帶子越粗＝從左邊那類被分到右邊那類的專案越多。
+//
+// 它講的是「站上的分類是怎麼從原本的分類切出來的」：一條帶子筆直對過去的是規則推的，
+// 一類左邊散成好幾條的，就是覆蓋清單一筆一筆拆開的地方（例如 20 號那一大袋）。
+//
+// 帶子的顏色跟著右邊的分類走，跟樹狀圖同一套色。手機上寬度不夠，圖本身可以左右滑，
+// 但頁面不會被撐寬。
+import { sankey } from "../../lib/dataviz";
+
+const W = 960;
+const H = 900;
+// 上下留白：最上、最下那格的字是垂直置中在節點上的，貼邊會被切掉
+const M = 16;
+const NODE_W = 10;
+const LEFT = 230;
+const RIGHT = W - 230;
+
+const { sources, targets, links } = sankey({ height: H, left: LEFT, right: RIGHT, nodeW: NODE_W, pad: 18 });
+const linkPath = (l: (typeof links)[number]) => {
+  const x0 = LEFT + NODE_W;
+  const x1 = RIGHT - NODE_W;
+  const mx = (x0 + x1) / 2;
+  return `M${x0},${l.y0} C${mx},${l.y0} ${mx},${l.y1} ${x1},${l.y1}`;
+};
+---
+
+<div class="sankey-scroll">
+  <svg viewBox={`0 ${-M} ${W} ${H + M * 2}`} class="sankey" role="img" aria-label="影響力類別如何對應到站上的議題分類，詳細數字見下方表格">
+    <g class="links">
+      {links.map((l) => (
+        <path
+          class="link"
+          d={linkPath(l)}
+          stroke={`var(--c-${l.targetSlug})`}
+          stroke-width={Math.max(1, l.w)}
+          data-groups={`${l.source.id} ${l.target.id}`}
+          data-tip-value={`${l.value} 個專案`}
+          data-tip-label={`${l.source.label} → ${l.target.label}`}
+        />
+      ))}
+    </g>
+
+    {sources.map((n) => (
+      <g
+        class="node"
+        tabindex="0"
+        data-groups={n.id}
+        data-tip-group={n.id}
+        data-tip-value={`${n.value} 個專案`}
+        data-tip-label={n.label}
+        data-tip-note="影響力類別（取每個專案的第一個）"
+      >
+        <rect class="hit" x={0} y={n.y - 5} width={LEFT + NODE_W} height={Math.max(n.h + 10, 18)} />
+        <rect class="bar" x={n.x} y={n.y} width={NODE_W} height={Math.max(n.h, 1.5)} rx="2" />
+        <text x={n.x - 8} y={n.y + n.h / 2} text-anchor="end" dominant-baseline="middle">
+          {n.label}
+          <tspan class="v" dx="6">{n.value}</tspan>
+        </text>
+      </g>
+    ))}
+
+    {targets.map(({ slug, node: n }) => (
+      <a href={`/c/${slug}`}>
+        <g
+          class="node"
+          data-groups={n.id}
+          data-tip-group={n.id}
+          data-tip-value={`${n.value} 個專案`}
+          data-tip-label={n.label}
+          data-tip-note="站上的議題分類，點了看這一類"
+        >
+          <rect class="hit" x={n.x} y={n.y - 5} width={W - n.x} height={Math.max(n.h + 10, 18)} />
+          <rect class="bar" x={n.x} y={n.y} width={NODE_W} height={n.h} rx="2" style={`fill:var(--c-${slug})`} />
+          <text x={n.x + NODE_W + 8} y={n.y + n.h / 2} dominant-baseline="middle">
+            {n.label}
+            <tspan class="v" dx="6">{n.value}</tspan>
+          </text>
+        </g>
+      </a>
+    ))}
+  </svg>
+</div>
+
+<style>
+  .sankey-scroll {
+    overflow-x: auto;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+  .sankey {
+    display: block;
+    width: 100%;
+    min-width: 820px;
+    height: auto;
+  }
+  .link {
+    fill: none;
+    stroke-opacity: 0.35;
+    transition: stroke-opacity 0.15s ease;
+  }
+  :global([data-hovering]) .link {
+    stroke-opacity: 0.08;
+  }
+  :global([data-hovering]) .link[data-tip-related],
+  :global([data-hovering]) .link[data-tip-active] {
+    stroke-opacity: 0.75;
+  }
+  .bar {
+    fill: var(--ink-muted);
+  }
+  .hit {
+    fill: transparent;
+  }
+  text {
+    font-size: 13px;
+    fill: var(--ink-2);
+  }
+  .v {
+    fill: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .node {
+    cursor: default;
+    outline: none;
+  }
+  a .node {
+    cursor: pointer;
+  }
+  .node:focus-visible text,
+  .node[data-tip-active] text {
+    fill: var(--ink);
+    font-weight: 600;
+  }
+</style>

@@ -3,8 +3,10 @@ import Base from "../layouts/Base.astro";
 import ChartTip from "../components/data/ChartTip.astro";
 import ChartSection from "../components/data/ChartSection.astro";
 import Treemap from "../components/data/Treemap.astro";
+import SdgGrid from "../components/data/SdgGrid.astro";
+import Sankey from "../components/data/Sankey.astro";
 import { stats } from "../lib/projects";
-import { categoryCounts, outsideSdg, projects } from "../lib/dataviz";
+import { categoryCounts, impactCells, outsideSdg, projects, sankey } from "../lib/dataviz";
 
 const description = `用幾張圖看台灣公民科技資料庫：${projects.length} 個專案分在哪些議題、對應哪些 SDGs、哪裡最缺人。`;
 
@@ -14,6 +16,24 @@ const leads = [
   { n: categoryCounts.length, label: "個議題分類" },
   { n: outsideSdg, label: "個專案的影響力類別不在 SDGs 裡" },
 ];
+
+const impact = impactCells();
+const impactRows = [...impact.sdg, ...impact.extra].map((c) => [
+  c.isSdg ? `SDG ${c.num}` : `自訂 ${c.num}`,
+  c.name,
+  c.count,
+]);
+const sdgTotal = impact.sdg.reduce((s, c) => s + c.count, 0);
+const extraTotal = impact.extra.reduce((s, c) => s + c.count, 0);
+
+// 表格只要數字，版面參數隨便給
+const flows = sankey({ height: 100, left: 0, right: 100, nodeW: 1, pad: 0 })
+  .links.sort((a, b) => b.value - a.value)
+  .map((l) => [l.source.label, l.target.label, l.value]);
+// 一個影響力類別被拆到幾個人話分類——拆得越散，越靠人工覆蓋清單
+const split = new Map<string, number>();
+for (const [src] of flows) split.set(src as string, (split.get(src as string) ?? 0) + 1);
+const [mostSplit, mostSplitN] = [...split].sort((a, b) => b[1] - a[1])[0];
 ---
 
 <Base title="資料總覽｜台灣公民科技資料庫" description={description} current="data">
@@ -50,6 +70,43 @@ const leads = [
       </p>
       <Treemap />
       <p slot="foot">分類是站上的「人話分類」草稿，規則與人工覆蓋清單見 GitHub 上的 <code>src/data/classification.ts</code>。</p>
+    </ChartSection>
+
+    <ChartSection
+      id="sdgs"
+      eyebrow="SDGs"
+      title="對應到哪幾個永續發展目標"
+      columns={["編號", "影響力類別", "專案數"]}
+      rows={impactRows}
+      numeric={[2]}
+    >
+      <p slot="lede">
+        Airtable 上每個專案都標了「影響力類別」：前 17 個是聯合國的永續發展目標（SDGs），
+        後 3 個是揪松團自己補的。SDGs 17 格加起來是 <span class="num">{sdgTotal}</span>，
+        自己補的 3 格就有 <span class="num">{extraTotal}</span>——很多公民科技專案做的是民主、資訊與開放資料，SDGs 沒有替它們留位置。
+      </p>
+      <SdgGrid />
+      <p slot="foot">一個專案可以標好幾個類別（{impact.multi} 個專案標了兩個以上），所以各格加總會比專案數多。</p>
+    </ChartSection>
+
+    <ChartSection
+      id="mapping"
+      eyebrow="分類怎麼來的"
+      title="從 SDGs 到站上的議題分類"
+      columns={["影響力類別", "站上的分類", "專案數"]}
+      rows={flows}
+      numeric={[2]}
+    >
+      <p slot="lede">
+        站上的 17 個分類不是 SDGs，是照 2026-07 需求問卷「想先看哪些議題」重切的。
+        左邊是原本的影響力類別，右邊是現在的分類，帶子越粗代表越多專案從左邊被分到右邊。
+        拆得最散的是「{mostSplit}」，被分到 {mostSplitN} 個分類。
+      </p>
+      <Sankey />
+      <p slot="foot">
+        每個專案只算它標的第一個影響力類別。對不上的專案靠一份人工覆蓋清單一筆一筆分，清單在 GitHub 上的
+        <code>src/data/classification.ts</code>，不同意哪一筆，改那一行就好。滑過任一類可以只看它的流向。
+      </p>
     </ChartSection>
   </div>
 
