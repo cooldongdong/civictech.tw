@@ -4,6 +4,7 @@
 // 顏色只有一個色相（石油藍），越深＝專案越多，20 格共用同一把尺——
 // 刻意不給 SDGs 跟自訂類各自一把，因為這張圖要講的正是「自訂的那三格比 SDGs 大」。
 // 數字放在色塊下方的底色上，不疊在色塊裡，深淺怎麼變字都讀得到。
+// 每一格都是連結，點進 /data/sdg/[num] 看標了這一類的專案。
 import { impactCells, type ImpactCell } from "../../lib/dataviz";
 
 const { sdg, extra } = impactCells();
@@ -22,12 +23,13 @@ const cell = (c: ImpactCell) => ({
 <div class="sdg">
   <div class="sdg-grid">
     {sdg.map(cell).map((c) => (
-      <div
+      <a
+        href={`/data/sdg/${c.num}`}
         class:list={["cell", { empty: c.count === 0 }]}
         style={c.style}
-        tabindex="0"
         data-tip-value={`${c.count} 個專案`}
         data-tip-label={`${c.code}・${c.name}`}
+        data-tip-note="點了看這些專案"
       >
         <div class="swatch" aria-hidden="true"></div>
         <div class="meta">
@@ -35,19 +37,20 @@ const cell = (c: ImpactCell) => ({
           <span class="code num">{c.code}</span>
           <span class="name">{c.name}</span>
         </div>
-      </div>
+      </a>
     ))}
   </div>
 
   <p class="extra-title">揪松自己補的三類（不在 SDGs 裡）</p>
   <div class="sdg-grid extra">
     {extra.map(cell).map((c) => (
-      <div
+      <a
+        href={`/data/sdg/${c.num}`}
         class="cell"
         style={c.style}
-        tabindex="0"
         data-tip-value={`${c.count} 個專案`}
         data-tip-label={`${c.code}・${c.name}`}
+        data-tip-note="點了看這些專案"
       >
         <div class="swatch" aria-hidden="true"></div>
         <div class="meta">
@@ -55,7 +58,7 @@ const cell = (c: ImpactCell) => ({
           <span class="code num">{c.code}</span>
           <span class="name">{c.name}</span>
         </div>
-      </div>
+      </a>
     ))}
   </div>
 
@@ -85,6 +88,8 @@ const cell = (c: ImpactCell) => ({
   }
 
   .cell {
+    display: block;
+    text-decoration: none;
     border-radius: 8px;
     background: var(--surface);
     border: 1px solid var(--line);

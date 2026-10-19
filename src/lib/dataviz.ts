@@ -574,3 +574,7 @@ export function tagNetwork(width: number, height: number) {
     isolated: count.size - list.length,
   };
 }
+
+/** 標了某個影響力類別的專案（不限第一個）——SDG 方陣點進去的清單頁用 */
+export const projectsByImpact = (num: number) =>
+  projects.filter((p) => p.impactCategories.some((c) => parseImpact(c).num === num));

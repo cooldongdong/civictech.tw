@@ -43,14 +43,14 @@ const linkPath = (l: (typeof links)[number]) => {
     </g>
 
     {sources.map((n) => (
+      <a href={`/data/sdg/${n.id.slice(1)}`}>
       <g
         class="node"
-        tabindex="0"
         data-groups={n.id}
         data-tip-group={n.id}
         data-tip-value={`${n.value} 個專案`}
         data-tip-label={n.label}
-        data-tip-note="影響力類別（取每個專案的第一個）"
+        data-tip-note="影響力類別（取每個專案的第一個），點了看這一類"
       >
         <rect class="hit" x={0} y={n.y - 5} width={LEFT + NODE_W} height={Math.max(n.h + 10, 18)} />
         <rect class="bar" x={n.x} y={n.y} width={NODE_W} height={Math.max(n.h, 1.5)} rx="2" />
@@ -59,6 +59,7 @@ const linkPath = (l: (typeof links)[number]) => {
           <tspan class="v" dx="6">{n.value}</tspan>
         </text>
       </g>
+      </a>
     ))}
 
     {targets.map(({ slug, node: n }) => (
