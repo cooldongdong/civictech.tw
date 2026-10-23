@@ -11,23 +11,19 @@ const [lead, second, ...others] = ranked.slice(0, 6);
 const more = ranked.slice(6);
 ---
 
-<section id="categories" class="py-16 sm:py-20 lg:py-24">
+<section id="categories" class="home-section">
   <div class="wrap">
-    <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
-      <h2 class="m-0 max-w-[18ch] text-[1.7rem] font-semibold sm:text-[2.1rem]" style="color:var(--ink)">
-        你關心的是哪一件事？
-      </h2>
-      <p class="m-0 text-sm" style="color:var(--ink-muted)">
+    <div class="home-head">
+      <h2 class="home-title">你關心的是哪一件事？</h2>
+      <p class="home-lede">
         依
         <a href="https://report.claire-cheng.com/#rec-1-2" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">2026-07 需求問卷</a>
-        中還沒做過專案的 {SURVEY_RESPONDENTS} 人排序 · 分類草稿，待社群討論 ·
-        <a href="https://g0v.hackmd.io/@jothon/civictech_doc" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">
-          來提意見
-        </a>
+        中還沒做過專案的 {SURVEY_RESPONDENTS} 人排序。分類還是草稿，
+        <a href="https://g0v.hackmd.io/@jothon/civictech_doc" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">歡迎來提意見</a>。
       </p>
     </div>
 
-    <div class="grid gap-3 lg:grid-cols-12">
+    <div class="stage-grow grid gap-3 lg:grid-cols-12">
       {[lead, second].map((c, i) => (
         <a
           href={`/c/${c.slug}`}

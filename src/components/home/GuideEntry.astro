@@ -7,15 +7,11 @@ import { getGuides } from "../../lib/guides";
 const { all, groups, featured } = await getGuides();
 ---
 
-<section id="know-how" class="py-16 sm:py-20 lg:py-24">
+<section id="know-how" class="home-section">
   <div class="wrap">
-    <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
-      <h2 class="m-0 max-w-[20ch] text-[1.7rem] font-semibold sm:text-[2.1rem]" style="color:var(--ink)">
-        知道怎麼做的人，寫下來了
-      </h2>
-      <p class="m-0 max-w-[40ch] text-sm" style="color:var(--ink-muted)">
-        做過專案的人整理的工具、方法與各領域資料。不知道從哪讀起，就從這三篇開始。
-      </p>
+    <div class="home-head">
+      <h2 class="home-title">知道怎麼做的人，寫下來了</h2>
+      <p class="home-lede">做過專案的人整理的工具、方法與各領域資料。不知道從哪讀起，就從這三篇開始。</p>
     </div>
 
     <div class="grid gap-3 md:grid-cols-3">

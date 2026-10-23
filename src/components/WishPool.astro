@@ -2,19 +2,29 @@
 // WishPool — 前端 JS 撈取 Google Sheet
 ---
 
-<section id="wish-pool" class="py-16 sm:py-20 lg:py-24">
-  <div class="wrap max-w-4xl">
-    <div class="mb-10">
-      <h2 class="m-0 max-w-[20ch] text-[1.7rem] font-semibold sm:text-[2.1rem]" style="color:var(--ink)">
-        想做但還沒有人做的事
-      </h2>
-      <p class="mb-0 mt-3 max-w-[48ch] text-[0.95rem] leading-relaxed" style="color:var(--ink-muted)">
-        寫下來，社群裡就有人看得到。送出後會先經過人工審核才會出現在下面。
-      </p>
+<section id="wish-pool" class="home-section">
+  <div class="wrap">
+    <div class="home-head">
+      <h2 class="home-title">想做但還沒有人做的事</h2>
+      <p class="home-lede">寫下來，社群裡就有人看得到。送出後會先經過人工審核，才會出現在左邊。</p>
     </div>
 
-    <!-- Form -->
-    <div class="mb-14 rounded-xl border p-6 sm:p-8" style="border-color:var(--line);background:var(--surface)">
+    <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] lg:gap-12">
+    <!-- 已經有人許過的願（左） -->
+    <div class="lg:order-1">
+      <h3 class="m-0 mb-4 text-sm font-semibold" style="color:var(--ink)">已經有人許過的願</h3>
+      <div id="js-wishes-loading" class="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-hidden="true">
+        <div class="h-[160px] animate-pulse rounded-[10px]" style="background:var(--surface-2)"></div>
+        <div class="h-[160px] animate-pulse rounded-[10px]" style="background:var(--surface-2)"></div>
+      </div>
+      <div id="js-wishes-container" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <!-- JS rendered -->
+      </div>
+    </div>
+
+    <!-- 許願表單（右） -->
+    <div class="rounded-[10px] border p-5 sm:p-6 lg:sticky lg:top-24 lg:order-2" style="border-color:var(--line);background:var(--surface)">
+      <h3 class="m-0 mb-5 text-sm font-semibold" style="color:var(--ink)">許一個願</h3>
       <form id="js-wish-form" class="space-y-5">
         <div>
           <label for="wish-q1" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
@@ -81,93 +91,35 @@
       </div>
     </div>
 
-    <!-- Display area -->
-    <div>
-      <h3 class="m-0 mb-6 text-base font-semibold" style="color:var(--ink)">已經有人許過的願</h3>
-      <div id="js-wishes-loading" class="grid grid-cols-1 gap-5 md:grid-cols-2" aria-hidden="true">
-        <div class="h-[180px] animate-pulse rounded-xl" style="background:var(--surface-2)"></div>
-        <div class="h-[180px] animate-pulse rounded-xl" style="background:var(--surface-2)"></div>
-      </div>
-      <div id="js-wishes-container" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <!-- JS rendered -->
-      </div>
     </div>
   </div>
 </section>
 
 <style is:global>
-  @reference "../styles/global.css";
-  .flip-card {
-    @apply bg-transparent cursor-pointer;
-    height: 300px;
-    perspective: 1000px;
-  }
-  .flip-card-inner {
-    @apply relative w-full h-full text-center rounded-2xl;
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    transform-style: preserve-3d;
-  }
-  .flip-card:hover .flip-card-inner,
-  .flip-card:focus .flip-card-inner {
-    transform: rotateY(180deg);
-  }
-  .flip-card-front, .flip-card-back {
-    @apply absolute inset-0 rounded-2xl p-6 flex flex-col justify-between items-center;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-  .flip-card-front {
+  /* 願望卡跟專案卡同一種長相：靠左、細框、圓角 10px。舊版的翻面卡把需求藏在背面，看不到就等於沒寫 */
+  .wish-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.1rem 1.2rem 1.15rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
     background: var(--surface);
-    color: var(--ink);
-    border: 1px solid var(--line);
   }
-  .flip-card-back {
-    @apply items-start text-left;
-    /* 背面用強調色淡底，翻過來一眼看得出是另一面，淺色深色都成立 */
-    color: var(--ink);
-    background: linear-gradient(140deg, var(--accent-soft) 0%, var(--surface-2) 100%);
-    border: 1px solid var(--line);
-    transform: rotateY(180deg);
-  }
-  .card-badge {
-    @apply self-end px-3 py-1 rounded-full text-xs font-medium;
+  .wish-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+  .wish-title { margin: 0; font-size: 1.02rem; font-weight: 600; line-height: 1.45; color: var(--ink); }
+  .wish-badge {
+    flex-shrink: 0;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
     background: var(--accent-soft);
     color: var(--accent-ink);
   }
-  .avatar-placeholder {
-    @apply w-14 h-14 rounded-full flex items-center justify-center text-2xl;
-    background: linear-gradient(135deg, var(--accent-fill), var(--c-health));
-  }
-  .card-wish-title {
-    @apply text-lg font-semibold my-2;
-    color: var(--ink);
-  }
-  .card-wish-desc {
-    @apply text-sm leading-relaxed text-center flex-1;
-    color: var(--ink-muted);
-  }
-  .back-title {
-    @apply text-base font-semibold mb-3 pb-2.5 w-full;
-    color: var(--accent-ink);
-    border-bottom: 1px solid var(--line-strong);
-  }
-  .back-content {
-    @apply text-sm leading-relaxed flex-1;
-  }
-  .back-content p {
-    @apply mb-2.5;
-  }
-  .back-content strong {
-    color: var(--accent-ink);
-  }
-  .flip-hint {
-    @apply text-xs;
-    color: var(--ink-muted);
-  }
-  .flip-hint-back {
-    @apply text-xs self-center;
-    color: var(--ink-muted);
-  }
+  .wish-desc { margin: 0; font-size: 0.88rem; line-height: 1.7; color: var(--ink-2); }
+  .wish-meta { display: grid; gap: 0.45rem; margin: 0.2rem 0 0; padding-top: 0.7rem; border-top: 1px solid var(--line); }
+  .wish-meta dt { font-size: 0.72rem; color: var(--ink-muted); }
+  .wish-meta dd { margin: 0.1rem 0 0; font-size: 0.84rem; line-height: 1.65; color: var(--ink-muted); }
 </style>
 
 <script>
@@ -235,26 +187,17 @@
       }
 
       container.innerHTML = wishes.map(wish => `
-        <div class="flip-card" tabindex="0">
-          <div class="flip-card-inner">
-            <div class="flip-card-front">
-              <div class="card-badge">${escapeHTML(wish.progress)}</div>
-              <div class="avatar-placeholder" aria-hidden="true"></div>
-              <h4 class="card-wish-title">${escapeHTML(wish.title)}</h4>
-              <p class="card-wish-desc">${escapeHTML(wish.description)}</p>
-              <div class="flip-hint">翻面看它需要什麼</div>
-            </div>
-            <div class="flip-card-back">
-              <h4 class="back-title">專案需求詳情</h4>
-              <div class="back-content">
-                <p><strong>現況痛點：</strong>${escapeHTML(wish.painPoint)}</p>
-                <p><strong>極需支援：</strong>${escapeHTML(wish.superpower)}</p>
-                <p><strong>目前進度：</strong>${escapeHTML(wish.progress)}</p>
-              </div>
-              <div class="flip-hint-back">🔄 移開或再次點擊翻回</div>
-            </div>
+        <article class="wish-card">
+          <div class="wish-top">
+            <h4 class="wish-title">${escapeHTML(wish.title)}</h4>
+            ${wish.progress ? `<span class="wish-badge">${escapeHTML(wish.progress)}</span>` : ''}
           </div>
-        </div>
+          <p class="wish-desc">${escapeHTML(wish.description)}</p>
+          <dl class="wish-meta">
+            ${wish.painPoint ? `<div><dt>現在的問題</dt><dd>${escapeHTML(wish.painPoint)}</dd></div>` : ''}
+            ${wish.superpower ? `<div><dt>需要的人</dt><dd>${escapeHTML(wish.superpower)}</dd></div>` : ''}
+          </dl>
+        </article>
       `).join('');
     } catch (err) {
       console.error(err);

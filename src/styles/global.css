@@ -193,6 +193,53 @@ html[data-theme="dark"] {
     background: color-mix(in srgb, var(--accent-fill) 85%, black);
   }
 
+  /* 首頁的區塊：一律全寬細線開頭、大留白，靠距離分段而不是靠底色（10/09 拿掉交替底色後的做法）。
+     標題在左、說明在右對角，每一區同一個開頭，看得出一段從哪裡開始。 */
+  .home-section {
+    border-top: 1px solid var(--line);
+    padding-block: clamp(4.5rem, 10vw, 8.5rem);
+  }
+  .home-head {
+    display: grid;
+    gap: 1rem 3rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  @media (min-width: 768px) {
+    .home-head { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); align-items: end; }
+  }
+  .home-title {
+    margin: 0;
+    max-width: 16ch;
+    font-size: clamp(1.9rem, 4.2vw, 3rem);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+  .home-lede {
+    margin: 0;
+    max-width: 38ch;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--ink-muted);
+  }
+  @media (min-width: 768px) { .home-lede { justify-self: end; } }
+
+  /* 跟著捲動長大的舞台：進場時從略小、略淡長到滿版（antigravity 首頁影片卡的做法）。
+     動畫綁捲動位置而不是時間，捲回去就縮回去；不支援的瀏覽器與減少動態的使用者看到的就是最終狀態 */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .stage-grow {
+        animation: stage-grow linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 30%;
+      }
+    }
+  }
+  @keyframes stage-grow {
+    from { transform: scale(0.94); opacity: 0.35; }
+    to { transform: none; opacity: 1; }
+  }
+
   /* 角落滑入的邀請卡（問卷、活動） */
   .popup-card {
     background: var(--surface);
