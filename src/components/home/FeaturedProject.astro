@@ -8,7 +8,8 @@ import { categoryBySlug } from "../../data/categories";
 const blurb = (p: (typeof featurePool)[number]) => {
   const line = (label: string) => p.aiInsight?.find((l) => l.label === label)?.text;
   const what = line("做什麼");
-  const text = what ? [what, line("給誰、解決什麼")].filter(Boolean).join("。") : p.intro!;
+  const who = line("給誰、解決什麼");
+  const text = what ? (who ? `${what}。給${who}` : what) : p.intro!;
   return text.length > 96 ? text.slice(0, 96) + "⋯" : text;
 };
 const pool = featurePool.map((p) => ({

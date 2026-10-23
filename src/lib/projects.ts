@@ -213,6 +213,8 @@ export const stats = {
   total: allProjects.length,
   listed: listedProjects.length,
   withIntro: allProjects.filter((p) => p.intro).length,
+  /** 有一句話可以介紹的：AI insight 的「做什麼」或 Intro，兩者有一就算 */
+  withSummary: allProjects.filter((p) => p.summary).length,
   withLink: allProjects.filter((p) => p.links.length > 0).length,
   featurePool: featurePool.length,
 };

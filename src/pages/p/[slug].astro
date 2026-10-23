@@ -23,14 +23,13 @@ const editUrl = editPath(project.slug);
 // 「做什麼」放到標題下當導言，其餘幾行排在內文；專案自己寫的 Intro 收進「專案自述」
 const lede = project.aiInsight?.find((l) => l.label === "做什麼")?.text;
 const details = (project.aiInsight ?? []).filter((l) => l.label !== "做什麼");
+// 有 Slack 頻道的，「討論在哪裡」那行可以點：問使用者要看封存的過去討論，還是去加入 g0v Slack。
+// insight 沒寫討論管道、但資料庫有頻道時，補一行
+if (project.slack && !details.some((l) => l.label === "討論在哪裡")) {
+  details.push({ label: "討論在哪裡", text: `g0v Slack #${project.slack.name}` });
+}
 
-// Slack 頻道跟其他連結排在同一列：封存站的頻道頁（免登入就能看），加上加入 g0v Slack 的入口。
-// 封存站對不到這個頻道時只給加入連結，不放壞連結。
-const links = [
-  ...project.links,
-  ...(project.slack?.archiveUrl ? [{ label: `Slack #${project.slack.name}`, url: project.slack.archiveUrl }] : []),
-  ...(project.slack ? [{ label: "加入 g0v Slack", url: "https://join.g0v.tw/" }] : []),
-];
+const links = project.links;
 
 const description =
   project.summary?.slice(0, 120) ??
@@ -85,7 +84,23 @@ const jsonLd = {
             {details.map((l) => (
               <div class="grid gap-1 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-5">
                 <dt class="text-xs sm:pt-1" style="color:var(--ink-muted)">{l.label}</dt>
-                <dd class="m-0 text-[1rem] leading-[1.75] [overflow-wrap:anywhere]" style="color:var(--ink-2)">{l.text}</dd>
+                <dd class="m-0 text-[1rem] leading-[1.75] [overflow-wrap:anywhere]" style="color:var(--ink-2)">
+                  {l.label === "討論在哪裡" && project.slack ? (
+                    <details class="slack-pick relative">
+                      <summary class="cursor-pointer underline decoration-dotted underline-offset-4" style="color:var(--ink-2)">{l.text}</summary>
+                      <div class="slack-menu absolute left-0 top-full z-10 mt-2 grid min-w-[15rem] gap-1 rounded-lg border p-2 text-sm" style="border-color:var(--line);background:var(--surface)">
+                        {project.slack.archiveUrl && (
+                          <a href={project.slack.archiveUrl} target="_blank" rel="noopener noreferrer" class="rounded-md px-3 py-2 no-underline" style="color:var(--ink)">
+                            看過去的討論<span class="block text-xs" style="color:var(--ink-muted)">#{project.slack.name} 的封存，免登入</span>
+                          </a>
+                        )}
+                        <a href="https://join.g0v.tw/" target="_blank" rel="noopener noreferrer" class="rounded-md px-3 py-2 no-underline" style="color:var(--ink)">
+                          加入 g0v Slack<span class="block text-xs" style="color:var(--ink-muted)">加入後搜尋 #{project.slack.name}</span>
+                        </a>
+                      </div>
+                    </details>
+                  ) : l.text}
+                </dd>
               </div>
             ))}
           </dl>
@@ -182,3 +197,9 @@ const jsonLd = {
     )}
   </article>
 </Base>
+
+<style>
+  .slack-pick > summary { list-style: none; display: inline; }
+  .slack-pick > summary::-webkit-details-marker { display: none; }
+  .slack-menu a:hover { background: var(--surface-2); }
+</style>
