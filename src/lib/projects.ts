@@ -37,6 +37,8 @@ export interface Project {
   aiInsight?: { label: string; text: string }[];
   aiInsightSources: string[];
   aiInsightDate?: string;
+  /** 卡片與摘要用的一句話：優先用 insight 的「做什麼」，沒有才退回 Intro */
+  summary?: string;
 }
 
 const BARE_URL = /^https?:\/\/\S+$/;
@@ -132,6 +134,7 @@ export const allProjects: Project[] = (raw.records as AirtableRecord[])
     seen.set(slug, dupe + 1);
     if (dupe > 0) slug = `${slug}-${dupe + 1}`;
 
+    const aiInsight = parseInsight(f["AI insight"]);
     const website = cleanUrl(f["Website URL"]) ?? (introIsBareUrl ? introRaw : undefined);
     const github = cleanUrl(f.github);
     const document = cleanUrl(f.document);
@@ -160,9 +163,10 @@ export const allProjects: Project[] = (raw.records as AirtableRecord[])
       category,
       categoryCurated,
       links,
-      aiInsight: parseInsight(f["AI insight"]),
+      aiInsight,
       aiInsightSources: parseSources(f["AI insight sources"]),
       aiInsightDate: clean(f["AI insight generated"]),
+      summary: aiInsight?.find((l) => l.label === "做什麼")?.text ?? (introIsBareUrl ? undefined : introRaw),
     };
   })
   .filter((p) => p.name.length > 0);
