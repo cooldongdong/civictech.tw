@@ -7,6 +7,7 @@
 // 這些缺口不藏起來，頁面上會直接講「這一欄還沒人填」。
 
 import raw from "../data/projects.json";
+import slackIds from "../data/slack-channels.json";
 import { byImpactCategory, overrides } from "../data/classification";
 import type { CategorySlug } from "../data/categories";
 
@@ -39,7 +40,11 @@ export interface Project {
   aiInsightDate?: string;
   /** 卡片與摘要用的一句話：優先用 insight 的「做什麼」，沒有才退回 Intro */
   summary?: string;
+  /** g0v Slack 頻道。archiveUrl 是封存站的頻道頁；對不到 ID 時沒有（只給加入連結） */
+  slack?: { name: string; archiveUrl?: string };
 }
+
+const SLACK_ARCHIVE = "https://g0v-slack-archive.g0v.ronny.tw/index/channel/";
 
 const BARE_URL = /^https?:\/\/\S+$/;
 
@@ -55,6 +60,14 @@ function parseInsight(v: unknown): { label: string; text: string }[] | undefined
     .map((m) => ({ label: m[1].trim(), text: m[2].trim() }))
     .filter((l) => !/^不明$|（詳細內容不明）$|^詳細內容不明$/.test(l.text));
   return lines.length > 0 ? lines : undefined;
+}
+
+// 資料庫的頻道欄是人手填的：有人帶 #、有人尾巴多一個 |
+function slackOf(v: unknown): Project["slack"] {
+  const name = clean(typeof v === "string" ? v.replace(/[#|]/g, "") : v);
+  if (!name) return undefined;
+  const id = (slackIds as Record<string, string | null>)[name];
+  return { name, archiveUrl: id ? SLACK_ARCHIVE + id : undefined };
 }
 
 // 來源欄一行一個網址，少數後面帶著說明（例如「（2019-02-01 快照）」），只留網址本身
@@ -166,6 +179,7 @@ export const allProjects: Project[] = (raw.records as AirtableRecord[])
       aiInsight,
       aiInsightSources: parseSources(f["AI insight sources"]),
       aiInsightDate: clean(f["AI insight generated"]),
+      slack: slackOf(f["slack channel"]),
       summary: aiInsight?.find((l) => l.label === "做什麼")?.text ?? (introIsBareUrl ? undefined : introRaw),
     };
   })

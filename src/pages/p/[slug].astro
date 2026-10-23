@@ -102,7 +102,7 @@ const jsonLd = {
           </div>
         )}
 
-        {project.links.length > 0 && (
+        {(project.links.length > 0 || project.slack) && (
           <div class="mt-8">
             <h2 class="m-0 mb-3 text-sm font-semibold" style="color:var(--ink)">相關連結</h2>
             <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
@@ -124,6 +124,15 @@ const jsonLd = {
                 </li>
               ))}
             </ul>
+            {project.slack && (
+              <p class="mb-0 mt-3 text-sm" style="color:var(--ink-muted)">
+                g0v Slack <span style="color:var(--ink-2)">#{project.slack.name}</span>：
+                {project.slack.archiveUrl && (
+                  <><a href={project.slack.archiveUrl} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">看過去的討論</a>（免登入）・</>
+                )}
+                <a href="https://join.g0v.tw/" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">加入 g0v Slack</a>
+              </p>
+            )}
           </div>
         )}
       </div>
