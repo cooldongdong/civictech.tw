@@ -61,13 +61,12 @@ const crossTopics = new Set(links.flatMap((l) => [dots.find((d) => d.slug === l.
     align-items: center;
   }
   @media (min-width: 1024px) {
-    .graph-stage { grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.55fr); }
+    .graph-stage { grid-template-columns: minmax(0, 1.7fr) minmax(0, 0.5fr); }
   }
   .graph {
     display: block;
     width: 100%;
     height: auto;
-    max-height: 80vh;
   }
   .links path {
     fill: none;
@@ -79,7 +78,7 @@ const crossTopics = new Set(links.flatMap((l) => [dots.find((d) => d.slug === l.
   .hub { fill: var(--surface); stroke: var(--line-strong); }
   .hub-text { font-size: 13px; fill: var(--ink-2); font-weight: 600; }
   .topic text {
-    font-size: 13px;
+    font-size: 15px;
     fill: var(--ink-muted);
     transition: fill 0.2s ease;
   }
