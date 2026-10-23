@@ -5,6 +5,8 @@
 import { topicGraph } from "../../lib/homeviz";
 
 const SIZE = 760;
+// 議題名稱排在圓外，左右各留一段空間給字，免得被裁掉或壓到旁邊的說明欄
+const PAD = 150;
 const { cx, cy, topics, dots, links } = topicGraph(SIZE);
 const linkCount = (slug: string) => links.filter((l) => l.a === slug || l.b === slug).length;
 const crossTopics = new Set(links.flatMap((l) => [dots.find((d) => d.slug === l.a)!.topic, dots.find((d) => d.slug === l.b)!.topic])).size;
@@ -21,7 +23,7 @@ const crossTopics = new Set(links.flatMap((l) => [dots.find((d) => d.slug === l.
     </div>
 
     <div class="stage graph-stage" data-graph>
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} class="graph" role="img" aria-label="議題與專案的關係圖；同樣的專案清單在各議題頁裡">
+      <svg viewBox={`${-PAD} -20 ${SIZE + PAD * 2} ${SIZE + 40}`} class="graph" role="img" aria-label="議題與專案的關係圖；同樣的專案清單在各議題頁裡">
         <g class="links">
           {links.map((l) => (
             <path d={l.d} data-a={l.a} data-b={l.b} />
@@ -65,8 +67,7 @@ const crossTopics = new Set(links.flatMap((l) => [dots.find((d) => d.slug === l.
     display: block;
     width: 100%;
     height: auto;
-    max-height: 78vh;
-    overflow: visible;
+    max-height: 80vh;
   }
   .links path {
     fill: none;
