@@ -273,7 +273,9 @@ export interface LifeStep {
 export function projectLife(name: string): { project: Project; steps: LifeStep[] } | undefined {
   const p = listedProjects.find((x) => x.name === name);
   if (!p) return undefined;
-  const mine = talks.filter((t) => matchProject(t)?.slug === p.slug).sort((a, b) => a.date.localeCompare(b.date, "en", { numeric: true }));
+  // 提案名稱常帶副標（「阿美語萌典(O citing no AMIS)」「阿美語萌典2015年」），開頭對得上也算
+  const key = norm(p.name);
+  const mine = talks.filter((t) => matchProject(t)?.slug === p.slug || norm(t.name).startsWith(key)).sort((a, b) => a.date.localeCompare(b.date, "en", { numeric: true }));
   const steps: LifeStep[] = [];
   const first = mine[0];
   if (first) {
