@@ -20,7 +20,7 @@ const siblings = projectsByCategory(project.category)
 // 修改建議走站內的編輯頁：表單預填目前的值，比直接丟一張空白的 GitHub issue 好改
 const editUrl = editPath(project.slug);
 
-// 「做什麼」放到標題下當導言，其餘幾行排在內文；兩者都是 AI insight，標示在下方一併交代
+// 「做什麼」放到標題下當導言，其餘幾行排在內文；專案自己寫的 Intro 收進「專案自述」
 const lede = project.aiInsight?.find((l) => l.label === "做什麼")?.text;
 const details = (project.aiInsight ?? []).filter((l) => l.label !== "做什麼");
 
@@ -82,25 +82,12 @@ const jsonLd = {
             ))}
           </dl>
         )}
-        {project.aiInsight && (
-          <details class="mt-4 max-w-[62ch] text-xs" style="color:var(--ink-muted)">
-            <summary class="cursor-pointer">
-              {lede ? "標題下這句和上面幾行" : "上面幾行"}由 AI 讀過專案資料後整理{project.aiInsightDate && <>（{project.aiInsightDate}）</>}，可能有錯或過時
-            </summary>
-            {project.aiInsightSources.length > 0 && (
-              <ul class="mb-0 mt-2 grid list-none gap-1 p-0">
-                {project.aiInsightSources.map((u) => (
-                  <li class="[overflow-wrap:anywhere]"><a href={u} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">{u}</a></li>
-                ))}
-              </ul>
-            )}
+        {project.intro && project.aiInsight ? (
+          <details class="mt-8 max-w-[62ch]">
+            <summary class="cursor-pointer text-sm font-semibold" style="color:var(--ink)">專案自述</summary>
+            <p class="mb-0 mt-3 text-[1.05rem] leading-[1.9] [overflow-wrap:anywhere]" style="color:var(--ink-2)">{project.intro}</p>
           </details>
-        )}
-
-        {project.intro && project.aiInsight && (
-          <h2 class="m-0 mb-3 mt-10 text-sm font-semibold" style="color:var(--ink)">專案自述</h2>
-        )}
-        {project.intro ? (
+        ) : project.intro ? (
           <p class="m-0 max-w-[62ch] text-[1.05rem] leading-[1.9] [overflow-wrap:anywhere]" style="color:var(--ink-2)">{project.intro}</p>
         ) : project.aiInsight ? null : (
           <div class="rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
