@@ -87,7 +87,10 @@ const jsonLd = {
                 <dd class="m-0 text-[1rem] leading-[1.75] [overflow-wrap:anywhere]" style="color:var(--ink-2)">
                   {l.label === "討論在哪裡" && project.slack ? (
                     <details class="slack-pick relative">
-                      <summary class="cursor-pointer underline decoration-dotted underline-offset-4" style="color:var(--ink-2)">{l.text}</summary>
+                      <summary class="slack-trigger cursor-pointer" style="color:var(--accent)">
+                        {l.text}
+                        <svg class="slack-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+                      </summary>
                       <div class="slack-menu absolute left-0 top-full z-10 mt-2 grid min-w-[15rem] gap-1 rounded-lg border p-2 text-sm" style="border-color:var(--line);background:var(--surface)">
                         {project.slack.archiveUrl && (
                           <a href={project.slack.archiveUrl} target="_blank" rel="noopener noreferrer" class="rounded-md px-3 py-2 no-underline" style="color:var(--ink)">
@@ -199,7 +202,19 @@ const jsonLd = {
 </Base>
 
 <style>
-  .slack-pick > summary { list-style: none; display: inline; }
+  .slack-pick > summary { list-style: none; display: inline-flex; align-items: center; gap: 0.35rem; }
   .slack-pick > summary::-webkit-details-marker { display: none; }
+  .slack-trigger:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .slack-chev { transition: transform 0.2s ease; }
+  .slack-pick[open] .slack-chev { transform: rotate(180deg); }
+  .slack-menu { box-shadow: 0 10px 30px rgb(0 0 0 / 0.25); }
   .slack-menu a:hover { background: var(--surface-2); }
 </style>
+
+<script>
+  // 二級選單：點選單外面或按 Esc 就收起來（<details> 本身不會）
+  const closeAll = (except?: Element) =>
+    document.querySelectorAll<HTMLDetailsElement>("details.slack-pick[open]").forEach((d) => d !== except && (d.open = false));
+  document.addEventListener("click", (e) => closeAll((e.target as Element).closest("details.slack-pick") ?? undefined));
+  document.addEventListener("keydown", (e) => e.key === "Escape" && closeAll());
+</script>
