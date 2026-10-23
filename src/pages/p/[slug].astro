@@ -65,9 +65,39 @@ const jsonLd = {
 
     <div class="wrap mt-9 grid gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-14">
       <div>
+        {project.aiInsight && (
+          <section aria-labelledby="ai-insight" class="mb-8 max-w-[62ch] rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
+            <h2 id="ai-insight" class="m-0 mb-4 text-sm font-semibold" style="color:var(--ink)">一眼看懂</h2>
+            <dl class="m-0 grid gap-3">
+              {project.aiInsight.map((l) => (
+                <div class="grid gap-1 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-4">
+                  <dt class="text-xs sm:pt-1" style="color:var(--ink-muted)">{l.label}</dt>
+                  <dd class="m-0 text-[0.98rem] leading-[1.75] [overflow-wrap:anywhere]" style="color:var(--ink-2)">{l.text}</dd>
+                </div>
+              ))}
+            </dl>
+            <div class="mt-4 text-xs" style="color:var(--ink-muted)">
+              由 AI 讀過專案的網站、共筆與討論後整理{project.aiInsightDate && <>（{project.aiInsightDate}）</>}，可能有錯或過時。
+              {project.aiInsightSources.length > 0 && (
+                <details class="mt-2">
+                  <summary class="cursor-pointer">看它讀了哪些資料（{project.aiInsightSources.length}）</summary>
+                  <ul class="mb-0 mt-2 grid list-none gap-1 p-0">
+                    {project.aiInsightSources.map((u) => (
+                      <li class="[overflow-wrap:anywhere]"><a href={u} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">{u}</a></li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
+          </section>
+        )}
+
+        {project.intro && project.aiInsight && (
+          <h2 class="m-0 mb-3 text-sm font-semibold" style="color:var(--ink)">專案自述</h2>
+        )}
         {project.intro ? (
           <p class="m-0 max-w-[62ch] text-[1.05rem] leading-[1.9] [overflow-wrap:anywhere]" style="color:var(--ink-2)">{project.intro}</p>
-        ) : (
+        ) : project.aiInsight ? null : (
           <div class="rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
             <p class="m-0 text-[0.95rem]" style="color:var(--ink-muted)">
               這個專案還沒有人寫介紹。

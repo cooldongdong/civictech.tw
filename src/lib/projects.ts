@@ -33,9 +33,35 @@ export interface Project {
   /** 這一筆的分類是人工指定的（而不是規則推的） */
   categoryCurated: boolean;
   links: { label: string; url: string }[];
+  /** AI 整理的四行介紹（做什麼／給誰／怎麼運作／討論在哪裡）。寫「不明」的那幾行不放進來——頁面上不顯示空格子 */
+  aiInsight?: { label: string; text: string }[];
+  aiInsightSources: string[];
+  aiInsightDate?: string;
 }
 
 const BARE_URL = /^https?:\/\/\S+$/;
+
+// Airtable 的「AI insight」欄是固定四行「標籤：內容」。
+// 「不明」是規格要求的誠實空格，對讀者沒有資訊量，所以整行拿掉；四行都不明就當作沒有。
+function parseInsight(v: unknown): { label: string; text: string }[] | undefined {
+  const s = clean(v);
+  if (!s) return undefined;
+  const lines = s
+    .split(/\n+/)
+    .map((l) => l.match(/^([^：]+)：(.+)$/))
+    .filter((m): m is RegExpMatchArray => !!m)
+    .map((m) => ({ label: m[1].trim(), text: m[2].trim() }))
+    .filter((l) => !/^不明$|（詳細內容不明）$|^詳細內容不明$/.test(l.text));
+  return lines.length > 0 ? lines : undefined;
+}
+
+// 來源欄一行一個網址，少數後面帶著說明（例如「（2019-02-01 快照）」），只留網址本身
+function parseSources(v: unknown): string[] {
+  return (clean(v) ?? "")
+    .split(/\n+/)
+    .map((l) => l.match(/https?:\/\/[^\s（）()]+/)?.[0])
+    .filter((u): u is string => !!u);
+}
 
 function clean(v: unknown): string | undefined {
   if (typeof v !== "string") return undefined;
@@ -134,6 +160,9 @@ export const allProjects: Project[] = (raw.records as AirtableRecord[])
       category,
       categoryCurated,
       links,
+      aiInsight: parseInsight(f["AI insight"]),
+      aiInsightSources: parseSources(f["AI insight sources"]),
+      aiInsightDate: clean(f["AI insight generated"]),
     };
   })
   .filter((p) => p.name.length > 0);
