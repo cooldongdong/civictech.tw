@@ -1,0 +1,38 @@
+---
+import Base from "../../../layouts/Base.astro";
+import ProjectEditForm from "../../../components/ProjectEditForm.astro";
+import { listedProjects } from "../../../lib/projects";
+import { suggestEditEnabled } from "../../../lib/suggest";
+import raw from "../../../data/projects.json";
+
+// 修改建議關掉時連頁面都不產生，正式站不會多出一批送不出去的表單
+export function getStaticPaths() {
+  if (!suggestEditEnabled) return [];
+  return listedProjects.map((p) => ({ params: { slug: p.slug }, props: { project: p } }));
+}
+
+const { project } = Astro.props;
+
+// 預填 Airtable 的原值，不用網站清理過的：例如簡介只貼了一個網址時，網站會把它挪去當官網，
+// 拿清理過的值預填，使用者什麼都沒動也會被當成「改了」
+const f = (raw.records as { id: string; fields: Record<string, any> }[]).find((r) => r.id === project.id)!.fields;
+const text = (k: string) => (typeof f[k] === "string" ? f[k] : undefined);
+const values = {
+  name: text("project name"),
+  name_en: text("project name EN"),
+  intro: text("Intro"),
+  website: text("Website URL"),
+  github: text("github"),
+  document: text("document"),
+  facebook: text("Facebook Page Link"),
+};
+---
+
+<Base title={`修改：${project.name}｜台灣公民科技資料庫`} description={`建議修改「${project.name}」的資料`} noindex>
+  <article class="wrap pt-28 pb-20 sm:pt-32">
+    <a href={`/p/${project.slug}`} class="text-sm no-underline" style="color:var(--accent)">← 回到專案頁</a>
+    <h1 class="mt-5 text-[1.6rem] font-semibold leading-tight sm:text-[2rem]" style="color:var(--ink)">建議修改</h1>
+    <p class="mb-8 mt-2 text-base [overflow-wrap:anywhere]" style="color:var(--ink-muted)">{project.name}</p>
+    <ProjectEditForm projectId={project.id} label={project.name} values={values} />
+  </article>
+</Base>

@@ -1,0 +1,160 @@
+---
+// 專案的修改表單。送出時不直接改資料：組好一張 GitHub issue（欄位預先填好），
+// 由 civictech-tw-data 的 workflow 轉成 PR、管理員合併後寫回 Airtable。沒有 GitHub 帳號的人改用 email。
+// 作法照搬 g0v/community-calendar 的 EventForm.astro。
+//
+// 欄位的 id 必須跟 civictech-tw-data/.github/ISSUE_TEMPLATE/edit-project.yml 的 id 一致，
+// GitHub 才會照網址參數預填；對不上的參數會被靜靜忽略。
+import { CONTACT_EMAIL, SUGGEST_REPO } from "../lib/suggest";
+
+interface Props {
+  projectId: string;
+  /** issue 標題與信件主旨用 */
+  label: string;
+  /** 預填的值：Airtable 的原值，不是網站清理過的 */
+  values: Record<string, string | undefined>;
+}
+const { projectId, label, values } = Astro.props;
+const v = (k: string) => values[k]?.trim() ?? "";
+
+const fields: { id: string; label: string; type?: string; hint?: string; wide?: boolean; rows?: number }[] = [
+  { id: "name", label: "專案名稱", hint: "改名會連帶改到專案頁的網址" },
+  { id: "name_en", label: "英文名稱", hint: "改名會連帶改到專案頁的網址" },
+  { id: "intro", label: "簡介", wide: true, rows: 5, hint: "這個專案在做什麼、解決誰的什麼問題。兩三句就好" },
+  { id: "website", label: "官方網站", type: "url" },
+  { id: "github", label: "原始碼", type: "url", hint: "改了也會連帶改到專案頁的網址" },
+  { id: "document", label: "專案文件", type: "url", hint: "共筆、簡報或說明文件" },
+  { id: "facebook", label: "Facebook", type: "url" },
+];
+---
+<form class="edit-form" data-project-id={projectId} data-label={label} data-repo={SUGGEST_REPO} data-email={CONTACT_EMAIL}>
+  <div class="grid">
+    {fields.map((f) => (
+      <label class:list={["field", { wide: f.wide }]}>
+        <span class="l">{f.label}</span>
+        {f.rows
+          ? <textarea name={f.id} rows={f.rows} data-initial={v(f.id)} data-label={f.label}>{v(f.id)}</textarea>
+          : <input name={f.id} type={f.type ?? "text"} value={v(f.id)} data-initial={v(f.id)} data-label={f.label} />}
+        {f.hint && <span class="hint">{f.hint}</span>}
+      </label>
+    ))}
+    <label class="field wide">
+      <span class="l">為什麼要改<span class="req">必填</span></span>
+      <textarea name="reason" rows="3" required placeholder="例如「官網搬家了」，附上來源連結更好"></textarea>
+    </label>
+  </div>
+
+  <p class="err" data-err hidden></p>
+  <div class="actions">
+    <button class="btn primary" type="submit">到 GitHub 送出</button>
+    <a class="btn" href="#" data-mail>沒有 GitHub 帳號？寄信給揪松團</a>
+  </div>
+  <p class="small">
+    「到 GitHub 送出」會打開一張填好的 issue，按下 Submit 之後會自動開 PR，管理員看過後合併，隔天就會更新到網站上。
+    需要 <a href="https://github.com/signup" target="_blank" rel="noopener noreferrer">GitHub 帳號</a>（免費）。
+    不想註冊的話，寄信也可以：信會幫你寫好，揪松團收到後點信裡的連結就能代你送出。
+  </p>
+  <p class="small">
+    清空一個欄位目前做不到（留空等於不改）。想刪掉錯的內容，請在「為什麼要改」裡寫明，管理員會處理。
+  </p>
+</form>
+
+<script>
+  for (const form of document.querySelectorAll<HTMLFormElement>(".edit-form")) {
+    const err = form.querySelector<HTMLElement>("[data-err]")!;
+    const inputs = () => [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input[name], textarea[name]")];
+
+    // 只送有改的欄位，管理員一眼就看得出改了什麼。留空等於不改：清空欄位這一版不支援
+    const collect = () => {
+      const out: Record<string, string> = {};
+      for (const el of inputs()) {
+        const v = el.value.trim();
+        if (el.name === "reason") { if (v) out.reason = v; continue; }
+        if (v && v !== (el.dataset.initial ?? "")) out[el.name] = v;
+      }
+      return out;
+    };
+    const check = (f: Record<string, string>) => {
+      if (Object.keys(f).filter((k) => k !== "reason").length === 0) return "沒有改到任何欄位。";
+      const bad = inputs().find((el) => el.type === "url" && f[el.name] && !/^https?:\/\/\S+$/.test(f[el.name]));
+      if (bad) return `「${bad.dataset.label}」要以 http:// 或 https:// 開頭。`;
+      if (!f.reason) return "請寫一下為什麼要改。";
+      return null;
+    };
+    const validate = () => {
+      const f = collect();
+      const problem = check(f);
+      err.hidden = !problem;
+      err.textContent = problem ?? "";
+      return problem ? null : f;
+    };
+
+    // 送出用的 issue 網址：欄位都預先填好。寄信時也附上同一個網址，揪松團的人點了就能代為送出
+    const issueUrl = (f: Record<string, string>, viaEmail = false) => {
+      const q = new URLSearchParams({
+        template: "edit-project.yml",
+        title: `修改：${form.dataset.label}`,
+        project_id: form.dataset.projectId!,
+      });
+      for (const [k, v] of Object.entries(f)) q.set(k, v);
+      if (viaEmail) q.set("reason", `（來信轉交）${f.reason}`);
+      return `${form.dataset.repo}/issues/new?${q}`;
+    };
+
+    form.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const f = validate();
+      if (f) window.open(issueUrl(f), "_blank", "noopener");
+    });
+
+    // 寄信：寫法比照 PR——哪一個專案、每個欄位從什麼改成什麼、理由——最後附上預先填好的 issue 連結
+    form.querySelector<HTMLAnchorElement>("[data-mail]")!.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      const f = validate();
+      if (!f) return;
+      const byName = Object.fromEntries(inputs().map((el) => [el.name, el]));
+      const changed = Object.entries(f).filter(([k]) => k !== "reason");
+      const body = [
+        "我想修改台灣公民科技資料庫（civictech.tw）上的這個專案：",
+        `${form.dataset.label}\n${location.href.replace(/\/edit\/?(\?.*)?$/, "")}`,
+        "",
+        "要改的地方（現在 → 改成）：",
+        ...changed.map(([k, v]) => `・${byName[k].dataset.label}：${byName[k].dataset.initial || "（空）"} → ${v}`),
+        "",
+        `為什麼要改：${f.reason}`,
+        "",
+        "――――",
+        "給揪松團：點下面的連結，GitHub 上的表單已經照這封信填好，確認後按 Submit 就會自動開 PR。",
+        issueUrl(f, true),
+      ].join("\n");
+      const subject = `［civictech.tw］修改專案：${form.dataset.label}`;
+      location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    });
+  }
+</script>
+
+<style>
+  .grid { display: grid; gap: 18px; }
+  @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } .wide { grid-column: 1 / -1; } }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .l { font-size: .875rem; font-weight: 600; color: var(--ink); }
+  .req { margin-left: 6px; font-size: .75rem; font-weight: 500; color: var(--accent); }
+  input, textarea {
+    width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line-strong);
+    background: var(--surface); color: var(--ink); font: inherit; font-size: .95rem; line-height: 1.6;
+  }
+  textarea { resize: vertical; }
+  input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+  .hint { font-size: .8rem; color: var(--ink-muted); }
+  .err { color: var(--gap); margin: 16px 0 0; font-size: .9rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .btn {
+    display: inline-flex; align-items: center; min-height: 42px; padding: 0 16px; border-radius: 8px;
+    border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font: inherit; font-size: .9rem;
+    text-decoration: none; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--ink-muted); }
+  .btn.primary { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent); }
+  .small { font-size: .85rem; margin: 12px 0 0; max-width: 44rem; color: var(--ink-muted); }
+  .small a { color: var(--accent); }
+</style>

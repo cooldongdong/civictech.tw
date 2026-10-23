@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import ProjectCard from "../../components/ProjectCard.astro";
 import { listedProjects, projectsByCategory } from "../../lib/projects";
 import { categoryBySlug } from "../../data/categories";
-import { suggestEditEnabled, suggestUrl as formUrl } from "../../lib/suggest";
+import { editPath, suggestEditEnabled } from "../../lib/suggest";
 
 export function getStaticPaths() {
   return listedProjects.map((p) => ({ params: { slug: p.slug }, props: { project: p } }));
@@ -17,9 +17,8 @@ const siblings = projectsByCategory(project.category)
   .filter((p) => p.slug !== project.slug && p.intro)
   .slice(0, 3);
 
-// 修改建議表單預填「對應專案」，填的人不用自己找是哪一筆。
-// 刻意不藏起來：一次想改好幾個專案的人，要在表單上看得到現在這張是在講哪一個。
-const suggestUrl = (field?: string) => formUrl({ projectId: project.id, field });
+// 修改建議走站內的編輯頁：表單預填目前的值，比直接丟一張空白的 GitHub issue 好改
+const editUrl = editPath(project.slug);
 
 const description =
   project.intro?.slice(0, 120) ??
@@ -75,7 +74,7 @@ const jsonLd = {
               {project.links.length > 0 ? "下面的連結是目前資料庫裡有的全部。" : "資料庫裡目前只有它的名字。"}
             </p>
             <p class="mb-0 mt-3 text-sm" style="color:var(--ink-muted)">
-              你認識這個專案嗎？{suggestEditEnabled && <><a href={suggestUrl("簡介")} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">幫它補一句話</a>，或</>}
+              你認識這個專案嗎？{suggestEditEnabled && <><a href={editUrl} style="color:var(--accent)">幫它補一句話</a>，或</>}
               直接寫信給 <a href="https://jothon.g0v.tw/about/" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">jothon</a>。
             </p>
           </div>
@@ -144,8 +143,8 @@ const jsonLd = {
             <div>
               <dt class="mb-1 text-xs">這筆資料有錯或過時？</dt>
               <dd class="m-0">
-                <a href={suggestUrl()} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">建議修改</a>，
-                小編人工審核，通過後隔天同步上線。
+                <a href={editUrl} style="color:var(--accent)">建議修改</a>，
+                管理員看過後合併，隔天同步上線。
               </dd>
             </div>
           )}

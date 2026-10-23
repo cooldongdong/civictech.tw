@@ -12,9 +12,11 @@ interface Props {
   /** 額外塞進 <head> 的結構化資料 */
   jsonLd?: unknown;
   canonical?: string;
+  /** 不給搜尋引擎收錄（例如編輯頁） */
+  noindex?: boolean;
 }
 
-const { title, description, current = "home", jsonLd, canonical } = Astro.props;
+const { title, description, current = "home", jsonLd, canonical, noindex = false } = Astro.props;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site ?? "https://civictech.tw").href;
 
 // 預覽站旗標。build 時帶 PUBLIC_PREVIEW=1 才成立，正式站的 build 不帶就自動消失，
@@ -63,7 +65,7 @@ const pageTitle = isPreview ? `【預覽版】${title}` : title;
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="zh_TW" />
     <meta name="twitter:card" content="summary" />
-    {isPreview && <meta name="robots" content="noindex, nofollow" />}
+    {(isPreview || noindex) && <meta name="robots" content="noindex, nofollow" />}
     <meta name="generator" content={Astro.generator} />
     {jsonLd && (
       <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
