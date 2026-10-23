@@ -62,6 +62,11 @@ function parseInsight(v: unknown): { label: string; text: string }[] | undefined
   return lines.length > 0 ? lines : undefined;
 }
 
+// 資料庫沒填頻道、但 insight 的「討論在哪裡」寫了 #頻道 的（例如 #open-moneyflow），從那行取
+function insightChannel(v: unknown): string | undefined {
+  return typeof v === "string" ? v.match(/^討論在哪裡：.*?#([\w\-\u4e00-\u9fff]+)/m)?.[1] : undefined;
+}
+
 // 資料庫的頻道欄是人手填的：有人帶 #、有人尾巴多一個 |
 function slackOf(v: unknown): Project["slack"] {
   const name = clean(typeof v === "string" ? v.replace(/[#|]/g, "") : v);
@@ -179,7 +184,7 @@ export const allProjects: Project[] = (raw.records as AirtableRecord[])
       aiInsight,
       aiInsightSources: parseSources(f["AI insight sources"]),
       aiInsightDate: clean(f["AI insight generated"]),
-      slack: slackOf(f["slack channel"]),
+      slack: slackOf(f["slack channel"]) ?? slackOf(insightChannel(f["AI insight"])),
       summary: aiInsight?.find((l) => l.label === "做什麼")?.text ?? (introIsBareUrl ? undefined : introRaw),
     };
   })

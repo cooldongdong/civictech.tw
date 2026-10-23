@@ -15,7 +15,12 @@ const channelName = (v) =>
   typeof v === "string" ? v.replace(/[#|]/g, "").trim() || undefined : undefined;
 
 const { records } = JSON.parse(await readFile(PROJECTS, "utf8"));
-const wanted = [...new Set(records.map((r) => channelName(r.fields["slack channel"])).filter(Boolean))].sort();
+// 頻道來源有兩個：資料庫的 slack channel 欄，以及 AI insight「討論在哪裡」那行寫到的 #頻道
+// （有些專案只在 insight 裡找得到頻道，資料庫那欄是空的）
+const fromInsight = (t) => (typeof t === "string" ? t.match(/^討論在哪裡：.*?#([\w\-\u4e00-\u9fff]+)/m)?.[1] : undefined);
+const wanted = [
+  ...new Set(records.flatMap((r) => [channelName(r.fields["slack channel"]), fromInsight(r.fields["AI insight"])]).filter(Boolean)),
+].sort();
 
 const res = await fetch(INDEX);
 if (!res.ok) throw new Error(`${INDEX} 回 ${res.status}`);

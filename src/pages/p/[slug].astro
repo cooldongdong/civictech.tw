@@ -212,9 +212,13 @@ const jsonLd = {
 </style>
 
 <script>
-  // 二級選單：點選單外面或按 Esc 就收起來（<details> 本身不會）
+  // 二級選單：<details> 本身不會自己收，這裡補上點別處與按 Esc 收起
+  // 只有點觸發的那行字會開關；點其他任何地方（包括選單裡的連結、選單的空白處）都收起來
   const closeAll = (except?: Element) =>
     document.querySelectorAll<HTMLDetailsElement>("details.slack-pick[open]").forEach((d) => d !== except && (d.open = false));
-  document.addEventListener("click", (e) => closeAll((e.target as Element).closest("details.slack-pick") ?? undefined));
+  document.addEventListener("click", (e) => {
+    const summary = (e.target as Element).closest("details.slack-pick > summary");
+    closeAll(summary?.parentElement ?? undefined);
+  });
   document.addEventListener("keydown", (e) => e.key === "Escape" && closeAll());
 </script>
