@@ -204,8 +204,9 @@ export const projectsByCategory = (slug: CategorySlug) =>
 export const countByCategory = (slug: CategorySlug) => projectsByCategory(slug).length;
 
 /** 首頁隨機卡的池子：要有話可說、也要有地方可去 */
+// 首頁隨機卡片：有 insight 的「做什麼」，或簡介至少 60 字，而且至少有一個連結
 export const featurePool = listedProjects.filter(
-  (p) => p.intro && p.intro.length >= 60 && p.links.length > 0,
+  (p) => (p.aiInsight?.some((l) => l.label === "做什麼") || (p.intro && p.intro.length >= 60)) && p.links.length > 0,
 );
 
 export const stats = {

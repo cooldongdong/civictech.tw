@@ -24,6 +24,14 @@ const editUrl = editPath(project.slug);
 const lede = project.aiInsight?.find((l) => l.label === "做什麼")?.text;
 const details = (project.aiInsight ?? []).filter((l) => l.label !== "做什麼");
 
+// Slack 頻道跟其他連結排在同一列：封存站的頻道頁（免登入就能看），加上加入 g0v Slack 的入口。
+// 封存站對不到這個頻道時只給加入連結，不放壞連結。
+const links = [
+  ...project.links,
+  ...(project.slack?.archiveUrl ? [{ label: `Slack #${project.slack.name}`, url: project.slack.archiveUrl }] : []),
+  ...(project.slack ? [{ label: "加入 g0v Slack", url: "https://join.g0v.tw/" }] : []),
+];
+
 const description =
   project.summary?.slice(0, 120) ??
   `${project.name}——收錄於台灣公民科技資料庫的「${category.name}」分類。`;
@@ -102,11 +110,11 @@ const jsonLd = {
           </div>
         )}
 
-        {(project.links.length > 0 || project.slack) && (
+        {links.length > 0 && (
           <div class="mt-8">
             <h2 class="m-0 mb-3 text-sm font-semibold" style="color:var(--ink)">相關連結</h2>
             <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
-              {project.links.map((l) => (
+              {links.map((l) => (
                 <li>
                   <a
                     href={l.url}
@@ -124,15 +132,6 @@ const jsonLd = {
                 </li>
               ))}
             </ul>
-            {project.slack && (
-              <p class="mb-0 mt-3 text-sm" style="color:var(--ink-muted)">
-                g0v Slack <span style="color:var(--ink-2)">#{project.slack.name}</span>：
-                {project.slack.archiveUrl && (
-                  <><a href={project.slack.archiveUrl} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">看過去的討論</a>（免登入）・</>
-                )}
-                <a href="https://join.g0v.tw/" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">加入 g0v Slack</a>
-              </p>
-            )}
           </div>
         )}
       </div>

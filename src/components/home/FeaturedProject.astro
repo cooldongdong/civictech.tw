@@ -2,12 +2,19 @@
 import { featurePool } from "../../lib/projects";
 import { categoryBySlug } from "../../data/categories";
 
-// 池子不是全部 219 個，是「有話可說、也有地方可去」的那些：
-// 簡介至少 60 字、而且至少有一個連結。抽到一個開天窗的專案比沒有隨機更糟。
+// 池子不是全部的專案，是「有話可說、也有地方可去」的那些（條件見 featurePool）。
+// 抽到一個開天窗的專案比沒有隨機更糟。
+// 有 AI insight 的先講「做什麼」再接「給誰」，沒有才退回簡介。
+const blurb = (p: (typeof featurePool)[number]) => {
+  const line = (label: string) => p.aiInsight?.find((l) => l.label === label)?.text;
+  const what = line("做什麼");
+  const text = what ? [what, line("給誰、解決什麼")].filter(Boolean).join("。") : p.intro!;
+  return text.length > 96 ? text.slice(0, 96) + "⋯" : text;
+};
 const pool = featurePool.map((p) => ({
   slug: p.slug,
   name: p.name,
-  intro: p.intro!.length > 96 ? p.intro!.slice(0, 96) + "⋯" : p.intro!,
+  intro: blurb(p),
   category: categoryBySlug.get(p.category)!.name,
   categorySlug: p.category,
 }));
