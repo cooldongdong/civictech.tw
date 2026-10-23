@@ -1,0 +1,174 @@
+---
+// 一年一年的大松：往下捲，左邊的年份一格格前進，右邊換成那一年上台的提案。
+// 站上有頁面的專案可以點；沒有的只列名字——它們也是那一年真的有人上台講過的點子。
+// 資料是大松提案紀錄（talks.json），目前整理到 2020 年，標題與說明照實寫，不說成「十幾年」。
+import { hackathonYears } from "../../lib/homeviz";
+
+const { steps, total, events } = hackathonYears();
+const first = steps[0].year;
+const last = steps[steps.length - 1].year;
+---
+
+<section id="hackathons" class="home-section">
+  <div class="wrap">
+    <div class="home-head">
+      <h2 class="home-title">從 {first} 年的第零次黑客松開始</h2>
+      <p class="home-lede">
+        {first}–{last} 年，<span class="num">{events}</span> 場大松、<span class="num">{total}</span> 個提案上台。
+        今天站上的很多專案，都是在其中一場第一次被講出來的。往下捲，一年一年看。
+      </p>
+    </div>
+  </div>
+
+  <div class="years" data-years style={`--steps:${steps.length}`}>
+    <div class="years-sticky">
+      <div class="wrap years-grid">
+        <ol class="years-index" aria-hidden="true">
+          {steps.map((s, i) => (
+            <li class:list={["yi", { "is-on": i === 0 }]} data-i={i}><span class="num">{s.year}</span></li>
+          ))}
+        </ol>
+
+        <div class="years-panels">
+          {steps.map((s, i) => (
+            <article class:list={["yp", { "is-on": i === 0 }]} data-i={i}>
+              <p class="yp-year num">{s.year}</p>
+              <p class="yp-count"><span class="num">{s.count}</span> 個提案・{s.events.length} 場大松</p>
+              <p class="yp-events">{s.events.slice(0, 4).join("、")}{s.events.length > 4 ? "⋯" : ""}</p>
+              <ul class="yp-chips">
+                {s.projects.slice(0, 14).map((p) => (
+                  <li><a href={`/p/${p.slug}`} class="yc yc-link">{p.name}</a></li>
+                ))}
+                {s.others.slice(0, Math.max(0, 22 - Math.min(14, s.projects.length))).map((n) => (
+                  <li><span class="yc">{n}</span></li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </div>
+    </div>
+    <div class="years-steps" aria-hidden="true">
+      {steps.map((_, i) => <div class="ys" data-i={i}></div>)}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* 整段的高度＝年份數 × 一段捲動距離；裡面那層 sticky 黏在畫面上，捲動只是用來換年份 */
+  .years { position: relative; }
+  .years-sticky {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    height: 100svh;
+  }
+  .years-steps { margin-top: -100svh; }
+  .ys { height: 55svh; }
+  .ys:last-child { height: 100svh; }
+
+  .years-grid {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+  @media (min-width: 768px) {
+    .years-grid { grid-template-columns: 5rem minmax(0, 1fr); gap: 3rem; }
+  }
+
+  .years-index {
+    display: none;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 768px) { .years-index { display: grid; gap: 0.55rem; } }
+  .yi {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    color: color-mix(in srgb, var(--ink-muted) 60%, transparent);
+    transition: color 0.3s ease;
+  }
+  .yi::before {
+    content: "";
+    width: 0.6rem;
+    height: 1px;
+    background: currentColor;
+    transition: width 0.3s var(--ease-out-expo);
+  }
+  .yi.is-on { color: var(--ink); }
+  .yi.is-on::before { width: 1.4rem; background: var(--accent); }
+
+  .years-panels { position: relative; min-height: 26rem; }
+  .yp {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateY(18px);
+    pointer-events: none;
+    transition: opacity 0.45s ease, transform 0.6s var(--ease-out-expo);
+  }
+  .yp.is-on { opacity: 1; transform: none; pointer-events: auto; }
+
+  .yp-year {
+    margin: 0;
+    font-size: clamp(4.5rem, 13vw, 9rem);
+    font-weight: 600;
+    line-height: 0.95;
+    color: var(--ink);
+  }
+  .yp-count { margin: 0.8rem 0 0.2rem; font-size: 1.05rem; color: var(--ink-2); }
+  .yp-events { margin: 0 0 1.4rem; font-size: 0.82rem; color: var(--ink-muted); }
+  .yp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: 62rem;
+  }
+  .yc {
+    display: inline-block;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    background: var(--surface);
+  }
+  .yc-link { color: var(--ink); text-decoration: none; border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  .yc-link:hover { background: var(--surface-2); }
+
+  /* 減少動態：不用黏住換頁，全部攤開成一年一段 */
+  @media (prefers-reduced-motion: reduce) {
+    .years-sticky { position: static; height: auto; display: block; }
+    .years-steps { display: none; }
+    .years-index { display: none; }
+    .years-panels { min-height: 0; display: grid; gap: 3rem; }
+    .yp { position: static; opacity: 1; transform: none; pointer-events: auto; }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-years]");
+  if (root && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const panels = [...root.querySelectorAll<HTMLElement>(".yp")];
+    const index = [...root.querySelectorAll<HTMLElement>(".yi")];
+    const set = (i: number) => {
+      panels.forEach((p, k) => p.classList.toggle("is-on", k === i));
+      index.forEach((p, k) => p.classList.toggle("is-on", k === i));
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) set(Number((e.target as HTMLElement).dataset.i));
+      },
+      { rootMargin: "-50% 0px -50% 0px" },
+    );
+    root.querySelectorAll(".ys").forEach((s) => io.observe(s));
+  }
+</script>

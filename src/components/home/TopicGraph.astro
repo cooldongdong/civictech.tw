@@ -1,0 +1,190 @@
+---
+// 議題與專案的放射圖。外圈是議題，每個點是一個專案；
+// 不同議題的兩個專案貼了同一個標籤，就從中間拉一條線——那是跨議題可以互相借鏡的地方。
+// 滑過（或點）一個議題或專案，只亮它跟它連到的；右邊的欄位跟著說明。
+import { topicGraph } from "../../lib/homeviz";
+
+const SIZE = 760;
+const { cx, cy, topics, dots, links } = topicGraph(SIZE);
+const linkCount = (slug: string) => links.filter((l) => l.a === slug || l.b === slug).length;
+const crossTopics = new Set(links.flatMap((l) => [dots.find((d) => d.slug === l.a)!.topic, dots.find((d) => d.slug === l.b)!.topic])).size;
+---
+
+<section id="connections" class="home-section">
+  <div class="wrap">
+    <div class="home-head">
+      <h2 class="home-title">專案之間，看得見的連結</h2>
+      <p class="home-lede">
+        外圈是議題，每個點是一個專案。不同議題的兩個專案貼了同一個標籤，就連一條線，現在有 <span class="num">{links.length}</span> 條，
+        跨過 <span class="num">{crossTopics}</span> 個議題。滑過一個議題或一個點看看。
+      </p>
+    </div>
+
+    <div class="stage graph-stage" data-graph>
+      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} class="graph" role="img" aria-label="議題與專案的關係圖；同樣的專案清單在各議題頁裡">
+        <g class="links">
+          {links.map((l) => (
+            <path d={l.d} data-a={l.a} data-b={l.b} />
+          ))}
+        </g>
+        <circle class="hub" cx={cx} cy={cy} r="38" />
+        <text class="hub-text" x={cx} y={cy} text-anchor="middle" dominant-baseline="middle">公民科技</text>
+        {topics.map((t) => (
+          <a href={`/c/${t.slug}`} class="topic" data-topic={t.slug} data-name={t.name} data-count={t.count} style={`--tint:var(--c-${t.slug})`}>
+            <text x={t.x} y={t.y} text-anchor={t.anchor} dominant-baseline="middle">{t.name}</text>
+          </a>
+        ))}
+        {dots.map((d) => (
+          <a href={`/p/${d.slug}`} class="dot" data-slug={d.slug} data-topic={d.topic} data-name={d.name} data-what={d.what} data-links={linkCount(d.slug)} style={`--tint:var(--c-${d.topic})`}>
+            <circle cx={d.x} cy={d.y} r="9" class="dot-hit" />
+            <circle cx={d.x} cy={d.y} r="3.6" class="dot-core" />
+          </a>
+        ))}
+      </svg>
+
+      <aside class="graph-panel" aria-live="polite">
+        <p class="panel-kicker" data-kicker>怎麼看這張圖</p>
+        <h3 class="panel-title" data-title>點越靠近同一段弧，越是同一個議題</h3>
+        <p class="panel-body" data-body>線是從中間繞過去的：兩個專案關心的事不一樣，卻用了同一種做法或資料。想找能借鏡的專案，順著線走。</p>
+        <a class="panel-link" data-link hidden>看這個專案 →</a>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<style>
+  .graph-stage {
+    display: grid;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  @media (min-width: 1024px) {
+    .graph-stage { grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.55fr); }
+  }
+  .graph {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 78vh;
+    overflow: visible;
+  }
+  .links path {
+    fill: none;
+    stroke: var(--ink-muted);
+    stroke-opacity: 0.14;
+    stroke-width: 1;
+    transition: stroke-opacity 0.25s ease, stroke 0.25s ease;
+  }
+  .hub { fill: var(--surface); stroke: var(--line-strong); }
+  .hub-text { font-size: 13px; fill: var(--ink-2); font-weight: 600; }
+  .topic text {
+    font-size: 13px;
+    fill: var(--ink-muted);
+    transition: fill 0.2s ease;
+  }
+  .topic:hover text, .topic.is-on text { fill: var(--tint); }
+  .dot-hit { fill: transparent; }
+  .dot-core {
+    fill: var(--tint);
+    opacity: 0.8;
+    transition: opacity 0.2s ease, r 0.2s ease;
+  }
+  .dot:hover .dot-core, .dot.is-on .dot-core { r: 6; opacity: 1; }
+
+  /* 有東西被選中時，其餘的都退到背景 */
+  [data-graph].has-focus .dot:not(.is-on):not(.is-near) .dot-core { opacity: 0.15; }
+  [data-graph].has-focus .dot.is-near .dot-core { opacity: 1; }
+  [data-graph].has-focus .topic:not(.is-on) text { fill: color-mix(in srgb, var(--ink-muted) 55%, transparent); }
+  [data-graph].has-focus .links path { stroke-opacity: 0.04; }
+  [data-graph].has-focus .links path.is-on { stroke: var(--accent); stroke-opacity: 0.75; stroke-width: 1.4; }
+
+  .graph-panel {
+    padding: 0.5rem 0.75rem 0.75rem;
+  }
+  .panel-kicker { margin: 0 0 0.35rem; font-size: 0.75rem; color: var(--ink-muted); }
+  .panel-title { margin: 0 0 0.6rem; font-size: 1.15rem; font-weight: 600; line-height: 1.45; color: var(--ink); }
+  .panel-body { margin: 0; font-size: 0.9rem; line-height: 1.75; color: var(--ink-2); }
+  .panel-link { display: inline-block; margin-top: 0.9rem; font-size: 0.9rem; color: var(--accent); }
+
+  /* 進場時整張圖從中心長出來，綁捲動位置 */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .graph { animation: graph-in linear both; animation-timeline: view(); animation-range: entry 0% cover 40%; transform-origin: 50% 50%; }
+    }
+  }
+  @keyframes graph-in {
+    from { transform: scale(0.82) rotate(-8deg); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-graph]");
+  if (root) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const kicker = $("[data-kicker]"), title = $("[data-title]"), body = $("[data-body]"), link = $("[data-link]") as HTMLAnchorElement;
+    const initial = { k: kicker.textContent, t: title.textContent, b: body.textContent };
+    const dots = [...root.querySelectorAll<SVGAElement>(".dot")];
+    const topics = [...root.querySelectorAll<SVGAElement>(".topic")];
+    const paths = [...root.querySelectorAll<SVGPathElement>(".links path")];
+
+    const clear = () => {
+      root.classList.remove("has-focus");
+      root.querySelectorAll(".is-on, .is-near").forEach((e) => e.classList.remove("is-on", "is-near"));
+      kicker.textContent = initial.k; title.textContent = initial.t; body.textContent = initial.b; link.hidden = true;
+    };
+
+    const focusDot = (d: SVGAElement) => {
+      clear();
+      root.classList.add("has-focus");
+      d.classList.add("is-on");
+      const slug = d.dataset.slug!;
+      let n = 0;
+      for (const p of paths) {
+        if (p.dataset.a === slug || p.dataset.b === slug) {
+          p.classList.add("is-on");
+          n++;
+          const other = p.dataset.a === slug ? p.dataset.b : p.dataset.a;
+          root.querySelector(`.dot[data-slug="${other}"]`)?.classList.add("is-near");
+        }
+      }
+      const topic = topics.find((t) => t.dataset.topic === d.dataset.topic);
+      topic?.classList.add("is-on");
+      kicker.textContent = topic?.dataset.name ?? "";
+      title.textContent = d.dataset.name ?? "";
+      body.textContent = (d.dataset.what || "") + (n ? `　跟其他議題的 ${n} 個專案用了同樣的標籤。` : "");
+      link.href = d.getAttribute("href")!; link.hidden = false; link.textContent = "看這個專案 →";
+    };
+
+    const focusTopic = (t: SVGAElement) => {
+      clear();
+      root.classList.add("has-focus");
+      t.classList.add("is-on");
+      const slug = t.dataset.topic!;
+      const mine = new Set<string>();
+      for (const d of dots) if (d.dataset.topic === slug) { d.classList.add("is-on"); mine.add(d.dataset.slug!); }
+      let n = 0;
+      for (const p of paths) if (mine.has(p.dataset.a!) || mine.has(p.dataset.b!)) { p.classList.add("is-on"); n++; }
+      kicker.textContent = "議題";
+      title.textContent = t.dataset.name ?? "";
+      body.textContent = `${t.dataset.count} 個專案，有 ${n} 條線連到別的議題。`;
+      link.href = t.getAttribute("href")!; link.hidden = false; link.textContent = "看這一類的專案 →";
+    };
+
+    for (const d of dots) { d.addEventListener("pointerenter", () => focusDot(d)); d.addEventListener("focus", () => focusDot(d)); }
+    for (const t of topics) { t.addEventListener("pointerenter", () => focusTopic(t)); t.addEventListener("focus", () => focusTopic(t)); }
+    root.querySelector(".graph")!.addEventListener("pointerleave", clear);
+
+    // 觸控沒有「滑過」：第一下先選中、顯示說明，再點一次才進頁面
+    let touch = false;
+    root.addEventListener("pointerdown", (e) => { touch = e.pointerType === "touch"; });
+    for (const el of [...dots, ...topics]) {
+      el.addEventListener("click", (e) => {
+        if (touch && !el.classList.contains("is-on")) {
+          e.preventDefault();
+          el.dataset.slug ? focusDot(el) : focusTopic(el);
+        }
+      });
+    }
+  }
+</script>

@@ -1,0 +1,92 @@
+---
+// Hero 底下兩排慢慢流過去的專案卡，一排往左、一排往右。
+// 「已經有人在做」不是口號：每張都是站上真的專案，點了就進它的頁面。
+// 滑鼠移上去就停下來，方便讀；系統設定減少動態的使用者看到的是可以橫向捲動的兩排，不會自己動。
+import { marqueeRows } from "../../lib/homeviz";
+
+const rows = marqueeRows();
+---
+
+<section class="marquee" aria-label="站上的專案，一部分">
+  {rows.map((row, r) => (
+    <div class={`marquee-row ${r === 1 ? "is-reverse" : ""}`}>
+      <ul class="marquee-track" style={`--dur:${r === 1 ? 110 : 95}s`}>
+        {[...row, ...row].map((c, i) => (
+          <li aria-hidden={i >= row.length ? "true" : undefined}>
+            <a href={`/p/${c.slug}`} class="chip" style={`--tint:var(--c-${c.category})`} tabindex={i >= row.length ? -1 : undefined}>
+              <span class="chip-name">{c.name}</span>
+              <span class="chip-what">{c.what}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</section>
+
+<style>
+  .marquee {
+    display: grid;
+    gap: 0.75rem;
+    padding-block: 0.5rem 1rem;
+    overflow: hidden;
+    /* 兩端淡出，看起來是從畫面外流進來的 */
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-row { overflow: hidden; }
+  .marquee-track {
+    display: flex;
+    gap: 0.75rem;
+    width: max-content;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    animation: marquee var(--dur) linear infinite;
+  }
+  .is-reverse .marquee-track { animation-direction: reverse; }
+  .marquee:hover .marquee-track,
+  .marquee:focus-within .marquee-track { animation-play-state: paused; }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .chip {
+    display: grid;
+    gap: 0.2rem;
+    width: 15.5rem;
+    padding: 0.85rem 1rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s var(--ease-out-expo);
+  }
+  .chip:hover {
+    border-color: color-mix(in srgb, var(--tint) 55%, var(--line));
+    transform: translateY(-2px);
+  }
+  .chip-name {
+    overflow: hidden;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--ink);
+  }
+  .chip-what {
+    overflow: hidden;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--ink-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { mask-image: none; }
+    .marquee-row { overflow-x: auto; }
+    .marquee-track { animation: none; }
+    .marquee-track > li[aria-hidden="true"] { display: none; }
+  }
+</style>
