@@ -3,6 +3,10 @@ import FeaturedProject from "./FeaturedProject.astro";
 
 const ytId = "kitNCWX-aHY";
 const modalSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0&modestbranding=1&playsinline=1`;
+import { stats } from "../../lib/projects";
+import { categories } from "../../data/categories";
+// 規模寫在副標裡，取代原本單獨一條的數字區。數字從資料算，不手寫
+const topicCount = categories.filter((c) => c.slug !== "community").length;
 ---
 
 <section id="hero" class="relative isolate overflow-hidden" data-hero>
@@ -15,7 +19,7 @@ const modalSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&re
         想改變的事，<br class="hidden sm:block" />已經有人在做
       </h1>
       <p class="mt-5 max-w-[34ch] text-[0.98rem] leading-relaxed sm:text-lg" style="color:var(--ink-2)">
-        台灣公民科技專案的目錄。照你關心的議題分，挑一個，去用它，或去找做它的人。
+        台灣公民科技專案的目錄，收錄 <span class="num">{stats.listed}</span> 個專案、<span class="num">{topicCount}</span> 個議題。照你關心的議題分，挑一個，去用它，或去找做它的人。
       </p>
       <div class="mt-9 flex flex-wrap items-center gap-3">
         <a
