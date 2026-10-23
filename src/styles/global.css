@@ -193,11 +193,18 @@ html[data-theme="dark"] {
     background: color-mix(in srgb, var(--accent-fill) 85%, black);
   }
 
-  /* 首頁的區塊：一律全寬細線開頭、大留白，靠距離分段而不是靠底色（10/09 拿掉交替底色後的做法）。
-     標題在左、說明在右對角，每一區同一個開頭，看得出一段從哪裡開始。 */
+  /* 首頁的區塊：不畫分隔線（看起來廉價），靠大留白與每一區同一個開頭分段——標題在左、說明在右對角。
+     主角區塊另外放進一張大圓角的「舞台」，見 .stage */
   .home-section {
-    border-top: 1px solid var(--line);
     padding-block: clamp(4.5rem, 10vw, 8.5rem);
+  }
+  .home-section + .home-section { padding-top: clamp(1.5rem, 4vw, 3rem); }
+
+  /* 舞台：大圓角、比底色亮一階的面板，把一區的內容整個托起來（claude.com、antigravity 都用這招取代分隔線） */
+  .stage {
+    padding: clamp(1rem, 2.5vw, 1.75rem);
+    border-radius: clamp(18px, 3vw, 32px);
+    background: var(--surface-2);
   }
   .home-head {
     display: grid;
@@ -213,6 +220,8 @@ html[data-theme="dark"] {
     font-size: clamp(1.9rem, 4.2vw, 3rem);
     font-weight: 600;
     line-height: 1.2;
+    text-wrap: balance;
+    word-break: keep-all;
     color: var(--ink);
   }
   .home-lede {
