@@ -104,7 +104,7 @@ const jsonLd = {
 
         {project.links.length > 0 && (
           <div class="mt-8">
-            <h2 class="m-0 mb-3 text-sm font-semibold" style="color:var(--ink)">去用它</h2>
+            <h2 class="m-0 mb-3 text-sm font-semibold" style="color:var(--ink)">相關連結</h2>
             <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
               {project.links.map((l) => (
                 <li>
@@ -134,7 +134,6 @@ const jsonLd = {
             <dt class="mb-1 text-xs" style="color:var(--ink-muted)">議題分類</dt>
             <dd class="m-0">
               <a href={`/c/${category.slug}`} style={`color:var(--c-${category.slug})`}>{category.name}</a>
-              {project.categoryCurated && <span class="ml-2 text-xs">（人工指定）</span>}
             </dd>
           </div>
 
