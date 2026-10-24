@@ -70,3 +70,9 @@ Cloudflare Pages，純靜態網站（build `npm run build`、輸出 `dist`）。
 ## 技術
 
 [Astro](https://astro.build) 靜態網站 ＋ [Tailwind CSS](https://tailwindcss.com) v4。
+
+## 授權
+
+- 程式碼：[MIT](LICENSE)
+- 專案資料：[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.zh-hant)，姓名標示「g0v civictech.tw」
+- 行動指引文章（`src/content/guides/`）：[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.zh-hant)，作者 Claire Cheng 與 g0v 揪松團，每篇文末附原文連結
