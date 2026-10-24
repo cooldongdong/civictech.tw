@@ -78,7 +78,6 @@ export const overrides: Record<string, CategorySlug> = {
   財產申報開放觀測站: "democracy",
   公民即時報: "democracy", // 勉強：公民新聞，不是查核，所以不放假訊息
   公民記者證產生器: "democracy",
-  記者證: "democracy",
 
   // ── 地方發展：從 11（永續城鄉）與教育、治理裡拆出來 ──
   "里伯 LINEbot 市容幫手": "local",
@@ -137,7 +136,6 @@ export const overrides: Record<string, CategorySlug> = {
   // ── 工作與生活權益 ──
   福利請聽: "rights", // 原本歸 3，它是社福
   無家者小幫手: "rights", // 第一版被「物資」兩個字誤丟進災害類
-  台灣公司資料: "rights", // 勉強：跟「台灣公司登記資料」放一起
 
   // ── 語言與教育：從 20 裡拆出來 ──
   "台灣 l10n 共筆": "learning", // 原本歸 10（消弭不平等）
