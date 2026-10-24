@@ -4,7 +4,7 @@ import { stats } from "../../lib/projects";
 // 以前這裡寫著「350+ 公民科技專案」，是一個硬寫在 HTML 裡的字串，
 // 而站上使用者當時看得到的專案數是 0。數字要從資料算出來——
 // 手寫的數字只會在寫下的那一天是對的，而且會被查證的人抓到。
-const withoutIntro = stats.total - stats.withIntro;
+const withoutIntro = stats.total - stats.withSummary;
 
 const items = [
   { n: stats.total, label: "個專案在資料庫裡" },

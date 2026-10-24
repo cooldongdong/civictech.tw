@@ -7,6 +7,7 @@
 // 這些缺口不藏起來，頁面上會直接講「這一欄還沒人填」。
 
 import raw from "../data/projects.json";
+import slackIds from "../data/slack-channels.json";
 import { byImpactCategory, overrides } from "../data/classification";
 import type { CategorySlug } from "../data/categories";
 
@@ -33,9 +34,54 @@ export interface Project {
   /** 這一筆的分類是人工指定的（而不是規則推的） */
   categoryCurated: boolean;
   links: { label: string; url: string }[];
+  /** AI 整理的四行介紹（做什麼／給誰／怎麼運作／討論在哪裡）。寫「不明」的那幾行不放進來——頁面上不顯示空格子 */
+  aiInsight?: { label: string; text: string }[];
+  aiInsightSources: string[];
+  aiInsightDate?: string;
+  /** 卡片與摘要用的一句話：優先用 insight 的「做什麼」，沒有才退回 Intro */
+  summary?: string;
+  /** g0v Slack 頻道。archiveUrl 是封存站的頻道頁；對不到 ID 時沒有（只給加入連結） */
+  slack?: { name: string; archiveUrl?: string };
 }
 
+const SLACK_ARCHIVE = "https://g0v-slack-archive.g0v.ronny.tw/index/channel/";
+
 const BARE_URL = /^https?:\/\/\S+$/;
+
+// Airtable 的「AI insight」欄是固定四行「標籤：內容」。
+// 「不明」是規格要求的誠實空格，對讀者沒有資訊量，所以整行拿掉；四行都不明就當作沒有。
+function parseInsight(v: unknown): { label: string; text: string }[] | undefined {
+  const s = clean(v);
+  if (!s) return undefined;
+  const lines = s
+    .split(/\n+/)
+    .map((l) => l.match(/^([^：]+)：(.+)$/))
+    .filter((m): m is RegExpMatchArray => !!m)
+    .map((m) => ({ label: m[1].trim(), text: m[2].trim() }))
+    .filter((l) => !/^不明$|（詳細內容不明）$|^詳細內容不明$/.test(l.text));
+  return lines.length > 0 ? lines : undefined;
+}
+
+// 資料庫沒填頻道、但 insight 的「討論在哪裡」寫了 #頻道 的（例如 #open-moneyflow），從那行取
+function insightChannel(v: unknown): string | undefined {
+  return typeof v === "string" ? v.match(/^討論在哪裡：.*?#([\w\-\u4e00-\u9fff]+)/m)?.[1] : undefined;
+}
+
+// 資料庫的頻道欄是人手填的：有人帶 #、有人尾巴多一個 |
+function slackOf(v: unknown): Project["slack"] {
+  const name = clean(typeof v === "string" ? v.replace(/[#|]/g, "") : v);
+  if (!name) return undefined;
+  const id = (slackIds as Record<string, string | null>)[name];
+  return { name, archiveUrl: id ? SLACK_ARCHIVE + id : undefined };
+}
+
+// 來源欄一行一個網址，少數後面帶著說明（例如「（2019-02-01 快照）」），只留網址本身
+function parseSources(v: unknown): string[] {
+  return (clean(v) ?? "")
+    .split(/\n+/)
+    .map((l) => l.match(/https?:\/\/[^\s（）()]+/)?.[0])
+    .filter((u): u is string => !!u);
+}
 
 function clean(v: unknown): string | undefined {
   if (typeof v !== "string") return undefined;
@@ -106,6 +152,7 @@ export const allProjects: Project[] = (raw.records as AirtableRecord[])
     seen.set(slug, dupe + 1);
     if (dupe > 0) slug = `${slug}-${dupe + 1}`;
 
+    const aiInsight = parseInsight(f["AI insight"]);
     const website = cleanUrl(f["Website URL"]) ?? (introIsBareUrl ? introRaw : undefined);
     const github = cleanUrl(f.github);
     const document = cleanUrl(f.document);
@@ -134,6 +181,11 @@ export const allProjects: Project[] = (raw.records as AirtableRecord[])
       category,
       categoryCurated,
       links,
+      aiInsight,
+      aiInsightSources: parseSources(f["AI insight sources"]),
+      aiInsightDate: clean(f["AI insight generated"]),
+      slack: slackOf(f["slack channel"]) ?? slackOf(insightChannel(f["AI insight"])),
+      summary: aiInsight?.find((l) => l.label === "做什麼")?.text ?? (introIsBareUrl ? undefined : introRaw),
     };
   })
   .filter((p) => p.name.length > 0);
@@ -157,14 +209,17 @@ export const projectsByCategory = (slug: CategorySlug) =>
 export const countByCategory = (slug: CategorySlug) => projectsByCategory(slug).length;
 
 /** 首頁隨機卡的池子：要有話可說、也要有地方可去 */
+// 首頁隨機卡片：有 insight 的「做什麼」，或簡介至少 60 字，而且至少有一個連結
 export const featurePool = listedProjects.filter(
-  (p) => p.intro && p.intro.length >= 60 && p.links.length > 0,
+  (p) => (p.aiInsight?.some((l) => l.label === "做什麼") || (p.intro && p.intro.length >= 60)) && p.links.length > 0,
 );
 
 export const stats = {
   total: allProjects.length,
   listed: listedProjects.length,
   withIntro: allProjects.filter((p) => p.intro).length,
+  /** 有一句話可以介紹的：AI insight 的「做什麼」或 Intro，兩者有一就算 */
+  withSummary: allProjects.filter((p) => p.summary).length,
   withLink: allProjects.filter((p) => p.links.length > 0).length,
   featurePool: featurePool.length,
 };

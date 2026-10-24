@@ -14,8 +14,8 @@ const projects = projectsByCategory(category.slug);
 
 // 有簡介的排前面。不是因為它們比較重要，是因為一整牆「還沒有人寫介紹」
 // 會讓人以為這個資料庫是空的——而缺口要看得見，但不必擋在門口。
-const sorted = [...projects].sort((a, b) => Number(!!b.intro) - Number(!!a.intro));
-const missing = projects.filter((p) => !p.intro).length;
+const sorted = [...projects].sort((a, b) => Number(!!b.summary) - Number(!!a.summary));
+const missing = projects.filter((p) => !p.summary).length;
 
 const jsonLd = {
   "@context": "https://schema.org",

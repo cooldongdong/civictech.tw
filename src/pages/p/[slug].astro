@@ -14,14 +14,25 @@ const category = categoryBySlug.get(project.category)!;
 
 // 同類的其他專案：分類法會刻意切斷跨類連結，這裡至少把同類的鄰居接回來
 const siblings = projectsByCategory(project.category)
-  .filter((p) => p.slug !== project.slug && p.intro)
+  .filter((p) => p.slug !== project.slug && p.summary)
   .slice(0, 3);
 
 // 修改建議走站內的編輯頁：表單預填目前的值，比直接丟一張空白的 GitHub issue 好改
 const editUrl = editPath(project.slug);
 
+// 「做什麼」放到標題下當導言，其餘幾行排在內文；專案自己寫的 Intro 收進「專案自述」
+const lede = project.aiInsight?.find((l) => l.label === "做什麼")?.text;
+const details = (project.aiInsight ?? []).filter((l) => l.label !== "做什麼");
+// 有 Slack 頻道的，「討論在哪裡」那行可以點：問使用者要看封存的過去討論，還是去加入 g0v Slack。
+// insight 沒寫討論管道、但資料庫有頻道時，補一行
+if (project.slack && !details.some((l) => l.label === "討論在哪裡")) {
+  details.push({ label: "討論在哪裡", text: `g0v Slack #${project.slack.name}` });
+}
+
+const links = project.links;
+
 const description =
-  project.intro?.slice(0, 120) ??
+  project.summary?.slice(0, 120) ??
   `${project.name}——收錄於台灣公民科技資料庫的「${category.name}」分類。`;
 
 // 給爬蟲與 AI 讀的那一份。跟畫面上顯示的是同一批內容，不是藏起來的第二份文字。
@@ -61,13 +72,50 @@ const jsonLd = {
       {project.nameEn && (
         <p class="mt-2 text-base" style="color:var(--ink-muted)">{project.nameEn}</p>
       )}
+      {lede && (
+        <p class="mb-0 mt-5 max-w-[40ch] text-[1.2rem] leading-[1.7] sm:text-[1.35rem]" style="color:var(--ink-2)">{lede}</p>
+      )}
     </header>
 
     <div class="wrap mt-9 grid gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-14">
       <div>
-        {project.intro ? (
+        {details.length > 0 && (
+          <dl class="m-0 grid max-w-[62ch] gap-4">
+            {details.map((l) => (
+              <div class="grid gap-1 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-5">
+                <dt class="text-xs sm:pt-1" style="color:var(--ink-muted)">{l.label}</dt>
+                <dd class="m-0 text-[1rem] leading-[1.75] [overflow-wrap:anywhere]" style="color:var(--ink-2)">
+                  {l.label === "討論在哪裡" && project.slack ? (
+                    <details class="slack-pick relative">
+                      <summary class="slack-trigger cursor-pointer" style="color:var(--accent)">
+                        {l.text}
+                        <svg class="slack-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+                      </summary>
+                      <div class="slack-menu absolute left-0 top-full z-10 mt-2 grid min-w-[15rem] gap-1 rounded-lg border p-2 text-sm" style="border-color:var(--line);background:var(--surface)">
+                        {project.slack.archiveUrl && (
+                          <a href={project.slack.archiveUrl} target="_blank" rel="noopener noreferrer" class="rounded-md px-3 py-2 no-underline" style="color:var(--ink)">
+                            看過去的討論<span class="block text-xs" style="color:var(--ink-muted)">#{project.slack.name} 的封存，免登入</span>
+                          </a>
+                        )}
+                        <a href="https://join.g0v.tw/" target="_blank" rel="noopener noreferrer" class="rounded-md px-3 py-2 no-underline" style="color:var(--ink)">
+                          加入 g0v Slack<span class="block text-xs" style="color:var(--ink-muted)">加入後搜尋 #{project.slack.name}</span>
+                        </a>
+                      </div>
+                    </details>
+                  ) : l.text}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {project.intro && project.aiInsight ? (
+          <details class="mt-8 max-w-[62ch]">
+            <summary class="cursor-pointer text-sm font-semibold" style="color:var(--ink)">專案自述</summary>
+            <p class="mb-0 mt-3 text-[1.05rem] leading-[1.9] [overflow-wrap:anywhere]" style="color:var(--ink-2)">{project.intro}</p>
+          </details>
+        ) : project.intro ? (
           <p class="m-0 max-w-[62ch] text-[1.05rem] leading-[1.9] [overflow-wrap:anywhere]" style="color:var(--ink-2)">{project.intro}</p>
-        ) : (
+        ) : project.aiInsight ? null : (
           <div class="rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
             <p class="m-0 text-[0.95rem]" style="color:var(--ink-muted)">
               這個專案還沒有人寫介紹。
@@ -80,11 +128,11 @@ const jsonLd = {
           </div>
         )}
 
-        {project.links.length > 0 && (
+        {links.length > 0 && (
           <div class="mt-8">
-            <h2 class="m-0 mb-3 text-sm font-semibold" style="color:var(--ink)">去用它</h2>
+            <h2 class="m-0 mb-3 text-sm font-semibold" style="color:var(--ink)">相關連結</h2>
             <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
-              {project.links.map((l) => (
+              {links.map((l) => (
                 <li>
                   <a
                     href={l.url}
@@ -112,7 +160,6 @@ const jsonLd = {
             <dt class="mb-1 text-xs" style="color:var(--ink-muted)">議題分類</dt>
             <dd class="m-0">
               <a href={`/c/${category.slug}`} style={`color:var(--c-${category.slug})`}>{category.name}</a>
-              {project.categoryCurated && <span class="ml-2 text-xs">（人工指定）</span>}
             </dd>
           </div>
 
@@ -125,19 +172,10 @@ const jsonLd = {
 
           {project.impactCategories.length > 0 && (
             <div>
-              <dt class="mb-1 text-xs">原始影響力類別</dt>
+              <dt class="mb-1 text-xs">影響力類別</dt>
               <dd class="m-0" style="color:var(--ink-2)">{project.impactCategories.join("、")}</dd>
             </div>
           )}
-
-          <div>
-            <dt class="mb-1 text-xs">這頁的資料從哪來</dt>
-            <dd class="m-0">
-              jothon 維護的 Airtable，每日同步到
-              <a href={`https://data.civictech.tw/v0/tech/projects.json`} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">開放資料 API</a>，
-              網站在 build 時讀那一份。
-            </dd>
-          </div>
 
           {suggestEditEnabled && (
             <div>
@@ -162,3 +200,25 @@ const jsonLd = {
     )}
   </article>
 </Base>
+
+<style>
+  .slack-pick > summary { list-style: none; display: inline-flex; align-items: center; gap: 0.35rem; }
+  .slack-pick > summary::-webkit-details-marker { display: none; }
+  .slack-trigger:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .slack-chev { transition: transform 0.2s ease; }
+  .slack-pick[open] .slack-chev { transform: rotate(180deg); }
+  .slack-menu { box-shadow: 0 10px 30px rgb(0 0 0 / 0.25); }
+  .slack-menu a:hover { background: var(--surface-2); }
+</style>
+
+<script>
+  // 二級選單：<details> 本身不會自己收，這裡補上點別處與按 Esc 收起
+  // 只有點觸發的那行字會開關；點其他任何地方（包括選單裡的連結、選單的空白處）都收起來
+  const closeAll = (except?: Element) =>
+    document.querySelectorAll<HTMLDetailsElement>("details.slack-pick[open]").forEach((d) => d !== except && (d.open = false));
+  document.addEventListener("click", (e) => {
+    const summary = (e.target as Element).closest("details.slack-pick > summary");
+    closeAll(summary?.parentElement ?? undefined);
+  });
+  document.addEventListener("keydown", (e) => e.key === "Escape" && closeAll());
+</script>
