@@ -27,26 +27,26 @@ const more = ranked.slice(6);
       {[lead, second].map((c, i) => (
         <a
           href={`/c/${c.slug}`}
-          class="cat cat-lead rise lg:col-span-6"
+          class="cat cat-lead glow rise lg:col-span-6"
           style={`--i:${i};--tint:var(--c-${c.slug})`}
         >
-          <span class="num cat-count">{c.count}</span>
+          <span class="num cat-count" data-count={c.count}>{c.count}</span>
           <h3 class="cat-name">{c.name}</h3>
           <p class="cat-blurb">{c.blurb}</p>
-          <p class="cat-rate">{surveyRate(c.survey!)}% 的人想先看</p>
+          <p class="cat-rate" style={`--p:${surveyRate(c.survey!)}%`}><span class="cat-bar" aria-hidden="true"></span>{surveyRate(c.survey!)}% 的人想先看</p>
         </a>
       ))}
 
       {others.map((c, i) => (
         <a
           href={`/c/${c.slug}`}
-          class="cat rise lg:col-span-3"
+          class="cat glow rise lg:col-span-3"
           style={`--i:${i + 2};--tint:var(--c-${c.slug})`}
         >
-          <span class="num cat-count cat-count-sm">{c.count}</span>
+          <span class="num cat-count cat-count-sm" data-count={c.count}>{c.count}</span>
           <h3 class="cat-name cat-name-sm">{c.name}</h3>
           <p class="cat-blurb cat-blurb-sm">{c.blurb}</p>
-          <p class="cat-rate">{surveyRate(c.survey!)}% 的人想先看</p>
+          <p class="cat-rate" style={`--p:${surveyRate(c.survey!)}%`}><span class="cat-bar" aria-hidden="true"></span>{surveyRate(c.survey!)}% 的人想先看</p>
         </a>
       ))}
 
@@ -67,7 +67,7 @@ const more = ranked.slice(6);
         </ul>
       </div>
 
-      <a href={`/c/${community.slug}`} class="cat cat-aside rise lg:col-span-12" style="--i:7;--tint:var(--c-community)">
+      <a href={`/c/${community.slug}`} class="cat cat-aside glow rise lg:col-span-12" style="--i:7;--tint:var(--c-community)">
         <div>
           <h3 class="cat-name cat-name-sm">{community.name}</h3>
           <p class="cat-blurb cat-blurb-sm">{community.blurb}</p>
@@ -91,7 +91,9 @@ const more = ranked.slice(6);
     background: var(--surface);
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
+    /* 這裡的 transition 會蓋掉 .rise 的，所以進場要的 opacity 也寫在這 */
+    transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo), opacity 0.7s var(--ease-out-expo);
+    transition-delay: 0s, 0s, calc(var(--i, 0) * 70ms);
   }
   .cat:hover {
     border-color: color-mix(in srgb, var(--tint) 55%, var(--line));
@@ -133,6 +135,28 @@ const more = ranked.slice(6);
     font-size: 0.78rem;
     color: var(--ink-muted);
   }
+  /* 問卷勾選率畫成一條細長條，卡片進場時從左邊長出來 */
+  .cat-bar {
+    display: block;
+    height: 3px;
+    margin-bottom: 0.5rem;
+    border-radius: 3px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .cat-bar::after {
+    content: "";
+    display: block;
+    width: var(--p);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--tint);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 1.1s var(--ease-out-expo) calc(var(--i, 0) * 60ms + 0.2s);
+  }
+  .cat.in .cat-bar::after { transform: none; }
+  @media (prefers-reduced-motion: reduce) { .cat-bar::after { transform: none; } }
 
   .more {
     padding: 1.2rem 1.4rem 1.3rem;
@@ -190,3 +214,35 @@ const more = ranked.slice(6);
     .cat-aside { flex-direction: row; align-items: flex-start; }
   }
 </style>
+
+<script>
+  // 卡片進場時，數字從 0 數到實際的專案數。沒有 JS 或減少動態的人直接看到原本的數字
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const nums = [...document.querySelectorAll<HTMLElement>("#categories [data-count]")];
+    const run = (el: HTMLElement) => {
+      const to = Number(el.dataset.count);
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        const k = Math.min(1, (now - t0) / 1100);
+        el.textContent = String(Math.round(to * (1 - Math.pow(2, -10 * k))));
+        if (k < 1) requestAnimationFrame(tick);
+        else el.textContent = String(to);
+      };
+      requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          io.unobserve(e.target);
+          run(e.target as HTMLElement);
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px" },
+    );
+    for (const el of nums) {
+      el.textContent = "0";
+      io.observe(el);
+    }
+  }
+</script>

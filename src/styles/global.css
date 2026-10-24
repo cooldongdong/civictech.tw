@@ -249,6 +249,39 @@ html[data-theme="dark"] {
     to { transform: none; opacity: 1; }
   }
 
+  /* 區塊標題與說明跟著捲動浮上來：從模糊、略低的位置對焦到定位。說明晚標題一步 */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .home-title,
+      .home-lede {
+        animation: head-in linear both;
+        animation-timeline: view();
+        animation-range: entry 10% cover 30%;
+      }
+      .home-lede { animation-range: entry 30% cover 38%; }
+    }
+  }
+  @keyframes head-in {
+    from { opacity: 0; transform: translateY(0.6em); filter: blur(8px); }
+    to { opacity: 1; transform: none; filter: none; }
+  }
+
+  /* 跟著游標走的光暈：卡片底下一圈分類色（沒有分類就用強調色），游標在哪亮哪。
+     --mx、--my 由首頁的一個 pointermove 監聽器寫入；光暈在內容底下，不會蓋到字 */
+  .glow { position: relative; isolation: isolate; }
+  .glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--tint, var(--accent)) 16%, transparent), transparent 65%);
+    transition: opacity 0.35s ease;
+  }
+  .glow:hover::before { opacity: 1; }
+
   /* 角落滑入的邀請卡（問卷、活動） */
   .popup-card {
     background: var(--surface);

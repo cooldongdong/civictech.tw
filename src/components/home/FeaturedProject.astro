@@ -25,7 +25,7 @@ const pool = featurePool.map((p) => ({
 const first = pool.find((p) => p.categorySlug !== "community") ?? pool[0];
 ---
 
-<aside class="featured" aria-label="隨機推薦的專案">
+<aside class="featured glow" aria-label="隨機推薦的專案">
   <div class="featured-head">
     <span>隨機挑一個</span>
     <span class="num" id="featured-progress" aria-live="polite">{pool.length} 個可看</span>

@@ -13,7 +13,7 @@ const rows = marqueeRows();
       <ul class="marquee-track" style={`--dur:${r === 1 ? 110 : 95}s`}>
         {[...row, ...row].map((c, i) => (
           <li aria-hidden={i >= row.length ? "true" : undefined}>
-            <a href={`/p/${c.slug}`} class="chip" style={`--tint:var(--c-${c.category})`} tabindex={i >= row.length ? -1 : undefined}>
+            <a href={`/p/${c.slug}`} class="chip glow" style={`--tint:var(--c-${c.category})`} tabindex={i >= row.length ? -1 : undefined}>
               <span class="chip-name">{c.name}</span>
               <span class="chip-what">{c.what}</span>
             </a>

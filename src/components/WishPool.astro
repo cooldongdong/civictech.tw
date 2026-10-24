@@ -106,6 +106,11 @@
     border-radius: 10px;
     background: var(--surface);
   }
+  /* 願望是載入後才畫上去的，趕不上 .rise 的觀察器，所以自己依序浮上來 */
+  @media (prefers-reduced-motion: no-preference) {
+    .wish-card { animation: wish-in 0.7s var(--ease-out-expo) both; animation-delay: calc(var(--i, 0) * 70ms); }
+  }
+  @keyframes wish-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   .wish-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
   .wish-title { margin: 0; font-size: 1.02rem; font-weight: 600; line-height: 1.45; color: var(--ink); }
   .wish-badge {
@@ -186,8 +191,8 @@
         return;
       }
 
-      container.innerHTML = wishes.map(wish => `
-        <article class="wish-card">
+      container.innerHTML = wishes.map((wish, i) => `
+        <article class="wish-card glow" style="--i:${Math.min(i, 8)}">
           <div class="wish-top">
             <h4 class="wish-title">${escapeHTML(wish.title)}</h4>
             ${wish.progress ? `<span class="wish-badge">${escapeHTML(wish.progress)}</span>` : ''}

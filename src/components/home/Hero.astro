@@ -9,19 +9,19 @@ import { categories } from "../../data/categories";
 const topicCount = categories.filter((c) => c.slug !== "community").length;
 ---
 
-<section id="hero" class="relative isolate overflow-hidden" data-hero>
+<section id="hero" class="relative isolate overflow-clip" data-hero>
   <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <div class="hero-veil" aria-hidden="true"></div>
 
-  <div class="wrap relative z-10 grid items-center gap-10 pb-16 pt-28 sm:pb-20 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16 lg:pb-24 lg:pt-32">
+  <div class="hero-inner wrap relative z-10 grid items-center gap-10 pb-16 pt-28 sm:pb-20 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16 lg:pb-24 lg:pt-32">
     <div>
       <h1 class="text-[2.1rem] font-semibold leading-[1.15] sm:text-5xl lg:text-[3.4rem]" style="color:var(--ink)">
-        想改變的事，<br class="hidden sm:block" />已經有人在做
+        <span class="hl"><span style="--d:0">想改變的事，</span></span><span class="hl"><span style="--d:1">已經有人在做</span></span>
       </h1>
-      <p class="mt-5 max-w-[34ch] text-[0.98rem] leading-relaxed sm:text-lg" style="color:var(--ink-2)">
+      <p class="hero-in mt-5 max-w-[34ch] text-[0.98rem] leading-relaxed sm:text-lg" style="color:var(--ink-2);--d:2">
         台灣公民科技專案的目錄，收錄 <span class="num">{stats.listed}</span> 個專案、<span class="num">{topicCount}</span> 個議題。照你關心的議題分，挑一個，去用它，或去找做它的人。
       </p>
-      <div class="mt-9 flex flex-wrap items-center gap-3">
+      <div class="hero-in mt-9 flex flex-wrap items-center gap-3" style="--d:3">
         <a
           href="#categories"
           class="inline-flex items-center gap-2 rounded-lg px-5 py-3 text-[0.95rem] font-medium no-underline transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
@@ -43,7 +43,7 @@ const topicCount = categories.filter((c) => c.slug !== "community").length;
       </div>
     </div>
 
-    <FeaturedProject />
+    <div class="hero-in hero-card" style="--d:4"><FeaturedProject /></div>
   </div>
 </section>
 
@@ -90,6 +90,37 @@ const topicCount = categories.filter((c) => c.slug !== "community").length;
         color-mix(in srgb, var(--paper) 25%, transparent) 45%,
         color-mix(in srgb, var(--paper) 85%, transparent) 100%);
   }
+  /* 進場：標題一行一行從下面滑上來，其餘的依序浮現。只在載入時跑一次 */
+  .hl { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.08em; }
+  @media (min-width: 640px) { .hl { display: block; } }
+  .hl > span { display: inline-block; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hl > span { animation: hl-up 1s var(--ease-out-expo) both; animation-delay: calc(0.1s + var(--d) * 0.12s); }
+    .hero-in { animation: hero-in 1s var(--ease-out-expo) both; animation-delay: calc(0.15s + var(--d) * 0.12s); }
+  }
+  @keyframes hl-up { from { transform: translateY(105%); } to { transform: none; } }
+  @keyframes hero-in { from { opacity: 0; transform: translateY(18px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+
+  /* 往下捲時，hero 的內容比捲動慢一點往上走、慢慢淡掉，下面的區塊像是從它底下滑上來 */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-inner {
+        animation: hero-out linear both;
+        animation-timeline: view();
+        animation-range: exit 0% exit 90%;
+      }
+    }
+  }
+  @keyframes hero-out { to { transform: translateY(12%) scale(0.97); opacity: 0; } }
+
+  /* 推薦卡跟著游標微微傾斜 */
+  .hero-card { perspective: 900px; }
+  .hero-card :global(.featured) {
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform 0.4s var(--ease-out-expo);
+    will-change: transform;
+  }
+
   .hero-ghost {
     border-color: var(--line-strong);
     background: color-mix(in srgb, var(--surface) 55%, transparent);
@@ -258,6 +289,22 @@ const topicCount = categories.filter((c) => c.slug !== "community").length;
       }, { passive: true });
       hero.addEventListener("pointerleave", () => { mouseIn = false; });
     }
+  }
+
+  // ── 推薦卡傾斜 ──
+  const card = document.querySelector<HTMLElement>(".hero-card .featured");
+  if (card && !window.matchMedia("(prefers-reduced-motion: reduce)").matches && matchMedia("(hover: hover)").matches) {
+    card.addEventListener("pointermove", (e) => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      card.style.setProperty("--ry", `${(x * 7).toFixed(2)}deg`);
+      card.style.setProperty("--rx", `${(-y * 7).toFixed(2)}deg`);
+    });
+    card.addEventListener("pointerleave", () => {
+      card.style.removeProperty("--rx");
+      card.style.removeProperty("--ry");
+    });
   }
 
   // ── 影片 ──

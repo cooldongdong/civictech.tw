@@ -13,7 +13,7 @@ const { guide, index = 0, large = false } = Astro.props;
 const covers = guide.covers?.replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim();
 ---
 
-<a href={`/g/${guide.slug}`} class:list={["gcard rise", { "gcard-lg": large }]} style={`--i:${Math.min(index, 8)}`}>
+<a href={`/g/${guide.slug}`} class:list={["gcard glow rise", { "gcard-lg": large }]} style={`--i:${Math.min(index, 8)}`}>
   <h3 class="gcard-title">{guide.title}</h3>
   {guide.summary && <p class="gcard-summary">{guide.summary}</p>}
   <div class="gcard-foot">
@@ -21,6 +21,10 @@ const covers = guide.covers?.replace(/（[^）]*）/g, "").replace(/\s+/g, " ").
     <span class="gcard-go" aria-hidden="true">→</span>
   </div>
 </a>
+
+<script>
+  import "../lib/glow";
+</script>
 
 <style>
   .gcard {
@@ -33,7 +37,9 @@ const covers = guide.covers?.replace(/（[^）]*）/g, "").replace(/\s+/g, " ").
     background: var(--surface);
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.2s ease, transform 0.2s var(--ease-out-expo);
+    /* 這裡的 transition 會蓋掉 .rise 的，所以進場要的 opacity 也寫在這 */
+    transition: border-color 0.2s ease, transform 0.2s var(--ease-out-expo), opacity 0.7s var(--ease-out-expo);
+    transition-delay: 0s, 0s, calc(var(--i, 0) * 70ms);
   }
   .gcard:hover {
     border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
