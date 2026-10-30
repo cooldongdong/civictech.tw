@@ -15,6 +15,8 @@
 | `/p/[slug]` | 專案頁：AI 產生的四行介紹、連結、討論頻道 |
 | `/p/[slug]/edit` | 建議修改：送出後在 civictech-tw-data 開一張修改申請 |
 | `/g`、`/g/[slug]` | 行動指引列表與全文 |
+| `/data` | 資料總覽：分類、SDGs、需求與供給、repo 活躍度、標籤網絡 |
+| `/data/sdg/[num]` | 對應某個 SDG 的專案 |
 
 ## 開發
 
@@ -44,6 +46,7 @@ npm run preview   # 在本機預覽 build 結果
 | :--- | :--- | :--- | :--- |
 | 專案（含 AI 介紹） | [data.civictech.tw](https://data.civictech.tw/v0/tech/projects.json)（正本在 Airtable） | `src/data/projects.json` | `node scripts/sync-data.mjs` |
 | Slack 頻道對照 | [g0v Slack 封存站](https://g0v-slack-archive.g0v.ronny.tw/) | `src/data/slack-channels.json` | `node scripts/sync-slack.mjs`（在 `sync-data.mjs` 之後跑） |
+| repo 最後活動時間 | GitHub API（有 `GITHUB_TOKEN` 就用，沒有會試 `gh auth token`） | `src/data/github.json` | `node scripts/sync-github.mjs` |
 | 行動指引文章 | [g0v HackMD](https://g0v.hackmd.io/@jothon/guide) | `src/content/guides/` | `node scripts/sync-guides.mjs` |
 
 - 資料不會自己更新，要有人跑腳本再 commit。

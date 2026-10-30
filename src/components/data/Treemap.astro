@@ -1,0 +1,128 @@
+---
+// 17 類的矩形樹狀圖：面積＝專案數，點一格進那一類的分類頁。
+//
+// 用 HTML 方塊而不是 SVG：SVG 的文字會跟著 viewBox 一起縮，手機上就小到讀不了；
+// 方塊用百分比定位，字維持原本大小。手機與桌機的長寬比差太多，所以算兩份版面，用 CSS 切。
+//
+// 格子太小放不下類名時不硬塞（硬塞就是被切掉半個字），改成只放數字或什麼都不放，
+// 名稱留給 tooltip 和底下的表格。
+import { categoryCounts, squarify, type Rect } from "../../lib/dataviz";
+
+interface Layout {
+  key: "wide" | "tall";
+  /** 計算用的座標空間 */
+  w: number;
+  h: number;
+  /** 這份版面實際最窄會被畫成幾 px 寬，拿來判斷字放不放得下 */
+  minPx: number;
+}
+
+const layouts: Layout[] = [
+  { key: "wide", w: 16, h: 9, minPx: 860 },
+  { key: "tall", w: 3, h: 5, minPx: 320 },
+];
+
+const values = categoryCounts.map((c) => c.count);
+const total = values.reduce((a, b) => a + b, 0);
+
+// 中文字寬約 1em；字級 0.85rem ≈ 13.6px，行高 1.3
+const CH = 13.6;
+const LINE = 18;
+const PAD = 8;
+
+function label(r: Rect, l: Layout, name: string): "full" | "count" | "none" {
+  const px = l.minPx / l.w;
+  const w = r.w * px - PAD * 2;
+  const h = r.h * px - PAD * 2;
+  if (w < 22 || h < 20) return "none";
+  const perLine = Math.floor(w / CH);
+  if (perLine < 2) return "count";
+  const lines = Math.ceil(name.length / perLine);
+  // 數字一行（約 26px）＋類名幾行
+  return h >= 26 + lines * LINE ? "full" : "count";
+}
+
+const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
+---
+
+<div class="treemap-wrap">
+  {layouts.map((l) => {
+    const rects = squarify(values, l.w, l.h);
+    return (
+      <div class={`treemap treemap-${l.key}`} style={`aspect-ratio:${l.w}/${l.h}`}>
+        {categoryCounts.map((c, i) => {
+          const r = rects[i];
+          const mode = label(r, l, c.name);
+          return (
+            <a
+              href={`/c/${c.slug}`}
+              class="tile"
+              style={`left:${pct(r.x, l.w)};top:${pct(r.y, l.h)};width:${pct(r.w, l.w)};height:${pct(r.h, l.h)};--fill:var(--c-${c.slug})`}
+              data-tip-value={`${c.count} 個專案`}
+              data-tip-label={c.name}
+              data-tip-note={`占 ${Math.round((c.count / total) * 100)}%，點了看這一類`}
+              aria-label={`${c.name}，${c.count} 個專案`}
+            >
+              {mode !== "none" && <span class="tile-n">{c.count}</span>}
+              {mode === "full" && <span class="tile-name">{c.name}</span>}
+            </a>
+          );
+        })}
+      </div>
+    );
+  })}
+</div>
+
+<style>
+  .treemap {
+    position: relative;
+    width: 100%;
+  }
+  .treemap-wide {
+    display: none;
+  }
+  @media (min-width: 860px) {
+    .treemap-wide {
+      display: block;
+    }
+    .treemap-tall {
+      display: none;
+    }
+  }
+
+  /* 格子之間的 2px 縫用內縮做，不畫框線 */
+  .tile {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px solid var(--paper);
+    border-radius: 6px;
+    background: var(--fill);
+    color: var(--on-cat);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-decoration: none;
+    transition: filter 0.15s ease;
+    overflow: visible;
+  }
+  .tile:hover,
+  .tile[data-tip-active] {
+    filter: brightness(1.12) saturate(1.05);
+  }
+  .tile:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -3px;
+  }
+  .tile-n {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 1.15rem;
+    line-height: 1.2;
+  }
+  .tile-name {
+    font-size: 0.85rem;
+    line-height: 1.3;
+    font-weight: 500;
+  }
+</style>

@@ -44,6 +44,8 @@
   --accent-ink: #094656;
   --accent-soft: #e0eef1;
   --gap: #b45309;
+  /* 疊在分類色上的字。淺色模式的分類色偏深，配白字；深色模式偏淺，配近黑 */
+  --on-cat: #ffffff;
   --shadow: rgb(15 26 29 / 0.1);
 
   /* 十七個分類的色票：飽和度一律壓低，讓它們在卡牆上可辨識但不互相喊話。
@@ -86,6 +88,7 @@ html[data-theme="dark"] {
   --accent-ink: #9fd6e4;
   --accent-soft: #0f3340;
   --gap: #f2b94b;
+  --on-cat: #0e1319;
   --shadow: rgb(0 0 0 / 0.35);
 
   /* 同一組色相，明度拉到 OKLCH L 0.775，對深底都在 8:1 以上 */

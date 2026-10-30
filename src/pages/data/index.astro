@@ -1,0 +1,208 @@
+---
+import Base from "../../layouts/Base.astro";
+import ChartTip from "../../components/data/ChartTip.astro";
+import ChartSection from "../../components/data/ChartSection.astro";
+import Treemap from "../../components/data/Treemap.astro";
+import SdgGrid from "../../components/data/SdgGrid.astro";
+import Sankey from "../../components/data/Sankey.astro";
+import DemandSupply from "../../components/data/DemandSupply.astro";
+import RepoActivity from "../../components/data/RepoActivity.astro";
+import TagNetwork from "../../components/data/TagNetwork.astro";
+import { stats } from "../../lib/projects";
+import { categoryCounts, demandRows, repoActivity, tagNetwork, GAP_THRESHOLD, impactCells, isGap, outsideSdg, projects, sankey } from "../../lib/dataviz";
+import { SURVEY_RESPONDENTS } from "../../data/categories";
+
+const description = `用幾張圖看台灣公民科技資料庫：${projects.length} 個專案分在哪些議題、對應哪些 SDGs、哪裡最缺人。`;
+
+// 頁首的數字跟首頁 StatStrip 一樣從資料算，不手寫
+const leads = [
+  { n: projects.length, label: "個專案，以下每張圖都數這些" },
+  { n: categoryCounts.length, label: "個議題分類" },
+  { n: outsideSdg, label: "個專案的影響力類別不在 SDGs 裡" },
+];
+
+const impact = impactCells();
+const impactRows = [...impact.sdg, ...impact.extra].map((c) => [
+  c.isSdg ? `SDG ${c.num}` : `自訂 ${c.num}`,
+  c.name,
+  c.count,
+]);
+const sdgTotal = impact.sdg.reduce((s, c) => s + c.count, 0);
+const extraTotal = impact.extra.reduce((s, c) => s + c.count, 0);
+
+// 表格只要數字，版面參數隨便給
+const flows = sankey({ height: 100, left: 0, right: 100, nodeW: 1, pad: 0 })
+  .links.sort((a, b) => b.value - a.value)
+  .map((l) => [l.source.label, l.target.label, l.value]);
+// 一個影響力類別被拆到幾個人話分類——拆得越散，越靠人工覆蓋清單
+const split = new Map<string, number>();
+for (const [src] of flows) split.set(src as string, (split.get(src as string) ?? 0) + 1);
+const [mostSplit, mostSplitN] = [...split].sort((a, b) => b[1] - a[1])[0];
+
+const demand = demandRows();
+const gaps = demand.filter(isGap);
+const top = demand[0];
+
+const repo = repoActivity();
+const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+const repoTiles = [
+  { n: repo.activeLastYear, label: "個一年內有更新" },
+  { n: repo.quietFiveYears, label: "個超過五年沒動" },
+  { n: repo.archived, label: "個已經封存" },
+];
+
+const net = tagNetwork(960, 560);
+const tagRows = net.edges
+  .sort((a, b) => b.weight - a.weight || a.a.tag.localeCompare(b.a.tag))
+  .map((e) => [e.a.tag, e.b.tag, e.weight]);
+---
+
+<Base title="資料總覽｜台灣公民科技資料庫" description={description} current="data">
+  <header class="pb-6 pt-28 sm:pt-32">
+    <div class="wrap">
+      <h1 class="m-0 text-[1.9rem] font-semibold sm:text-[2.4rem]" style="color:var(--ink)">資料總覽</h1>
+      <p class="mt-4 max-w-[60ch] text-[0.98rem] leading-relaxed" style="color:var(--ink-muted)">
+        同一批專案，換幾種方式看。資料庫裡共有 <span class="num">{stats.total}</span> 筆，
+        其中 <span class="num">{stats.listed}</span> 筆有簡介或連結、在站上有自己的頁面——下面的圖都只數這 {stats.listed} 筆，
+        跟分類頁的數字對得上。
+      </p>
+      <div class="mt-8 grid gap-6 sm:grid-cols-3">
+        {leads.map((it) => (
+          <div class="flex items-baseline gap-3 sm:flex-col sm:items-start sm:gap-1">
+            <span class="text-[2rem] font-semibold leading-none sm:text-[2.6rem]" style="color:var(--ink)">{it.n}</span>
+            <span class="text-sm" style="color:var(--ink-muted)">{it.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap pb-20">
+    <ChartSection
+      id="categories"
+      eyebrow="議題"
+      title="每一類有多少專案"
+      columns={["議題", "專案數"]}
+      rows={categoryCounts.map((c) => [c.name, c.count])}
+      numeric={[1]}
+    >
+      <p slot="lede">
+        一格是一個議題，面積是專案數。點任何一格，就會進到那一類的專案清單。
+      </p>
+      <Treemap />
+      <p slot="foot">分類是站上的「人話分類」草稿，規則與人工覆蓋清單見 GitHub 上的 <code>src/data/classification.ts</code>。</p>
+    </ChartSection>
+
+    <ChartSection
+      id="sdgs"
+      eyebrow="SDGs"
+      title="對應到哪幾個永續發展目標"
+      columns={["編號", "影響力類別", "專案數"]}
+      rows={impactRows}
+      numeric={[2]}
+    >
+      <p slot="lede">
+        Airtable 上每個專案都標了「影響力類別」：前 17 個是聯合國的永續發展目標（SDGs），
+        後 3 個是揪松團自己補的。SDGs 17 格加起來是 <span class="num">{sdgTotal}</span>，
+        自己補的 3 格就有 <span class="num">{extraTotal}</span>——很多公民科技專案做的是民主、資訊與開放資料，SDGs 沒有替它們留位置。
+      </p>
+      <SdgGrid />
+      <p slot="foot">一個專案可以標好幾個類別（{impact.multi} 個專案標了兩個以上），所以各格加總會比專案數多。</p>
+    </ChartSection>
+
+    <ChartSection
+      id="mapping"
+      eyebrow="分類怎麼來的"
+      title="從 SDGs 到站上的議題分類"
+      columns={["影響力類別", "站上的分類", "專案數"]}
+      rows={flows}
+      numeric={[2]}
+    >
+      <p slot="lede">
+        站上的 17 個分類不是 SDGs，是照 2026-07 需求問卷「想先看哪些議題」重切的。
+        左邊是原本的影響力類別，右邊是現在的分類，帶子越粗代表越多專案從左邊被分到右邊。
+        拆得最散的是「{mostSplit}」，被分到 {mostSplitN} 個分類。
+      </p>
+      <Sankey />
+      <p slot="foot">
+        每個專案只算它標的第一個影響力類別。對不上的專案靠一份人工覆蓋清單一筆一筆分，清單在 GitHub 上的
+        <code>src/data/classification.ts</code>，不同意哪一筆，改那一行就好。滑過任一類可以只看它的流向。
+      </p>
+    </ChartSection>
+
+    <ChartSection
+      id="gaps"
+      eyebrow="哪裡缺人"
+      title="大家想看的，跟社群做的"
+      columns={["議題", "想先看的人（%）", "需求名次", "專案數", "專案數名次"]}
+      rows={demand.map((r) => [r.name, r.demand, r.demandRank, r.supply, r.supplyRank])}
+      numeric={[1, 2, 3, 4]}
+    >
+      <p slot="lede">
+        2026-07 的需求問卷問了還沒做過專案的 {SURVEY_RESPONDENTS} 個人「想先看哪些議題的資料」。
+        最多人勾的是「{top.name}」（{top.demand}%），站上這一類有 {top.supply} 個專案。
+        {gaps.length > 0 && <>標成缺口的 {gaps.length} 類——{gaps.map((g) => `「${g.name}」`).join("")}——需求排在前面，專案數卻排在後面：想找地方出力，可以從這裡開始。</>}
+      </p>
+      <DemandSupply />
+      <p slot="foot">
+        問卷只問了 12 個議題，站上另外 5 類沒有需求數字，不在這張圖上。
+        「缺口」＝需求名次比專案數名次前面 {GAP_THRESHOLD} 名以上。問卷報告：
+        <a href="https://report.claire-cheng.com/#rec-1-2" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">report.claire-cheng.com</a>
+      </p>
+    </ChartSection>
+
+    <ChartSection
+      id="repos"
+      eyebrow="原始碼"
+      title="程式碼最後一次更新是什麼時候"
+      columns={["專案", "repo", "最後一次 push", "狀態"]}
+      rows={repo.withRepo.map((r) => [
+        r.name,
+        r.repo,
+        r.pushedAt ? fmtDate(r.pushedAt) : "—",
+        r.missing ? "找不到" : r.archived ? "已封存" : "",
+      ])}
+    >
+      <p slot="lede">
+        有 <span class="num">{repo.withRepo.length}</span> 個專案在資料庫裡連到自己的 GitHub repo。
+        照最後一次 push 的年份排，可以粗看這些程式碼還有沒有人在動。
+        沒在動不代表專案死了——做完就不必再改的工具很多——但它是一個值得去問一聲的訊號。
+      </p>
+      <div class="mb-6 grid gap-4 sm:grid-cols-3">
+        {repoTiles.map((t) => (
+          <div class="flex items-baseline gap-2">
+            <span class="text-[1.6rem] font-semibold leading-none" style="color:var(--ink)">{t.n}</span>
+            <span class="text-sm" style="color:var(--ink-muted)">{t.label}</span>
+          </div>
+        ))}
+      </div>
+      <RepoActivity />
+      <p slot="foot">
+        GitHub 資料同步於 {fmtDate(repo.synced)}。另有 {repo.orgOnly} 個專案只連到 GitHub 組織首頁、看不出是哪個 repo，
+        {repo.withoutGithub} 個沒有填 GitHub，都不在這張圖上。
+        {repo.missing > 0 && `有 ${repo.missing} 個 repo 已經找不到（被刪除或改成私有）。`}
+      </p>
+    </ChartSection>
+
+    <ChartSection
+      id="tags"
+      eyebrow="標籤"
+      title="哪些標籤常一起出現"
+      columns={["標籤", "標籤", "一起出現的專案數"]}
+      rows={tagRows}
+      numeric={[2]}
+    >
+      <p slot="lede">
+        除了分類，專案還可以貼自由標籤。兩個標籤貼在同一個專案上，就連一條線——
+        它看得出議題之間的交界。連得最廣的是「{net.hub.tag}」，跟 {net.hub.neighbors.length} 個標籤一起出現過。
+      </p>
+      <TagNetwork />
+      <p slot="foot">
+        標籤是社群自由貼的，還很稀：{net.tagged} 個專案有標籤，其中只有 {net.multiTagged} 個貼了兩個以上。
+        {net.totalTags} 種標籤裡，有 {net.isolated} 種從沒跟別的標籤一起出現過，沒有畫在圖上。
+      </p>
+    </ChartSection>
+  </div>
+
+  <ChartTip />
+</Base>

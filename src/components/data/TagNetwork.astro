@@ -1,0 +1,99 @@
+---
+// 標籤共現網絡：兩個標籤同時貼在同一個專案上，就連一條線；線越粗，一起出現的專案越多。
+// 點越大，貼了這個標籤的專案越多。滑過一個標籤，只亮它跟它的鄰居。
+//
+// 標籤在 Airtable 上是社群自由貼的，大多數專案只有一個標籤或沒有，所以這張網很稀——
+// 圖下照實寫出有多少標籤是孤島，不讓它看起來比實際更「連在一起」。
+import { tagNetwork } from "../../lib/dataviz";
+
+const W = 960;
+const H = 560;
+const { nodes, edges } = tagNetwork(W, H);
+---
+
+<div class="net-scroll">
+  <svg viewBox={`0 0 ${W} ${H}`} class="net" role="img" aria-label="標籤之間的共同出現關係，詳細清單見下方表格">
+    <g>
+      {edges.map((e) => (
+        <line
+          class="edge"
+          x1={e.a.x}
+          y1={e.a.y}
+          x2={e.b.x}
+          y2={e.b.y}
+          stroke-width={1 + (e.weight - 1) * 1.5}
+          data-groups={`${e.a.id} ${e.b.id}`}
+        />
+      ))}
+    </g>
+    {nodes.map((n) => (
+      <g
+        class="tag"
+        tabindex="0"
+        data-groups={[n.id, ...n.neighbors].join(" ")}
+        data-tip-group={n.id}
+        data-tip-value={`${n.count} 個專案`}
+        data-tip-label={`標籤「${n.tag}」`}
+        data-tip-note={`跟 ${n.neighbors.length} 個標籤一起出現過`}
+      >
+        <circle class="hit" cx={n.x} cy={n.y} r={Math.max(12, n.r + 4)} />
+        <circle class="dot" cx={n.x} cy={n.y} r={n.r} />
+        <text x={n.x + n.r + 5} y={n.y} dominant-baseline="middle">{n.tag}</text>
+      </g>
+    ))}
+  </svg>
+</div>
+
+<style>
+  .net-scroll {
+    overflow-x: auto;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+  .net {
+    display: block;
+    width: 100%;
+    min-width: 760px;
+    height: auto;
+  }
+  .edge {
+    stroke: var(--line-strong);
+    transition: stroke 0.15s ease, opacity 0.15s ease;
+  }
+  .dot {
+    fill: var(--accent);
+    stroke: var(--paper);
+    stroke-width: 2;
+  }
+  .hit {
+    fill: transparent;
+  }
+  text {
+    font-size: 12.5px;
+    fill: var(--ink-2);
+    paint-order: stroke;
+    stroke: var(--paper);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+  .tag {
+    outline: none;
+    transition: opacity 0.15s ease;
+  }
+  :global([data-hovering]) .tag,
+  :global([data-hovering]) .edge {
+    opacity: 0.2;
+  }
+  :global([data-hovering]) .tag[data-tip-related],
+  :global([data-hovering]) .edge[data-tip-related] {
+    opacity: 1;
+  }
+  :global([data-hovering]) .edge[data-tip-related] {
+    stroke: var(--accent);
+  }
+  .tag[data-tip-active] text,
+  .tag:focus-visible text {
+    fill: var(--ink);
+    font-weight: 600;
+  }
+</style>

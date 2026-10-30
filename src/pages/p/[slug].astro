@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import ProjectCard from "../../components/ProjectCard.astro";
 import { listedProjects, projectsByCategory } from "../../lib/projects";
 import { categoryBySlug } from "../../data/categories";
+import { parseImpact } from "../../lib/dataviz";
 import { editPath, suggestEditEnabled } from "../../lib/suggest";
 
 export function getStaticPaths() {
@@ -173,7 +174,14 @@ const jsonLd = {
           {project.impactCategories.length > 0 && (
             <div>
               <dt class="mb-1 text-xs">影響力類別</dt>
-              <dd class="m-0" style="color:var(--ink-2)">{project.impactCategories.join("、")}</dd>
+              <dd class="m-0" style="color:var(--ink-2)">
+                {project.impactCategories.map((c, i) => (
+                  <>
+                    {i > 0 && "、"}
+                    <a href={`/data/sdg/${parseImpact(c).num}`} style="color:var(--accent)">{c}</a>
+                  </>
+                ))}
+              </dd>
             </div>
           )}
 

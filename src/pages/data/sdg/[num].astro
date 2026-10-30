@@ -1,0 +1,55 @@
+---
+// 一個影響力類別（SDG 1–17 或揪松自訂的 18–20）底下有哪些專案。從資料總覽的 SDG 方陣點進來。
+//
+// 跟分類頁 /c/[slug] 是兩種切法：分類頁一個專案只會出現在一類，
+// 這裡一個專案標了幾個影響力類別，就會出現在幾頁。所以每張卡片都標出它在站上歸哪一類。
+import Base from "../../../layouts/Base.astro";
+import ProjectCard from "../../../components/ProjectCard.astro";
+import { impactCells, projectsByImpact, type ImpactCell } from "../../../lib/dataviz";
+
+export function getStaticPaths() {
+  const { sdg, extra } = impactCells();
+  return [...sdg, ...extra].map((cell) => ({ params: { num: String(cell.num) }, props: { cell } }));
+}
+
+const { cell } = Astro.props as { cell: ImpactCell };
+const projects = projectsByImpact(cell.num);
+// 有簡介的排前面，理由同分類頁
+const sorted = [...projects].sort((a, b) => Number(!!b.intro) - Number(!!a.intro));
+const code = cell.isSdg ? `SDG ${cell.num}` : `揪松自訂 ${cell.num}`;
+const title = `${code}・${cell.name}｜台灣公民科技資料庫`;
+const description = cell.isSdg
+  ? `標了聯合國永續發展目標 ${cell.num}「${cell.name}」的 ${projects.length} 個台灣公民科技專案。`
+  : `標了「${cell.name}」的 ${projects.length} 個台灣公民科技專案。這一類是揪松團自己補的，不在 SDGs 裡。`;
+---
+
+<Base title={title} description={description} current="data">
+  <header class="pb-10 pt-28 sm:pt-32">
+    <div class="wrap">
+      <a href="/data#sdgs" class="text-sm no-underline" style="color:var(--ink-muted)">← 資料總覽</a>
+      <p class="num mt-5 mb-0 text-sm" style="color:var(--ink-muted)">{code}</p>
+      <div class="mt-1 flex flex-wrap items-end gap-x-5 gap-y-2">
+        <h1 class="m-0 text-[1.9rem] font-semibold sm:text-[2.4rem]" style="color:var(--ink)">{cell.name}</h1>
+        <span class="num text-[1.6rem]" style="color:var(--accent)">{projects.length}</span>
+      </div>
+      <p class="mt-4 max-w-[60ch] text-[0.95rem] leading-relaxed" style="color:var(--ink-muted)">
+        {cell.isSdg
+          ? `Airtable 上「影響力類別」標了 SDG ${cell.num} 的專案。`
+          : "Airtable 上「影響力類別」標了這一類的專案。這一類不在聯合國的 17 個 SDGs 裡，是揪松團為公民科技補的。"}
+        一個專案可以標好幾個影響力類別，所以同一個專案可能也出現在別的 SDG 頁。卡片上方標的是它在站上歸的議題分類。
+      </p>
+    </div>
+  </header>
+
+  <div class="wrap pb-20">
+    {sorted.length > 0 ? (
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {sorted.map((p, i) => <ProjectCard project={p} index={i} showCategory />)}
+      </div>
+    ) : (
+      <p class="rounded-lg border p-4 text-sm" style="border-color:var(--line);background:var(--surface-2);color:var(--ink-muted)">
+        目前資料庫裡還沒有專案標這一類。
+      </p>
+    )}
+  </div>
+</Base>

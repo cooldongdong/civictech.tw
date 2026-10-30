@@ -1,0 +1,109 @@
+---
+// 整頁共用一個 tooltip。任何帶 data-tip-value 的元素，hover 或鍵盤 focus 都會叫出它。
+//
+// tooltip 只是加料，不是唯一的入口：每張圖底下都有一張表，同樣的數字不 hover 也讀得到。
+// 內容一律用 textContent 塞——專案名稱與標籤是社群在 Airtable 上填的，不能當 HTML 解析。
+---
+
+<div id="chart-tip" role="status" aria-live="polite" hidden>
+  <strong data-tip-value></strong>
+  <span data-tip-label></span>
+  <span data-tip-note></span>
+</div>
+
+<style>
+  #chart-tip {
+    position: fixed;
+    z-index: 60;
+    pointer-events: none;
+    max-width: 18rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 8px 20px -6px var(--shadow);
+    font-size: 0.8rem;
+    line-height: 1.45;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  #chart-tip[hidden] {
+    display: none;
+  }
+  [data-tip-value] {
+    color: var(--ink);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  [data-tip-label] {
+    color: var(--ink-2);
+  }
+  [data-tip-note] {
+    color: var(--ink-muted);
+    font-size: 0.75rem;
+  }
+  [data-tip-note]:empty {
+    display: none;
+  }
+</style>
+
+<script>
+  const tip = document.getElementById("chart-tip")!;
+  const valueEl = tip.querySelector("[data-tip-value]")!;
+  const labelEl = tip.querySelector("[data-tip-label]")!;
+  const noteEl = tip.querySelector("[data-tip-note]")!;
+  const OFFSET = 14;
+
+  function place(x: number, y: number) {
+    const r = tip.getBoundingClientRect();
+    // 靠右邊或底下太近就翻到另一側，不讓 tooltip 被視窗切掉
+    const left = x + OFFSET + r.width > window.innerWidth - 8 ? x - OFFSET - r.width : x + OFFSET;
+    const top = y + OFFSET + r.height > window.innerHeight - 8 ? y - OFFSET - r.height : y + OFFSET;
+    tip.style.left = `${Math.max(8, left)}px`;
+    tip.style.top = `${Math.max(8, top)}px`;
+  }
+
+  function show(el: Element) {
+    const d = (el as HTMLElement).dataset;
+    valueEl.textContent = d.tipValue ?? "";
+    labelEl.textContent = d.tipLabel ?? "";
+    noteEl.textContent = d.tipNote ?? "";
+    tip.hidden = false;
+    document.querySelectorAll("[data-tip-active]").forEach((e) => e.removeAttribute("data-tip-active"));
+    el.setAttribute("data-tip-active", "");
+    el.closest("[data-chart]")?.setAttribute("data-hovering", "");
+    // 讓同一張圖裡跟它有關的元素一起亮（桑基圖的流向、網絡圖的鄰居）
+    const group = d.tipGroup;
+    if (group) {
+      el.closest("[data-chart]")
+        ?.querySelectorAll(`[data-groups~="${CSS.escape(group)}"]`)
+        .forEach((e) => e.setAttribute("data-tip-related", ""));
+    }
+  }
+
+  function hide() {
+    tip.hidden = true;
+    document.querySelectorAll("[data-tip-active]").forEach((e) => e.removeAttribute("data-tip-active"));
+    document.querySelectorAll("[data-tip-related]").forEach((e) => e.removeAttribute("data-tip-related"));
+    document.querySelectorAll("[data-hovering]").forEach((e) => e.removeAttribute("data-hovering"));
+  }
+
+  document.addEventListener("pointerover", (e) => {
+    const el = (e.target as Element).closest?.("[data-tip-value]");
+    if (el) show(el);
+    else if (!tip.hidden) hide();
+  });
+  document.addEventListener("pointermove", (e) => {
+    if (!tip.hidden) place(e.clientX, e.clientY);
+  });
+  document.addEventListener("focusin", (e) => {
+    const el = (e.target as Element).closest?.("[data-tip-value]");
+    if (!el) return hide();
+    show(el);
+    const r = el.getBoundingClientRect();
+    place(r.left + r.width / 2, r.top + r.height / 2);
+  });
+  document.addEventListener("focusout", hide);
+  window.addEventListener("scroll", () => !tip.hidden && hide(), { passive: true });
+</script>
