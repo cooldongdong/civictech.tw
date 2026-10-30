@@ -18,8 +18,8 @@ const category = categoryBySlug.get(project.category)!;
     {project.nameEn && <span class="card-name-en">{project.nameEn}</span>}
   </h3>
 
-  {project.intro ? (
-    <p class="card-intro">{project.intro.length > 84 ? project.intro.slice(0, 84) + "⋯" : project.intro}</p>
+  {project.summary ? (
+    <p class="card-intro">{project.summary.length > 84 ? project.summary.slice(0, 84) + "⋯" : project.summary}</p>
   ) : (
     <p class="card-gap">還沒有人寫介紹</p>
   )}

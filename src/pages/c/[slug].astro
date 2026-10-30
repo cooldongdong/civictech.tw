@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import ProjectCard from "../../components/ProjectCard.astro";
 import { categories, surveyRate, SURVEY_RESPONDENTS } from "../../data/categories";
 import { projectsByCategory } from "../../lib/projects";
-import { suggestEditEnabled, suggestUrl } from "../../lib/suggest";
+import { suggestEditEnabled } from "../../lib/suggest";
 
 export function getStaticPaths() {
   return categories.map((c) => ({ params: { slug: c.slug }, props: { category: c } }));
@@ -14,8 +14,8 @@ const projects = projectsByCategory(category.slug);
 
 // 有簡介的排前面。不是因為它們比較重要，是因為一整牆「還沒有人寫介紹」
 // 會讓人以為這個資料庫是空的——而缺口要看得見，但不必擋在門口。
-const sorted = [...projects].sort((a, b) => Number(!!b.intro) - Number(!!a.intro));
-const missing = projects.filter((p) => !p.intro).length;
+const sorted = [...projects].sort((a, b) => Number(!!b.summary) - Number(!!a.summary));
+const missing = projects.filter((p) => !p.summary).length;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -68,7 +68,7 @@ const jsonLd = {
       <p class="mt-8 rounded-lg border p-4 text-sm" style="border-color:var(--line);background:var(--surface-2);color:var(--ink-muted)">
         這一類裡有 <span class="num">{missing}</span> 個專案還沒有人寫介紹。
         資料庫是社群一起填的{suggestEditEnabled ? (
-          <>——你認識其中哪一個，<a href={suggestUrl({ field: "簡介" })} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">就可以幫它補一句話</a>。</>
+          <>——你認識其中哪一個，點進它的專案頁，按「建議修改」就能幫它補一句話。</>
         ) : "。"}
       </p>
     )}

@@ -1,18 +1,16 @@
-// 修改建議表單（Airtable）。專案頁、分類頁、首頁數字區的「補一句話／補一筆」都連到這裡。
+// 修改建議：專案頁的「建議修改／幫它補一句話」連到站內的編輯頁（/p/{slug}/edit），
+// 表單預填目前的值，送出時只把有改的欄位組成 civictech-tw-data 的 GitHub issue。
+// 那邊自動開 PR，管理員合併就寫回 Airtable，隔天同步上線（流程見那個 repo 的 edits/README.md）。
 //
-// 預設只在預覽站開：Airtable 目前的方案送不出表單，正式站放一個按了沒反應的按鈕比不放更糟。
-// 表單能用之後，正式站 build 帶 PUBLIC_SUGGEST_EDIT=1 就會出現；要在預覽站關掉就帶 0。
-const flag = import.meta.env.PUBLIC_SUGGEST_EDIT;
-export const suggestEditEnabled = flag ? flag === "1" : import.meta.env.PUBLIC_PREVIEW === "1";
+// 預設開（g0v/civictech-tw-data 的表單與 workflow 2026-10-23 上線）。要關掉就在 build 帶 PUBLIC_SUGGEST_EDIT=0，
+// 關掉時連編輯頁都不產生。
+export const suggestEditEnabled = import.meta.env.PUBLIC_SUGGEST_EDIT !== "0";
 
-const SUGGEST_FORM = "https://airtable.com/app2R1DOrrO9iysOr/pag8PhiBFiltvE3LU/form";
+// PUBLIC_SUGGEST_REPO 可以換成測試用的 repo，送出的 issue 就不會掉進正式 repo
+export const SUGGEST_REPO = `https://github.com/${import.meta.env.PUBLIC_SUGGEST_REPO || "g0v/civictech-tw-data"}`;
 
-// 帶 record ID 而不是名稱：5 筆名稱尾端有空白或換行，帶名稱實測對不上；ID 也不怕 Airtable 上改名。
-// 對不上時那格會靜靜變空、但照樣送得出去，所以那一欄在 Airtable 上刻意不設必填
-export function suggestUrl(opts: { projectId?: string; field?: string } = {}) {
-  const q = new URLSearchParams();
-  if (opts.projectId) q.set("prefill_對應專案", opts.projectId);
-  if (opts.field) q.set("prefill_哪一欄", opts.field);
-  const qs = q.toString();
-  return qs ? `${SUGGEST_FORM}?${qs}` : SUGGEST_FORM;
-}
+// 沒有 GitHub 帳號的人寄信給揪松團，跟社群行事曆同一個信箱。
+// 不用 +tag 分類：這是 Google 網路論壇的地址，不保證收得到 +tag 的信；改用主旨的［civictech.tw］前綴
+export const CONTACT_EMAIL = "g0v-jothon@googlegroups.com";
+
+export const editPath = (slug: string) => `/p/${slug}/edit`;
