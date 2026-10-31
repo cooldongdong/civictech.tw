@@ -128,6 +128,7 @@ function github(path: string, token: string, init: RequestInit = {}): Promise<Re
 async function installationToken(appId: string, pem: string, repo: string): Promise<string> {
   const jwt = await appJwt(appId, pem);
   const inst = await github(`/repos/${repo}/installation`, jwt);
+  if (inst.status === 401) throw new Error("GitHub 不認這把 JWT：私鑰被刪了，或 App ID 跟私鑰對不上");
   if (!inst.ok) throw new Error(`App 沒有裝在 ${repo}（${inst.status}）`);
   const { id } = (await inst.json()) as { id: number };
   const res = await github(`/app/installations/${id}/access_tokens`, jwt, { method: "POST" });
