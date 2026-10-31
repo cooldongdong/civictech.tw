@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import WishCard from "../../components/WishCard.astro";
+import WishFountain from "../../components/WishFountain.astro";
 import { getWishes } from "../../lib/wishes";
 import { PROGRESS } from "../../lib/wish";
 
@@ -29,25 +30,13 @@ const jsonLd = {
 ---
 
 <Base title="許願池｜台灣公民科技資料庫" description={description} current="wish" jsonLd={jsonLd}>
-  <header class="pb-8 pt-28 sm:pt-32">
-    <div class="wrap flex flex-wrap items-end justify-between gap-6">
-      <div>
-        <h1 class="m-0 text-[1.9rem] font-semibold sm:text-[2.4rem]" style="color:var(--ink)">許願池</h1>
-        <p class="mb-0 mt-4 max-w-[52ch] text-[0.98rem] leading-relaxed" style="color:var(--ink-muted)">
-          想做但還沒有人做的事。每個提案都在 g0v Slack 上有一串討論，看到想參與的，就去打聲招呼。
-        </p>
-      </div>
-      <a
-        href="/w/new"
-        class="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium no-underline transition-transform duration-200 hover:-translate-y-0.5"
-        style="background:var(--accent-fill);color:var(--on-accent)"
-      >
-        我也想許願
-      </a>
-    </div>
-  </header>
+  <WishFountain wishes={wishes} />
 
-  <div class="wrap pb-20">
+  <div class="wrap pb-20 pt-12">
+    <h2 class="m-0 mb-2 text-[1.3rem] font-semibold" style="color:var(--ink)">所有提案</h2>
+    <p class="mb-6 mt-0 text-sm" style="color:var(--ink-muted)">
+      每個提案都在 g0v Slack 上有一串討論，看到想參與的，就去打聲招呼。
+    </p>
     {wishes.length > 0 ? (
       <>
         <!-- 篩選只在瀏覽器裡把卡片藏起來；沒有 JS 的時候就是全部列出 -->
