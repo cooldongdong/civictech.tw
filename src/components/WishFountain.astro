@@ -567,53 +567,96 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       ctx.lineWidth = 3;
       ctx.strokeStyle = pal.gold;
       ctx.stroke();
-      // 長髮在頭後面
+      // 座標以頭頂為原點、往下為正；袍子下襬在 175，浮出水面的只有上面 135
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+
+      // 長髮：從頭頂順著臉的兩側披到肩後，髮尾帶一點波浪。被袍子蓋住的部分不會露出來
       ctx.beginPath();
-      ctx.moveTo(-20, 10);
-      ctx.quadraticCurveTo(-28, 52, -18, 78);
-      ctx.lineTo(18, 78);
-      ctx.quadraticCurveTo(28, 52, 20, 10);
-      ctx.closePath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(-24, 0, -29, 22, -25, 46);
+      ctx.bezierCurveTo(-22, 68, -33, 84, -29, 104);
+      ctx.quadraticCurveTo(-21, 98, -15, 106);
+      ctx.lineTo(15, 106);
+      ctx.quadraticCurveTo(21, 98, 29, 104);
+      ctx.bezierCurveTo(33, 84, 22, 68, 25, 46);
+      ctx.bezierCurveTo(29, 22, 24, 0, 0, 0);
       ctx.fillStyle = pal.hair;
       ctx.fill();
-      // 袍子：上窄下寬
+
+      // 脖子
+      ctx.fillStyle = pal.skin;
+      ctx.fillRect(-5, 34, 10, 10);
+
+      // 袍子：圓肩、往下漸寬，領口一道小 V
       ctx.beginPath();
-      ctx.moveTo(-17, 40);
-      ctx.lineTo(17, 40);
+      ctx.moveTo(-8, 40);
+      ctx.lineTo(0, 49);
+      ctx.lineTo(8, 40);
+      ctx.quadraticCurveTo(22, 41, 24, 52);
       ctx.lineTo(48, 175);
       ctx.lineTo(-48, 175);
+      ctx.lineTo(-24, 52);
+      ctx.quadraticCurveTo(-22, 41, -8, 40);
       ctx.closePath();
       ctx.fillStyle = pal.robe;
       ctx.fill();
       ctx.lineWidth = 2;
       ctx.strokeStyle = pal.robeEdge;
       ctx.stroke();
+      // 衣褶與金色腰帶
       ctx.beginPath();
-      ctx.moveTo(4, 60);
-      ctx.lineTo(10, 175);
+      ctx.moveTo(-6, 82);
+      ctx.quadraticCurveTo(-9, 130, -14, 175);
+      ctx.moveTo(8, 82);
+      ctx.quadraticCurveTo(12, 130, 18, 175);
       ctx.stroke();
-      // 兩隻手向外攤開，像是端著兩個提案。
-      // 袖子先畫一道袍邊色、再疊袍子色，淺色模式的白底上才看得到袖子，不然手像飄在空中
-      ctx.lineCap = "round";
-      for (const [width, color] of [[12, pal.robeEdge], [8, pal.robe]] as const) {
-        ctx.lineWidth = width;
-        ctx.strokeStyle = color;
-        for (const side of [-1, 1]) {
-          ctx.beginPath();
-          ctx.moveTo(side * 14, 50);
-          ctx.quadraticCurveTo(side * 40, 70, side * 56, 58);
-          ctx.stroke();
-        }
-      }
-      for (const side of [-1, 1]) ellipse(side * 58, 57, 5, 5, pal.skin);
-      // 頭、臉
-      ellipse(0, 20, 17, 19, pal.skin);
       ctx.beginPath();
-      ctx.moveTo(-17, 16);
-      ctx.quadraticCurveTo(0, -6, 17, 16);
-      ctx.quadraticCurveTo(0, 4, -17, 16);
+      ctx.moveTo(-27, 76);
+      ctx.quadraticCurveTo(0, 82, 27, 76);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = pal.gold;
+      ctx.stroke();
+
+      // 寬大的垂袖：從肩膀垂下、在腰前收口，掌心朝上攤開，像捧著兩個提案遞給你。
+      // 袖子用袍子的顏色加一圈袍邊色，淺色模式的白底上才看得出輪廓
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(side * 22, 46);
+        ctx.bezierCurveTo(side * 34, 52, side * 44, 70, side * 50, 86);
+        ctx.quadraticCurveTo(side * 43, 96, side * 32, 94);
+        ctx.bezierCurveTo(side * 30, 80, side * 26, 70, side * 22, 64);
+        ctx.closePath();
+        ctx.fillStyle = pal.robe;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = pal.robeEdge;
+        ctx.stroke();
+        // 手：從袖口伸出、掌心朝上的一小片
+        ctx.beginPath();
+        ctx.moveTo(side * 34, 93);
+        ctx.quadraticCurveTo(side * 44, 104, side * 56, 96);
+        ctx.quadraticCurveTo(side * 50, 90, side * 44, 91);
+        ctx.closePath();
+        ctx.fillStyle = pal.skin;
+        ctx.fill();
+      }
+
+      // 頭、臉
+      ellipse(0, 21, 16, 18, pal.skin);
+      // 側分的瀏海
+      ctx.beginPath();
+      ctx.moveTo(-17, 22);
+      ctx.bezierCurveTo(-18, 6, -6, 1, 6, 3);
+      ctx.bezierCurveTo(14, 5, 19, 12, 17, 24);
+      ctx.quadraticCurveTo(10, 12, -2, 11);
+      ctx.quadraticCurveTo(-11, 13, -17, 22);
       ctx.fillStyle = pal.hair;
       ctx.fill();
+      // 腮紅
+      ctx.globalAlpha = 0.35;
+      for (const side of [-1, 1]) ellipse(side * 10, 29, 3.5, 2.2, "#e98a8a");
+      ctx.globalAlpha = 1;
       ctx.lineWidth = 1.6;
       ctx.strokeStyle = "#5b4636";
       for (const side of [-1, 1]) {
