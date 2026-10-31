@@ -1,0 +1,134 @@
+---
+// 許願表單，放在 /w/new。送出走 /api/wish（functions/api/wish.ts）代開 GitHub issue，送的人不用有 GitHub 帳號。
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+---
+
+<div class="rounded-xl border p-6 sm:p-8" style="border-color:var(--line);background:var(--surface)">
+  <form id="js-wish-form" class="space-y-5">
+    <div>
+      <label for="wish-q1" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
+        <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">1</span>
+        給專案取個酷名字：如「真的假的」、「阿美語萌典」，好記又有個性。
+      </label>
+      <input type="text" id="wish-q1" name="title" maxlength="80" required placeholder="請輸入專案名稱..."
+        class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)" />
+    </div>
+
+    <div>
+      <label for="wish-q2" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
+        <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">2</span>
+        一句話形容這個專案：透過 [技術] 解決 [誰] 的 [什麼痛點]。
+      </label>
+      <input type="text" id="wish-q2" name="description" maxlength="200" required placeholder="請輸入一句話形容..."
+        class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)" />
+    </div>
+
+    <div>
+      <label for="wish-q3" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
+        <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">3</span>
+        現有工具的不足：為什麼現在的方法行不通？
+      </label>
+      <textarea id="wish-q3" name="painPoint" maxlength="2000" rows="3" required placeholder="請描述目前的困境與不足..."
+        class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)"></textarea>
+    </div>
+
+    <div>
+      <label for="wish-q4" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
+        <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">4</span>
+        需要的超能力：（例如：徵求會用 ______ 的人）。
+      </label>
+      <input type="text" id="wish-q4" name="superpower" maxlength="300" required placeholder="例如：徵求會寫 React / 需要 UI 設計師..."
+        class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)" />
+    </div>
+
+    <div>
+      <label for="wish-q5" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
+        <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">5</span>
+        目前的進度：
+      </label>
+      <select id="wish-q5" name="progress" required
+        class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)">
+        <option value="" disabled selected>-- 請選擇目前進度 --</option>
+        <option value="已有構想">已有構想</option>
+        <option value="已有草稿">已有草稿</option>
+        <option value="已有資料">已有資料</option>
+      </select>
+    </div>
+
+    <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto" data-language="zh-tw"></div>
+
+    <p class="m-0 text-xs leading-relaxed" style="color:var(--ink-muted)">
+      送出後會公開在 GitHub 和 g0v Slack 上，請不要填聯絡方式或其他個人資料。
+    </p>
+
+    <button type="submit" id="js-wish-submit"
+      class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-none py-3 text-sm font-medium transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99]" style="background:var(--accent-fill);color:var(--on-accent)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13" />
+        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+      </svg>
+      送出許願
+    </button>
+  </form>
+
+  <div id="js-success-msg" class="mt-5 hidden rounded-lg border-l-2 px-4 py-3 text-sm" style="border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)">
+    已送出，大家可以在 g0v Slack 上討論了。為了擋掉灌水，有人看過之後才會出現在<a href="/w" class="underline">許願池</a>。
+    <a id="js-success-link" class="hidden underline" target="_blank" rel="noopener noreferrer">在 GitHub 上看你的提案 →</a>
+  </div>
+  <div id="js-error-msg" class="mt-5 hidden rounded-lg border-l-2 px-4 py-3 text-sm" role="alert" style="border-color:var(--gap);background:var(--surface-2);color:var(--ink)"></div>
+</div>
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
+  const form = document.getElementById('js-wish-form') as HTMLFormElement | null;
+  const submitBtn = document.getElementById('js-wish-submit') as HTMLButtonElement | null;
+  const successMsg = document.getElementById('js-success-msg');
+  const successLink = document.getElementById('js-success-link') as HTMLAnchorElement | null;
+  const errorMsg = document.getElementById('js-error-msg');
+
+  if (form && successMsg && errorMsg && submitBtn) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      // Turnstile 會在表單裡塞一個 cf-turnstile-response 欄位
+      const turnstileToken = data['cf-turnstile-response'];
+      delete data['cf-turnstile-response'];
+      // 不要用 window.alert：它會擋住整個頁面，而且長得像瀏覽器出錯。
+      // 錯誤訊息就寫在表單旁邊，使用者才知道自己填的東西還在。
+      const showError = (message: string) => {
+        errorMsg.textContent = message;
+        errorMsg.classList.remove('hidden');
+      };
+      if (!turnstileToken) {
+        showError('機器人驗證還沒跑完，等它打勾再送出。');
+        return;
+      }
+
+      errorMsg.classList.add('hidden');
+      submitBtn.disabled = true;
+      try {
+        const res = await fetch('/api/wish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...data, turnstileToken }),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.ok) throw new Error(out.message || '送不出去，稍後再按一次送出。');
+        form.classList.add('hidden');
+        if (successLink && out.url) {
+          successLink.href = out.url;
+          successLink.classList.remove('hidden');
+        }
+        successMsg.classList.remove('hidden');
+      } catch (err) {
+        console.error('送出失敗', err);
+        const fallback = '送不出去，可能是網路的問題。你填的內容還在，稍後再按一次送出。';
+        showError(err instanceof TypeError ? fallback : (err as Error).message || fallback);
+        // Turnstile 的 token 只能用一次，失敗後要換一張新的
+        (window as { turnstile?: { reset(): void } }).turnstile?.reset();
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  }
+</script>

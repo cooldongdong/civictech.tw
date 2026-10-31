@@ -29,14 +29,26 @@ npm run build     # 輸出到 ./dist/
 npm run preview   # 在本機預覽 build 結果
 ```
 
-環境變數照 `.env.example` 複製一份成 `.env`。全部不設也能跑，只是許願池會是空的。
+環境變數照 `.env.example` 複製一份成 `.env`。全部不設也能跑，只是許願池送不出去（卡片照樣讀得到）。
 
 | 變數 | 用途 |
 | :--- | :--- |
-| `PUBLIC_GOOGLE_*`、`PUBLIC_ENTRY_*` | 許願池讀寫的 Google 試算表與表單 |
+| `PUBLIC_TURNSTILE_SITE_KEY` | 許願池表單的機器人驗證（Cloudflare Turnstile） |
+| `PUBLIC_WISH_SLACK_URL` | 選填，許願池卡片背面「到 Slack 一起聊」連去的頻道 |
 | `PUBLIC_PREVIEW` | 設成 `1` 會掛上「改版預覽」橫幅、加 noindex、robots.txt 擋收錄。正式站不要帶 |
 | `PUBLIC_SUGGEST_EDIT` | 設成 `0` 會關掉「建議修改」與編輯頁。預設開 |
-| `PUBLIC_SUGGEST_REPO` | 編輯頁送出的 repo，預設 `g0v/civictech-tw-data`。測試時換成自己的 repo |
+| `PUBLIC_SUGGEST_REPO` | 編輯頁與許願池送出的 repo，預設 `g0v/civictech-tw-data`。測試時換成自己的公開 repo |
+
+許願池的後端是 Cloudflare Pages Function（`functions/api/wish.ts`），另外要在 Cloudflare 設三個 secret：`GITHUB_APP_ID`、`GITHUB_APP_PRIVATE_KEY`、`TURNSTILE_SECRET`。本地要跑後端就寫進 `.dev.vars`，用 `npx wrangler pages dev dist`。
+
+### 許願池怎麼運作
+
+1. 訪客在首頁填表，過了 Turnstile，`/api/wish` 用 GitHub App 身分在 `g0v/civictech-tw-data` 開一張貼 `wish` 標籤的 issue。訪客不需要 GitHub 帳號。
+2. g0v Slack 的頻道訂閱了 `wish` 標籤，issue 一開出來就會跳卡片；GitHub 上的留言也會進同一個討論串。
+3. 看過沒問題的人在 Slack 卡片上按 Edit 補貼 `wish-approved`（要對 repo 有寫入權、在 Slack 連結過 GitHub 帳號）。
+4. 首頁卡片直接向 GitHub API 讀 open 且帶 `wish-approved` 的 issue，最多慢一分鐘。不適當的提案關掉 issue 就會從首頁消失。
+
+標籤用英文是因為 GitHub 的 Slack app 訂閱過濾不吃中文標籤名稱；而且它只在 issue 開出來的那一刻看標籤，所以審核標籤沒辦法拿來決定要不要進 Slack。
 
 ## 資料從哪來
 

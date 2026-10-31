@@ -1,290 +1,46 @@
 ---
-// WishPool — 前端 JS 撈取 Google Sheet
+// 首頁的許願池入口。只放最新三個提案與兩個入口：許願在 /w/new，完整列表在 /w。
+// 提案會一直增加，所以首頁只放固定幾張，不讓這一區無限長下去。
+// id 留著 wish-pool：舊版就是這個錨點，外面可能有人貼過 civictech.tw/#wish-pool
+import WishCard from "./WishCard.astro";
+import { getWishes } from "../lib/wishes";
+
+const wishes = await getWishes();
+const latest = wishes.slice(0, 3);
 ---
 
 <section id="wish-pool" class="py-16 sm:py-20 lg:py-24">
-  <div class="wrap max-w-4xl">
-    <div class="mb-10">
+  <div class="wrap">
+    <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
       <h2 class="m-0 max-w-[20ch] text-[1.7rem] font-semibold sm:text-[2.1rem]" style="color:var(--ink)">
         想做但還沒有人做的事
       </h2>
-      <p class="mb-0 mt-3 max-w-[48ch] text-[0.95rem] leading-relaxed" style="color:var(--ink-muted)">
-        寫下來，社群裡就有人看得到。送出後會先經過人工審核才會出現在下面。
+      <p class="m-0 max-w-[40ch] text-sm" style="color:var(--ink-muted)">
+        寫下來，社群裡就有人看得到。每個提案都會進 g0v Slack，讓想一起做的人接著聊。
       </p>
     </div>
 
-    <!-- Form -->
-    <div class="mb-14 rounded-xl border p-6 sm:p-8" style="border-color:var(--line);background:var(--surface)">
-      <form id="js-wish-form" class="space-y-5">
-        <div>
-          <label for="wish-q1" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
-            <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">1</span>
-            給專案取個酷名字：如「真的假的」、「阿美語萌典」，好記又有個性。
-          </label>
-          <input type="text" id="wish-q1" name={import.meta.env.PUBLIC_ENTRY_TITLE} required placeholder="請輸入專案名稱..."
-            class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)" />
-        </div>
-
-        <div>
-          <label for="wish-q2" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
-            <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">2</span>
-            一句話形容這個專案：透過 [技術] 解決 [誰] 的 [什麼痛點]。
-          </label>
-          <input type="text" id="wish-q2" name={import.meta.env.PUBLIC_ENTRY_DESCRIPTION} required placeholder="請輸入一句話形容..."
-            class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)" />
-        </div>
-
-        <div>
-          <label for="wish-q3" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
-            <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">3</span>
-            現有工具的不足：為什麼現在的方法行不通？
-          </label>
-          <textarea id="wish-q3" name={import.meta.env.PUBLIC_ENTRY_PAINPOINT} rows="3" required placeholder="請描述目前的困境與不足..."
-            class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)"></textarea>
-        </div>
-
-        <div>
-          <label for="wish-q4" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
-            <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">4</span>
-            需要的超能力：（例如：徵求會用 ______ 的人）。
-          </label>
-          <input type="text" id="wish-q4" name={import.meta.env.PUBLIC_ENTRY_SUPERPOWER} required placeholder="例如：徵求會寫 React / 需要 UI 設計師..."
-            class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)" />
-        </div>
-
-        <div>
-          <label for="wish-q5" class="mb-2 flex items-start gap-2.5 text-sm font-medium leading-snug" style="color:var(--ink-2)">
-            <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">5</span>
-            目前的進度：
-          </label>
-          <select id="wish-q5" name={import.meta.env.PUBLIC_ENTRY_PROGRESS} required
-            class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)">
-            <option value="" disabled selected>-- 請選擇目前進度 --</option>
-            <option value="已有構想">已有構想</option>
-            <option value="已有草稿">已有草稿</option>
-            <option value="已有資料">已有資料</option>
-          </select>
-        </div>
-
-        <button type="submit"
-          class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-none py-3 text-sm font-medium transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99]" style="background:var(--accent-fill);color:var(--on-accent)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" />
-          </svg>
-          送出許願
-        </button>
-      </form>
-
-      <div id="js-success-msg" class="mt-5 hidden rounded-lg border-l-2 px-4 py-3 text-sm" style="border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)">
-        已送出。為了擋掉灌水，會先經過人工審核才會出現在下方。
+    {latest.length > 0 ? (
+      <div class="grid gap-3 md:grid-cols-3">
+        {latest.map((w, i) => <WishCard wish={w} index={i} />)}
       </div>
-    </div>
+    ) : (
+      <p class="m-0 rounded-lg border p-6 text-center text-sm" style="border-color:var(--line);color:var(--ink-muted)">
+        目前還沒有提案，來當第一個許願的人吧。
+      </p>
+    )}
 
-    <!-- Display area -->
-    <div>
-      <h3 class="m-0 mb-6 text-base font-semibold" style="color:var(--ink)">已經有人許過的願</h3>
-      <div id="js-wishes-loading" class="grid grid-cols-1 gap-5 md:grid-cols-2" aria-hidden="true">
-        <div class="h-[180px] animate-pulse rounded-xl" style="background:var(--surface-2)"></div>
-        <div class="h-[180px] animate-pulse rounded-xl" style="background:var(--surface-2)"></div>
-      </div>
-      <div id="js-wishes-container" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <!-- JS rendered -->
-      </div>
-    </div>
+    <nav aria-label="許願池" class="mt-8 flex flex-wrap items-center gap-3">
+      <a
+        href="/w/new"
+        class="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium no-underline transition-transform duration-200 hover:-translate-y-0.5"
+        style="background:var(--accent-fill);color:var(--on-accent)"
+      >
+        我也想許願
+      </a>
+      {wishes.length > 0 && (
+        <a href="/w" class="ml-auto text-sm" style="color:var(--accent)">看全部 {wishes.length} 個提案 →</a>
+      )}
+    </nav>
   </div>
 </section>
-
-<style is:global>
-  @reference "../styles/global.css";
-  .flip-card {
-    @apply bg-transparent cursor-pointer;
-    height: 300px;
-    perspective: 1000px;
-  }
-  .flip-card-inner {
-    @apply relative w-full h-full text-center rounded-2xl;
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    transform-style: preserve-3d;
-  }
-  .flip-card:hover .flip-card-inner,
-  .flip-card:focus .flip-card-inner {
-    transform: rotateY(180deg);
-  }
-  .flip-card-front, .flip-card-back {
-    @apply absolute inset-0 rounded-2xl p-6 flex flex-col justify-between items-center;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-  .flip-card-front {
-    background: var(--surface);
-    color: var(--ink);
-    border: 1px solid var(--line);
-  }
-  .flip-card-back {
-    @apply items-start text-left;
-    /* 背面用強調色淡底，翻過來一眼看得出是另一面，淺色深色都成立 */
-    color: var(--ink);
-    background: linear-gradient(140deg, var(--accent-soft) 0%, var(--surface-2) 100%);
-    border: 1px solid var(--line);
-    transform: rotateY(180deg);
-  }
-  .card-badge {
-    @apply self-end px-3 py-1 rounded-full text-xs font-medium;
-    background: var(--accent-soft);
-    color: var(--accent-ink);
-  }
-  .avatar-placeholder {
-    @apply w-14 h-14 rounded-full flex items-center justify-center text-2xl;
-    background: linear-gradient(135deg, var(--accent-fill), var(--c-health));
-  }
-  .card-wish-title {
-    @apply text-lg font-semibold my-2;
-    color: var(--ink);
-  }
-  .card-wish-desc {
-    @apply text-sm leading-relaxed text-center flex-1;
-    color: var(--ink-muted);
-  }
-  .back-title {
-    @apply text-base font-semibold mb-3 pb-2.5 w-full;
-    color: var(--accent-ink);
-    border-bottom: 1px solid var(--line-strong);
-  }
-  .back-content {
-    @apply text-sm leading-relaxed flex-1;
-  }
-  .back-content p {
-    @apply mb-2.5;
-  }
-  .back-content strong {
-    color: var(--accent-ink);
-  }
-  .flip-hint {
-    @apply text-xs;
-    color: var(--ink-muted);
-  }
-  .flip-hint-back {
-    @apply text-xs self-center;
-    color: var(--ink-muted);
-  }
-</style>
-
-<script>
-  const GOOGLE_SHEET_CSV_URL = import.meta.env.PUBLIC_GOOGLE_SHEET_CSV_URL;
-  const GOOGLE_FORM_ACTION_URL = import.meta.env.PUBLIC_GOOGLE_FORM_ACTION_URL;
-
-  const form = document.getElementById('js-wish-form') as HTMLFormElement | null;
-  const successMsg = document.getElementById('js-success-msg');
-  const container = document.getElementById('js-wishes-container');
-  const loadingStatus = document.getElementById('js-wishes-loading');
-
-  if (form && successMsg) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const searchParams = new URLSearchParams();
-      for (const [key, value] of formData) {
-        searchParams.append(key, value.toString());
-      }
-      try {
-        await fetch(GOOGLE_FORM_ACTION_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: searchParams
-        });
-        form.classList.add('hidden');
-        successMsg.classList.remove('hidden');
-      } catch (err) {
-        // 不要用 window.alert：它會擋住整個頁面，而且長得像瀏覽器出錯。
-        // 錯誤訊息就寫在表單旁邊，使用者才知道自己填的東西還在。
-        console.error('送出失敗', err);
-        successMsg.textContent = '送不出去，可能是網路的問題。你填的內容還在，稍後再按一次送出。';
-        successMsg.classList.remove('hidden');
-      }
-    });
-  }
-
-  async function loadWishes() {
-    if (!container || !loadingStatus) return;
-    if (!GOOGLE_SHEET_CSV_URL) {
-      loadingStatus.textContent = '請先設定 PUBLIC_GOOGLE_SHEET_CSV_URL 環境變數。';
-      return;
-    }
-    try {
-      const response = await fetch(GOOGLE_SHEET_CSV_URL);
-      if (!response.ok) throw new Error('無法取得 Google Sheet 資料');
-      const csvText = await response.text();
-      const rows = parseCSV(csvText);
-
-      const wishes = rows.slice(1)
-        .map((row, index) => ({
-          id: index, title: row[1] || '', description: row[2] || '',
-          painPoint: row[3] || '', superpower: row[4] || '',
-          progress: row[5] || '',
-          isApproved: (row[6] || '').trim().toUpperCase() === 'Y'
-        }))
-        .filter(wish => wish.isApproved && wish.title);
-
-      loadingStatus.classList.add('hidden');
-
-      if (wishes.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-12 text-sm" style="color:var(--ink-muted)">目前尚無審核通過的許願專案，快來當第一個許願者吧！</div>`;
-        return;
-      }
-
-      container.innerHTML = wishes.map(wish => `
-        <div class="flip-card" tabindex="0">
-          <div class="flip-card-inner">
-            <div class="flip-card-front">
-              <div class="card-badge">${escapeHTML(wish.progress)}</div>
-              <div class="avatar-placeholder" aria-hidden="true"></div>
-              <h4 class="card-wish-title">${escapeHTML(wish.title)}</h4>
-              <p class="card-wish-desc">${escapeHTML(wish.description)}</p>
-              <div class="flip-hint">翻面看它需要什麼</div>
-            </div>
-            <div class="flip-card-back">
-              <h4 class="back-title">專案需求詳情</h4>
-              <div class="back-content">
-                <p><strong>現況痛點：</strong>${escapeHTML(wish.painPoint)}</p>
-                <p><strong>極需支援：</strong>${escapeHTML(wish.superpower)}</p>
-                <p><strong>目前進度：</strong>${escapeHTML(wish.progress)}</p>
-              </div>
-              <div class="flip-hint-back">🔄 移開或再次點擊翻回</div>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    } catch (err) {
-      console.error(err);
-      loadingStatus.textContent = '載入許願池資料失敗，請重新整理網頁。';
-    }
-  }
-
-  function parseCSV(text: string): string[][] {
-    const lines: string[][] = [];
-    let row: string[] = [''];
-    let inQuotes = false;
-    for (let i = 0; i < text.length; i++) {
-      const c = text[i]; const next = text[i + 1];
-      if (c === '"') {
-        if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
-        else { inQuotes = !inQuotes; }
-      } else if (c === ',' && !inQuotes) { row.push(''); }
-      else if ((c === '\r' || c === '\n') && !inQuotes) {
-        if (c === '\r' && next === '\n') i++;
-        lines.push(row); row = [''];
-      } else { row[row.length - 1] += c; }
-    }
-    if (row.length > 1 || row[0] !== '') lines.push(row);
-    return lines;
-  }
-
-  function escapeHTML(str: string): string {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-  }
-
-  loadWishes();
-</script>
