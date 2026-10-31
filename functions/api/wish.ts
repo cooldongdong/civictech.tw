@@ -4,13 +4,21 @@
 // 而開 issue 要用的私鑰不能放進前端。
 //
 // 流程：驗 Turnstile → 檢查欄位 → 用 App 私鑰換 installation token → 開 issue 並貼 wish 標籤。
-// 審核的人在 GitHub 上補貼 wish-approved，才會進 Slack 頻道、才會出現在網站上。
+// Slack 頻道訂閱 wish 標籤，所以每張提案一開出來就會進頻道。
+// 看過沒問題的人在 Slack 卡片上按 Edit 補貼 wish-approved，網站才會顯示。
+// 為什麼不倒過來（審核過才進 Slack）：GitHub 的 Slack app 只在 issue 開出來的那一刻看標籤，
+// 事後補貼的標籤不會讓卡片跳出來（2026-10-31 實測）。
+//
+// 能補貼 wish-approved 的是對 repo 有寫入權、並在 Slack 連結過 GitHub 帳號的人。
+// 不要做會自動貼 wish-approved 的 issue 模板：模板上的標籤連沒有權限的人用也會貼上，審核就被繞過了。
 //
 // 需要的環境變數（Cloudflare Pages → Settings → Variables and Secrets）：
 //   GITHUB_APP_ID           GitHub App 的 App ID
 //   GITHUB_APP_PRIVATE_KEY  App 的私鑰，GitHub 下載下來的 .pem 整份貼上（PKCS#1 或 PKCS#8 都可以）
 //   TURNSTILE_SECRET        Turnstile 的 secret key
 //   PUBLIC_SUGGEST_REPO     選填，issue 開在哪個 repo；不設就是 g0v/civictech-tw-data
+
+import { buildBody, FIELDS, neutralize, PROGRESS, WISH_LABEL } from "../../src/lib/wish.ts";
 
 interface Env {
   GITHUB_APP_ID?: string;
@@ -23,18 +31,6 @@ interface Context {
   request: Request;
   env: Env;
 }
-
-// 標籤用英文：GitHub 的 Slack app 訂閱過濾（+label:）不吃中文標籤名稱，中文說明寫在標籤的描述欄
-const WISH_LABEL = "wish";
-const PROGRESS = ["已有構想", "已有草稿", "已有資料"];
-
-// 欄位名稱同時是 issue 內文的小標題，前端靠這些小標題把內文拆回欄位，改名要兩邊一起改
-const FIELDS = [
-  { key: "description", heading: "一句話形容", max: 200 },
-  { key: "painPoint", heading: "現有工具的不足", max: 2000 },
-  { key: "superpower", heading: "需要的超能力", max: 300 },
-  { key: "progress", heading: "目前的進度", max: 20 },
-] as const;
 
 export async function onRequestPost({ request, env }: Context): Promise<Response> {
   if (!env.GITHUB_APP_ID || !env.GITHUB_APP_PRIVATE_KEY || !env.TURNSTILE_SECRET) {
@@ -59,10 +55,7 @@ export async function onRequestPost({ request, env }: Context): Promise<Response
   if (!title || FIELDS.some((f) => !values[f.key])) return reply(400, "每一題都要填。");
   if (!PROGRESS.includes(values.progress)) return reply(400, "目前的進度只能從選單裡挑。");
 
-  const body = [
-    "<!-- 這張 issue 由 civictech.tw 首頁的許願池送出。貼上 wish-approved 標籤後會進 Slack、出現在網站上。 -->",
-    ...FIELDS.map((f) => `### ${f.heading}\n\n${escapeHeadings(neutralize(values[f.key]))}`),
-  ].join("\n\n");
+  const body = buildBody(values);
 
   const repo = env.PUBLIC_SUGGEST_REPO || "g0v/civictech-tw-data";
   try {
@@ -86,18 +79,6 @@ function reply(status: number, message: string): Response {
 
 function clean(value: unknown, max: number): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
-}
-
-// 送出的文字會原樣進到公開 issue，先拆掉會波及別人的寫法：
-// @某人 會通知對方，#123 與 owner/repo#123 會在別的 issue 留下反向連結。
-// 在中間塞一個零寬空白，看起來一樣，GitHub 就不會認。
-function neutralize(text: string): string {
-  return text.replace(/@(?=\w)/g, "@\u200b").replace(/#(?=\d)/g, "#\u200b");
-}
-
-// 行首的 # 會變成小標題，打亂前端拆欄位用的 ### 小標題，跳脫掉
-function escapeHeadings(text: string): string {
-  return text.replace(/^(\s*)#/gm, "$1\\#");
 }
 
 async function passTurnstile(token: string, secret: string, ip?: string): Promise<boolean> {

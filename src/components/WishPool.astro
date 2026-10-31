@@ -11,7 +11,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
         想做但還沒有人做的事
       </h2>
       <p class="mb-0 mt-3 max-w-[48ch] text-[0.95rem] leading-relaxed" style="color:var(--ink-muted)">
-        寫下來，社群裡就有人看得到。送出後會先經過人工審核才會出現在下面。
+        寫下來，社群裡就有人看得到。送出後會進 g0v Slack 讓大家討論，有人看過之後才會出現在下面。
       </p>
     </div>
 
@@ -71,7 +71,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
         <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto" data-language="zh-tw"></div>
 
         <p class="m-0 text-xs leading-relaxed" style="color:var(--ink-muted)">
-          送出後會在 GitHub 上公開成一張提案頁，請不要填聯絡方式或其他個人資料。
+          送出後會公開在 GitHub 和 g0v Slack 上，請不要填聯絡方式或其他個人資料。
         </p>
 
         <button type="submit" id="js-wish-submit"
@@ -85,7 +85,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       </form>
 
       <div id="js-success-msg" class="mt-5 hidden rounded-lg border-l-2 px-4 py-3 text-sm" style="border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)">
-        已送出。為了擋掉灌水，會先經過人工審核，通過後才會出現在下方、進到 Slack 頻道讓大家討論。
+        已送出，大家可以在 g0v Slack 上討論了。為了擋掉灌水，有人看過之後才會出現在下方。
         <a id="js-success-link" class="hidden underline" target="_blank" rel="noopener noreferrer">看你的提案頁 →</a>
       </div>
       <div id="js-error-msg" class="mt-5 hidden rounded-lg border-l-2 px-4 py-3 text-sm" role="alert" style="border-color:var(--gap);background:var(--surface-2);color:var(--ink)"></div>
@@ -184,18 +184,11 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 </style>
 
 <script>
+  import { APPROVED_LABEL, parseBody } from '../lib/wish';
+
   // 卡片從 GitHub 公開 API 讀，不帶 token：每個訪客自己的 IP 每小時 60 次，一次載入只用 1 次
   const REPO = import.meta.env.PUBLIC_SUGGEST_REPO || 'g0v/civictech-tw-data';
-  const APPROVED_LABEL = 'wish-approved';
   const SLACK_URL = import.meta.env.PUBLIC_WISH_SLACK_URL;
-
-  // 跟 functions/api/wish.ts 的 FIELDS 小標題一致，改名要兩邊一起改
-  const HEADINGS: Record<string, string> = {
-    '一句話形容': 'description',
-    '現有工具的不足': 'painPoint',
-    '需要的超能力': 'superpower',
-    '目前的進度': 'progress',
-  };
 
   const form = document.getElementById('js-wish-form') as HTMLFormElement | null;
   const submitBtn = document.getElementById('js-wish-submit') as HTMLButtonElement | null;
@@ -252,18 +245,6 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   }
 
   interface Issue { title: string; body: string | null; html_url: string; pull_request?: unknown }
-
-  // issue 內文是 functions/api/wish.ts 組的：每個欄位一個 ### 小標題。
-  // 審核的人在 GitHub 上改過內文也照樣拆得開，只要小標題沒動。
-  function parseBody(body: string): Record<string, string> {
-    const fields: Record<string, string> = {};
-    const parts = body.split(/^### (.+)$/m);
-    for (let i = 1; i < parts.length; i += 2) {
-      const key = HEADINGS[parts[i].trim()];
-      if (key) fields[key] = parts[i + 1].trim().replace(/^(\s*)\\#/gm, '$1#');
-    }
-    return fields;
-  }
 
   async function loadWishes() {
     if (!container || !loadingStatus) return;
