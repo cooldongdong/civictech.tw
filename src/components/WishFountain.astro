@@ -196,7 +196,7 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
 <script>
   interface Pick { number: number; title: string; description: string; progress: string }
   interface Drop { x: number; y: number; vx: number; vy: number; land: number; kind: "jet" | "splash" }
-  interface Ripple { x: number; y: number; t0: number; size: number }
+  interface Ripple { x: number; y: number; t0: number; size: number; life: number; bowl?: boolean }
 
   const root = document.querySelector<HTMLElement>("[data-fountain]");
   if (root) fountain(root);
@@ -265,6 +265,9 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
     let coin: { sx: number; sy: number; tx: number; ty: number; t0: number } | null = null;
     let sinking: { x: number; y: number; t0: number } | null = null;
     let goddess: { state: "hidden" | "rising" | "shown" | "sinking"; t0: number } = { state: "hidden", t0: 0 };
+    // 硬幣落水、女神浮出的地方，記成相對池子中心的比例（u 以 rx、v 以 ry 為單位）。
+    // 手機上女神開口時整區會被撐高、池子往下移，記絕對座標的話她會浮在半空中
+    let spot = { u: 0, v: 0 };
     let now = 0;
 
     const surface = (x: number, y: number) => ((x - cx) / rx) ** 2 + ((y - py) / ry) ** 2 <= 1;
@@ -292,7 +295,13 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
         tx = cx + Math.cos(a) * rx * 0.6;
         ty = py + Math.sin(a) * ry * 0.6;
       }
-      if (fromButton) { tx = cx + rx * 0.25; ty = py + ry * 0.2; }
+      if (fromButton) { tx = cx + rx * 0.4; ty = py + ry * 0.3; }
+      // 女神會從硬幣落水的地方浮上來，所以落點要容得下她：
+      // 只在池子前半（站在柱子前面），左右離池邊留一個袖子的寬度
+      const room = rx - 62 * s;
+      tx = Math.max(cx - room, Math.min(cx + room, tx));
+      ty = Math.max(py + ry * 0.1, Math.min(py + ry * 0.55, ty));
+      spot = { u: (tx - cx) / rx, v: (ty - py) / ry };
       if (reduced) {
         splash(tx, ty);
         goddess = { state: "shown", t0: now };
@@ -304,7 +313,7 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
     }
 
     function splash(x: number, y: number) {
-      for (let i = 0; i < 3; i++) ripples.push({ x, y, t0: now + i * 0.18, size: 70 * s });
+      for (let i = 0; i < 3; i++) ripples.push({ x, y, t0: now + i * 0.18, size: 70 * s, life: 1.6 });
       if (reduced) return;
       for (let i = 0; i < 16; i++) {
         drops.push({ x, y, vx: (Math.random() - 0.5) * 140 * s, vy: -(90 + Math.random() * 150) * s, land: y, kind: "splash" });
@@ -408,13 +417,16 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
         d.x += d.vx * dt;
         d.y += d.vy * dt;
         if (d.vy > 0 && d.y >= d.land) {
-          if (d.land > bowlY + 1 && Math.random() < (d.kind === "splash" ? 0.3 : 0.04)) {
-            ripples.push({ x: d.x, y: d.land, t0: now, size: (12 + Math.random() * 14) * s });
+          // 水滴落在哪裡，漣漪就從哪裡冒出來：水簾落進池子、噴泉落進上層的碗，都留下小小的一圈
+          const inBowl = d.land <= bowlY + 1;
+          if (Math.random() < (d.kind === "splash" ? 0.4 : inBowl ? 0.15 : 0.35)) {
+            const size = (d.kind === "splash" ? 8 + Math.random() * 6 : inBowl ? 3 + Math.random() * 4 : 5 + Math.random() * 7) * s;
+            ripples.push({ x: d.x, y: d.land, t0: now, size, life: 0.9, bowl: inBowl });
           }
           drops.splice(i, 1);
         }
       }
-      for (let i = ripples.length - 1; i >= 0; i--) if (now - ripples[i].t0 > 1.6) ripples.splice(i, 1);
+      for (let i = ripples.length - 1; i >= 0; i--) if (now - ripples[i].t0 > ripples[i].life) ripples.splice(i, 1);
 
       if (coin && now - coin.t0 >= 0.75) {
         splash(coin.tx, coin.ty);
@@ -463,15 +475,14 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       ctx.beginPath();
       ctx.ellipse(cx, py, rx, ry, 0, 0, Math.PI * 2);
       ctx.clip();
-      ctx.lineWidth = 1.5;
-      for (const r of ripples) {
-        const k = (now - r.t0) / 1.6;
-        if (k < 0) continue;
-        ctx.beginPath();
-        ctx.ellipse(r.x, r.y, r.size * (0.2 + k), r.size * (0.2 + k) * (ry / rx), 0, 0, Math.PI * 2);
-        ctx.strokeStyle = pal.ripple.replace(/[\d.]+\)$/, `${(1 - k) * 0.9})`);
-        ctx.stroke();
-      }
+      // 水簾落進池子的那一圈白色水沫：漣漪就從這條線上冒出來，看得出水是落在這裡。
+      // 水簾只從碗的前緣流下來，所以只畫前半圈；位置與水簾落點一致（見 update 的 land）
+      ctx.beginPath();
+      ctx.ellipse(cx, py - 6 * s, 100 * s, ry * 0.45, 0, 0.08 * Math.PI, 0.92 * Math.PI);
+      ctx.lineWidth = 3 * s;
+      ctx.strokeStyle = pal.foam.replace(/[\d.]+\)$/, "0.25)");
+      ctx.stroke();
+      drawRipples(false);
       if (sinking) {
         const k = Math.min(1, (now - sinking.t0) / 1);
         ctx.globalAlpha = 1 - k;
@@ -479,6 +490,23 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
         ctx.globalAlpha = 1;
       }
       ctx.restore();
+    }
+
+    // 池子與上層的碗各畫各的漣漪，外面已經用各自的水面裁好
+    function drawRipples(bowl: boolean) {
+      ctx.lineWidth = 1.5;
+      for (const r of ripples) {
+        if (Boolean(r.bowl) !== bowl) continue;
+        const k = (now - r.t0) / r.life;
+        if (k < 0) continue;
+        // 從 0.4 倍開始擴散：從 0 開始的話，小漣漪剛冒出來只有一兩個像素，加上線寬會變成一顆顆小黑點
+        const grow = r.size * (0.4 + k * 0.8);
+        const strength = r.size > 20 * s ? 0.9 : 0.6;
+        ctx.beginPath();
+        ctx.ellipse(r.x, r.y, grow, grow * (ry / rx), 0, 0, Math.PI * 2);
+        ctx.strokeStyle = pal.ripple.replace(/[\d.]+\)$/, `${(1 - k) * strength})`);
+        ctx.stroke();
+      }
     }
 
     function drawPillar() {
@@ -494,6 +522,12 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       ctx.fill();
       ellipse(cx, bowlY, 78 * s, 15 * s, pal.stone);
       ellipse(cx, bowlY + 1 * s, 66 * s, 10 * s, pal.water);
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(cx, bowlY + 1 * s, 66 * s, 10 * s, 0, 0, Math.PI * 2);
+      ctx.clip();
+      drawRipples(true);
+      ctx.restore();
       // 噴口
       ctx.fillStyle = pal.stoneSide;
       ctx.fillRect(cx - 5 * s, py - 178 * s, 10 * s, 38 * s);
@@ -548,17 +582,27 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       if (goddess.state === "rising") rise = 1 - (1 - Math.min(1, t / 1.3)) ** 3;
       if (goddess.state === "sinking") rise = 1 - Math.min(1, t / 0.9) ** 2;
       if (reduced) rise = 1;
-      const base = py + ry * 0.35;
+      // 從硬幣落水的地方浮上來：漣漪的中心就是她
+      const gx = cx + spot.u * rx, base = py + spot.v * ry;
       const bob = goddess.state === "shown" && !reduced ? Math.sin(now * 1.6) * 3 * s : 0;
       // 袍子有 175 高，只浮上來 135，下襬留一截在水裡，才像是從湖裡浮上來
       const top = base - 135 * s * rise + bob;
+      const ringX = 52 * s, ringY = 10 * s;
+
+      // 圍著她的那圈水波拆成兩半：後半圈在她身後，前半圈在她身前
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = pal.foam;
+      ctx.beginPath();
+      ctx.ellipse(gx, base, ringX, ringY, 0, Math.PI, Math.PI * 2);
+      ctx.stroke();
 
       ctx.save();
-      // 只畫水面以上的部分，看起來才像從水裡浮上來
+      // 只畫水面以上的部分。吃水線順著前半圈的弧度，而不是一刀切平
       ctx.beginPath();
       ctx.rect(0, 0, W, base);
+      ctx.ellipse(gx, base, ringX, ringY, 0, 0, Math.PI);
       ctx.clip();
-      ctx.translate(cx + rx * 0.42, top);
+      ctx.translate(gx, top);
       ctx.scale(s, s);
 
       // 光環
@@ -669,11 +713,10 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       ctx.stroke();
       ctx.restore();
 
-      // 腰間的一圈水波
-      ctx.beginPath();
-      ctx.ellipse(cx + rx * 0.42, base, 54 * s, 10 * s, 0, 0, Math.PI * 2);
       ctx.lineWidth = 2;
       ctx.strokeStyle = pal.foam;
+      ctx.beginPath();
+      ctx.ellipse(gx, base, ringX, ringY, 0, 0, Math.PI);
       ctx.stroke();
 
       // 閃光
@@ -682,7 +725,7 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
         for (let i = 0; i < 5; i++) {
           const a = now * 0.8 + i * 1.26;
           const tw = (Math.sin(now * 3 + i * 2) + 1) / 2;
-          const x = cx + rx * 0.42 + Math.cos(a) * 80 * s;
+          const x = gx + Math.cos(a) * 80 * s;
           const y = top + 70 * s + Math.sin(a) * 60 * s;
           ctx.globalAlpha = tw;
           sparkle(x, y, 4 * s * (0.6 + tw * 0.4));
