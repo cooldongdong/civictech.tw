@@ -1,6 +1,6 @@
 ---
 // WishPool — 許願池。送出走 /api/wish（functions/api/wish.ts）代開 GitHub issue，送的人不用有 GitHub 帳號。
-// 下方的卡片讀貼了「許願池-通過」標籤的 issue；同一個標籤也是 Slack 頻道訂閱的過濾條件，貼上就會進頻道討論。
+// 下方的卡片讀貼了 wish-approved 標籤的 issue；同一個標籤也是 Slack 頻道訂閱的過濾條件，貼上就會進頻道討論。
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
@@ -186,7 +186,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 <script>
   // 卡片從 GitHub 公開 API 讀，不帶 token：每個訪客自己的 IP 每小時 60 次，一次載入只用 1 次
   const REPO = import.meta.env.PUBLIC_SUGGEST_REPO || 'g0v/civictech-tw-data';
-  const APPROVED_LABEL = '許願池-通過';
+  const APPROVED_LABEL = 'wish-approved';
   const SLACK_URL = import.meta.env.PUBLIC_WISH_SLACK_URL;
 
   // 跟 functions/api/wish.ts 的 FIELDS 小標題一致，改名要兩邊一起改

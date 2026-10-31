@@ -3,8 +3,8 @@
 // 為什麼要經過後端：送出的人不一定有 GitHub 帳號，所以不能直接導去 issues/new；
 // 而開 issue 要用的私鑰不能放進前端。
 //
-// 流程：驗 Turnstile → 檢查欄位 → 用 App 私鑰換 installation token → 開 issue 並貼「許願池」標籤。
-// 審核的人在 GitHub 上補貼「許願池-通過」，才會進 Slack 頻道、才會出現在網站上。
+// 流程：驗 Turnstile → 檢查欄位 → 用 App 私鑰換 installation token → 開 issue 並貼 wish 標籤。
+// 審核的人在 GitHub 上補貼 wish-approved，才會進 Slack 頻道、才會出現在網站上。
 //
 // 需要的環境變數（Cloudflare Pages → Settings → Variables and Secrets）：
 //   GITHUB_APP_ID           GitHub App 的 App ID
@@ -24,7 +24,8 @@ interface Context {
   env: Env;
 }
 
-const WISH_LABEL = "許願池";
+// 標籤用英文：GitHub 的 Slack app 訂閱過濾（+label:）不吃中文標籤名稱，中文說明寫在標籤的描述欄
+const WISH_LABEL = "wish";
 const PROGRESS = ["已有構想", "已有草稿", "已有資料"];
 
 // 欄位名稱同時是 issue 內文的小標題，前端靠這些小標題把內文拆回欄位，改名要兩邊一起改
@@ -59,7 +60,7 @@ export async function onRequestPost({ request, env }: Context): Promise<Response
   if (!PROGRESS.includes(values.progress)) return reply(400, "目前的進度只能從選單裡挑。");
 
   const body = [
-    "<!-- 這張 issue 由 civictech.tw 首頁的許願池送出。貼上「許願池-通過」標籤後會進 Slack、出現在網站上。 -->",
+    "<!-- 這張 issue 由 civictech.tw 首頁的許願池送出。貼上 wish-approved 標籤後會進 Slack、出現在網站上。 -->",
     ...FIELDS.map((f) => `### ${f.heading}\n\n${escapeHeadings(neutralize(values[f.key]))}`),
   ].join("\n\n");
 
