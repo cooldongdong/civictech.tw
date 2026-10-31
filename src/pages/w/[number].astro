@@ -1,0 +1,241 @@
+---
+// 一個提案一頁，網址是 issue 編號。內容在 build 時產生（分享連結才有預覽、搜尋引擎才看得到），
+// 下方的討論在瀏覽器裡即時抓（理由見 src/lib/wish-discussion.ts）。
+import Base from "../../layouts/Base.astro";
+import { getWishes, wishDate, WISH_REPO, type Wish } from "../../lib/wishes";
+
+export async function getStaticPaths() {
+  const wishes = await getWishes();
+  return wishes.map((wish) => ({ params: { number: String(wish.number) }, props: { wish } }));
+}
+
+const { wish } = Astro.props as { wish: Wish };
+const slackUrl = import.meta.env.PUBLIC_WISH_SLACK_URL;
+const description = wish.description ?? `${wish.title}——civictech.tw 許願池的提案。`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  name: wish.title,
+  description,
+  inLanguage: "zh-Hant-TW",
+  dateCreated: wish.createdAt,
+  url: new URL(`/w/${wish.number}`, "https://civictech.tw").href,
+  isPartOf: { "@type": "WebSite", name: "台灣公民科技資料庫", url: "https://civictech.tw" },
+};
+---
+
+<Base title={`${wish.title}｜許願池`} description={description} current="wish" jsonLd={jsonLd}>
+  <article class="pt-28 sm:pt-32">
+    <header class="wrap">
+      <a href="/w" class="text-sm no-underline" style="color:var(--ink-muted)">← 許願池</a>
+      <h1 class="mt-5 max-w-[30ch] text-[1.9rem] font-semibold leading-tight sm:text-[2.4rem]" style="color:var(--ink)">
+        {wish.title}
+      </h1>
+      {wish.description && (
+        <p class="mb-0 mt-4 max-w-[52ch] text-[1.05rem] leading-relaxed" style="color:var(--ink-2)">{wish.description}</p>
+      )}
+    </header>
+
+    <div class="wrap mt-10 grid gap-10 pb-20 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-14">
+      <div class="min-w-0 max-w-[68ch]">
+        {wish.painPoint && (
+          <section class="wish-field">
+            <h2>現有工具的不足</h2>
+            <p>{wish.painPoint}</p>
+          </section>
+        )}
+        {wish.superpower && (
+          <section class="wish-field">
+            <h2>需要的超能力</h2>
+            <p>{wish.superpower}</p>
+          </section>
+        )}
+
+        <section class="mt-12 border-t pt-8" style="border-color:var(--line)" aria-labelledby="discussion-title">
+          <h2 id="discussion-title" class="m-0 text-[1.25rem] font-semibold" style="color:var(--ink)">討論</h2>
+          <p class="mb-6 mt-2 text-sm" style="color:var(--ink-muted)">
+            合併 g0v Slack 討論串與 GitHub 上的留言。想加入討論，到
+            {slackUrl ? <a href={slackUrl} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">Slack 頻道</a> : "Slack 頻道"}
+            或 <a href={wish.url} target="_blank" rel="noopener noreferrer" style="color:var(--accent)">GitHub</a> 留言。
+          </p>
+          <div id="wish-discussion" data-repo={WISH_REPO} data-number={wish.number} data-url={wish.url} data-slack={slackUrl ?? ""}>
+            <p class="discussion-status">讀取討論中…</p>
+          </div>
+        </section>
+      </div>
+
+      <aside class="text-sm lg:sticky lg:top-28 lg:self-start" style="color:var(--ink-muted)">
+        <dl class="m-0 space-y-4 rounded-lg border p-5" style="border-color:var(--line);background:var(--surface)">
+          {wish.progress && (
+            <div>
+              <dt class="text-xs">目前進度</dt>
+              <dd class="m-0 mt-1"><span class="badge">{wish.progress}</span></dd>
+            </div>
+          )}
+          <div>
+            <dt class="text-xs">提案日期</dt>
+            <dd class="num m-0 mt-1" style="color:var(--ink)">{wishDate(wish.createdAt)}</dd>
+          </div>
+        </dl>
+        <div class="mt-4 flex flex-col gap-2">
+          {slackUrl && (
+            <a
+              href={slackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center rounded-lg px-4 py-2.5 font-medium no-underline transition-transform duration-200 hover:-translate-y-0.5"
+              style="background:var(--accent-fill);color:var(--on-accent)"
+            >
+              到 Slack 一起聊
+            </a>
+          )}
+          <a
+            href={wish.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center rounded-lg border px-4 py-2.5 no-underline transition-colors hover:bg-[var(--surface-2)]"
+            style="border-color:var(--line);color:var(--ink-2)"
+          >
+            GitHub 提案頁
+          </a>
+        </div>
+      </aside>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .wish-field + .wish-field {
+    margin-top: 2rem;
+  }
+  .wish-field h2 {
+    margin: 0 0 0.6rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  /* 內文是訪客打的純文字，換行要照原樣留著 */
+  .wish-field p {
+    margin: 0;
+    white-space: pre-line;
+    line-height: 1.85;
+    color: var(--ink-2);
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.65rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .discussion-status {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+  }
+  #wish-discussion :global(.comment) {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--line);
+  }
+  #wish-discussion :global(.comment:first-child) {
+    border-top: 0;
+    padding-top: 0;
+  }
+  #wish-discussion :global(.comment-avatar) {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: var(--surface-2);
+  }
+  #wish-discussion :global(.comment-head) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+  }
+  #wish-discussion :global(.comment-author) {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  #wish-discussion :global(.comment-source) {
+    padding: 0.05rem 0.45rem;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 0.7rem;
+  }
+  #wish-discussion :global(.comment-body) {
+    margin-top: 0.35rem;
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--ink-2);
+    overflow-wrap: anywhere;
+  }
+  #wish-discussion :global(.comment-body p) {
+    margin: 0 0 0.5rem;
+  }
+  #wish-discussion :global(.comment-body a) {
+    color: var(--accent);
+  }
+  #wish-discussion :global(.comment-body img) {
+    max-width: 100%;
+  }
+</style>
+
+<script>
+  import { githubComments, slackChannelId, slackComments, type Comment } from "../../lib/wish-discussion";
+
+  const box = document.getElementById("wish-discussion");
+  if (box) load(box);
+
+  async function load(box: HTMLElement) {
+    const { repo = "", number = "", url = "", slack } = box.dataset;
+    const channel = slackChannelId(slack);
+    // 兩邊各自失敗不影響另一邊：封存站還沒收錄頻道、GitHub 匿名額度用完，都只少一半
+    const [gh, sl] = await Promise.allSettled([
+      githubComments(repo, Number(number)),
+      channel ? slackComments(channel, url) : Promise.resolve([]),
+    ]);
+    const comments = [gh, sl]
+      .flatMap((r) => (r.status === "fulfilled" ? r.value : []))
+      .sort((a, b) => a.at - b.at);
+    const failed = [gh, sl].filter((r) => r.status === "rejected");
+    failed.forEach((r) => console.error((r as PromiseRejectedResult).reason));
+
+    if (comments.length === 0) {
+      box.innerHTML = `<p class="discussion-status">${
+        failed.length ? "討論暫時讀不到，可以直接到 Slack 或 GitHub 看。" : "還沒有人留言，來說第一句話吧。"
+      }</p>`;
+      return;
+    }
+    box.innerHTML = comments.map(render).join("");
+  }
+
+  function render(c: Comment): string {
+    const when = new Date(c.at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", dateStyle: "medium", timeStyle: "short" });
+    const avatar = c.avatar ? `<img class="comment-avatar" src="${escapeAttr(c.avatar)}" alt="" loading="lazy">` : `<span class="comment-avatar"></span>`;
+    const time = c.url ? `<a href="${escapeAttr(c.url)}" target="_blank" rel="noopener noreferrer">${when}</a>` : when;
+    return `<div class="comment">
+      ${avatar}
+      <div>
+        <div class="comment-head">
+          <span class="comment-author">${escapeAttr(c.author)}</span>
+          <span class="comment-source">${c.source === "slack" ? "Slack" : "GitHub"}</span>
+          <span>${time}</span>
+        </div>
+        <div class="comment-body">${c.html}</div>
+      </div>
+    </div>`;
+  }
+
+  function escapeAttr(s: string): string {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+</script>

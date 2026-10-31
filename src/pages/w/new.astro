@@ -1,0 +1,19 @@
+---
+import Base from "../../layouts/Base.astro";
+import WishForm from "../../components/WishForm.astro";
+---
+
+<Base
+  title="許願｜台灣公民科技資料庫"
+  description="想做但還沒有人做的公民科技專案，寫下來，g0v 社群裡就有人看得到。"
+  current="wish"
+>
+  <div class="wrap max-w-3xl pb-20 pt-28 sm:pt-32">
+    <a href="/w" class="text-sm no-underline" style="color:var(--ink-muted)">← 許願池</a>
+    <h1 class="mt-5 text-[1.9rem] font-semibold sm:text-[2.4rem]" style="color:var(--ink)">想做但還沒有人做的事</h1>
+    <p class="mb-10 mt-4 max-w-[52ch] text-[0.98rem] leading-relaxed" style="color:var(--ink-muted)">
+      寫下來，社群裡就有人看得到。送出後會進 g0v Slack 讓大家討論，有人看過之後就會出現在許願池。不需要 GitHub 帳號。
+    </p>
+    <WishForm />
+  </div>
+</Base>

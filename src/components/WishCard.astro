@@ -1,0 +1,102 @@
+---
+// 許願池的提案卡片。首頁與 /w 共用，樣式跟著行動指引的 GuideCard 走。
+import { wishDate, type Wish } from "../lib/wishes";
+
+interface Props {
+  wish: Wish;
+  index?: number;
+}
+const { wish, index = 0 } = Astro.props;
+---
+
+<a href={`/w/${wish.number}`} class="wcard rise" style={`--i:${Math.min(index, 8)}`} data-progress={wish.progress}>
+  <div class="wcard-meta">
+    {wish.progress && <span class="wcard-badge">{wish.progress}</span>}
+    <span class="num">{wishDate(wish.createdAt)}</span>
+  </div>
+  <h3 class="wcard-title">{wish.title}</h3>
+  {wish.description && <p class="wcard-desc">{wish.description}</p>}
+  <div class="wcard-foot">
+    <span class="wcard-need">{wish.superpower ? `徵求：${wish.superpower}` : "看提案"}</span>
+    <span class="wcard-go" aria-hidden="true">→</span>
+  </div>
+</a>
+
+<style>
+  .wcard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 1.1rem 1.2rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, transform 0.2s var(--ease-out-expo);
+  }
+  /* /w 的進度篩選用 hidden 藏卡片，但上面的 display:flex 會蓋過瀏覽器預設的 display:none */
+  .wcard[hidden] {
+    display: none;
+  }
+  .wcard:hover {
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+    transform: translateY(-2px);
+  }
+  .wcard-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.74rem;
+    color: var(--ink-muted);
+  }
+  .wcard-badge {
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-weight: 500;
+  }
+  .wcard-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  /* 一句話形容最多三行，卡片才不會高低不齊 */
+  .wcard-desc {
+    margin: 0;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.86rem;
+    line-height: 1.7;
+    color: var(--ink-muted);
+  }
+  .wcard-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.3rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--line);
+  }
+  .wcard-need {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.74rem;
+    color: var(--ink-muted);
+  }
+  .wcard-go {
+    color: var(--accent);
+    transition: transform 0.2s ease;
+  }
+  .wcard:hover .wcard-go {
+    transform: translateX(3px);
+  }
+</style>

@@ -1,0 +1,116 @@
+---
+import Base from "../../layouts/Base.astro";
+import WishCard from "../../components/WishCard.astro";
+import { getWishes } from "../../lib/wishes";
+import { PROGRESS } from "../../lib/wish";
+
+const wishes = await getWishes();
+const counts = Object.fromEntries(PROGRESS.map((p) => [p, wishes.filter((w) => w.progress === p).length]));
+
+const description = `想做但還沒有人做的公民科技專案，${wishes.length} 個提案在找一起做的人。`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "許願池｜台灣公民科技資料庫",
+  description,
+  inLanguage: "zh-Hant-TW",
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: wishes.length,
+    itemListElement: wishes.map((w, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: new URL(`/w/${w.number}`, "https://civictech.tw").href,
+      name: w.title,
+    })),
+  },
+};
+---
+
+<Base title="許願池｜台灣公民科技資料庫" description={description} current="wish" jsonLd={jsonLd}>
+  <header class="pb-8 pt-28 sm:pt-32">
+    <div class="wrap flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <h1 class="m-0 text-[1.9rem] font-semibold sm:text-[2.4rem]" style="color:var(--ink)">許願池</h1>
+        <p class="mb-0 mt-4 max-w-[52ch] text-[0.98rem] leading-relaxed" style="color:var(--ink-muted)">
+          想做但還沒有人做的事。每個提案都在 g0v Slack 上有一串討論，看到想參與的，就去打聲招呼。
+        </p>
+      </div>
+      <a
+        href="/w/new"
+        class="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium no-underline transition-transform duration-200 hover:-translate-y-0.5"
+        style="background:var(--accent-fill);color:var(--on-accent)"
+      >
+        我也想許願
+      </a>
+    </div>
+  </header>
+
+  <div class="wrap pb-20">
+    {wishes.length > 0 ? (
+      <>
+        <!-- 篩選只在瀏覽器裡把卡片藏起來；沒有 JS 的時候就是全部列出 -->
+        <div role="group" aria-label="依目前進度篩選" class="mb-6 flex flex-wrap gap-2" id="wish-filter">
+          <button type="button" class="chip" data-filter="" aria-pressed="true">
+            全部 <span class="num">{wishes.length}</span>
+          </button>
+          {PROGRESS.filter((p) => counts[p] > 0).map((p) => (
+            <button type="button" class="chip" data-filter={p} aria-pressed="false">
+              {p} <span class="num">{counts[p]}</span>
+            </button>
+          ))}
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" id="wish-list">
+          {wishes.map((w, i) => <WishCard wish={w} index={i} />)}
+        </div>
+      </>
+    ) : (
+      <p class="m-0 rounded-lg border p-8 text-center text-sm" style="border-color:var(--line);color:var(--ink-muted)">
+        目前還沒有提案，<a href="/w/new" style="color:var(--accent)">來當第一個許願的人</a>吧。
+      </p>
+    )}
+  </div>
+</Base>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink-2);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .chip:hover {
+    background: var(--surface-2);
+  }
+  .chip[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+  .chip .num {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+</style>
+
+<script>
+  const filter = document.getElementById("wish-filter");
+  const cards = document.querySelectorAll<HTMLElement>("#wish-list [data-progress]");
+  filter?.addEventListener("click", (e) => {
+    const button = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-filter]");
+    if (!button) return;
+    const value = button.dataset.filter;
+    filter.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+    cards.forEach((card) => {
+      card.hidden = Boolean(value) && card.dataset.progress !== value;
+    });
+  });
+</script>
