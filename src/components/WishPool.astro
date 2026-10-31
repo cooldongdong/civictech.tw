@@ -1,5 +1,7 @@
 ---
-// WishPool — 前端 JS 撈取 Google Sheet
+// WishPool — 許願池。送出走 /api/wish（functions/api/wish.ts）代開 GitHub issue，送的人不用有 GitHub 帳號。
+// 下方的卡片讀貼了「許願池-通過」標籤的 issue；同一個標籤也是 Slack 頻道訂閱的過濾條件，貼上就會進頻道討論。
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
 <section id="wish-pool" class="py-16 sm:py-20 lg:py-24">
@@ -21,7 +23,7 @@
             <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">1</span>
             給專案取個酷名字：如「真的假的」、「阿美語萌典」，好記又有個性。
           </label>
-          <input type="text" id="wish-q1" name={import.meta.env.PUBLIC_ENTRY_TITLE} required placeholder="請輸入專案名稱..."
+          <input type="text" id="wish-q1" name="title" maxlength="80" required placeholder="請輸入專案名稱..."
             class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)" />
         </div>
 
@@ -30,7 +32,7 @@
             <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">2</span>
             一句話形容這個專案：透過 [技術] 解決 [誰] 的 [什麼痛點]。
           </label>
-          <input type="text" id="wish-q2" name={import.meta.env.PUBLIC_ENTRY_DESCRIPTION} required placeholder="請輸入一句話形容..."
+          <input type="text" id="wish-q2" name="description" maxlength="200" required placeholder="請輸入一句話形容..."
             class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)" />
         </div>
 
@@ -39,7 +41,7 @@
             <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">3</span>
             現有工具的不足：為什麼現在的方法行不通？
           </label>
-          <textarea id="wish-q3" name={import.meta.env.PUBLIC_ENTRY_PAINPOINT} rows="3" required placeholder="請描述目前的困境與不足..."
+          <textarea id="wish-q3" name="painPoint" maxlength="2000" rows="3" required placeholder="請描述目前的困境與不足..."
             class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)"></textarea>
         </div>
 
@@ -48,7 +50,7 @@
             <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">4</span>
             需要的超能力：（例如：徵求會用 ______ 的人）。
           </label>
-          <input type="text" id="wish-q4" name={import.meta.env.PUBLIC_ENTRY_SUPERPOWER} required placeholder="例如：徵求會寫 React / 需要 UI 設計師..."
+          <input type="text" id="wish-q4" name="superpower" maxlength="300" required placeholder="例如：徵求會寫 React / 需要 UI 設計師..."
             class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)" />
         </div>
 
@@ -57,7 +59,7 @@
             <span class="num mt-0.5 inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full text-[0.7rem]" style="background:var(--accent-soft);color:var(--accent-ink)">5</span>
             目前的進度：
           </label>
-          <select id="wish-q5" name={import.meta.env.PUBLIC_ENTRY_PROGRESS} required
+          <select id="wish-q5" name="progress" required
             class="w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors duration-150 focus:outline-none" style="border-color:var(--line);background:var(--paper);color:var(--ink)">
             <option value="" disabled selected>-- 請選擇目前進度 --</option>
             <option value="已有構想">已有構想</option>
@@ -66,7 +68,13 @@
           </select>
         </div>
 
-        <button type="submit"
+        <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto" data-language="zh-tw"></div>
+
+        <p class="m-0 text-xs leading-relaxed" style="color:var(--ink-muted)">
+          送出後會在 GitHub 上公開成一張提案頁，請不要填聯絡方式或其他個人資料。
+        </p>
+
+        <button type="submit" id="js-wish-submit"
           class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-none py-3 text-sm font-medium transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99]" style="background:var(--accent-fill);color:var(--on-accent)">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13" />
@@ -77,9 +85,12 @@
       </form>
 
       <div id="js-success-msg" class="mt-5 hidden rounded-lg border-l-2 px-4 py-3 text-sm" style="border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)">
-        已送出。為了擋掉灌水，會先經過人工審核才會出現在下方。
+        已送出。為了擋掉灌水，會先經過人工審核，通過後才會出現在下方、進到 Slack 頻道讓大家討論。
+        <a id="js-success-link" class="hidden underline" target="_blank" rel="noopener noreferrer">看你的提案頁 →</a>
       </div>
+      <div id="js-error-msg" class="mt-5 hidden rounded-lg border-l-2 px-4 py-3 text-sm" role="alert" style="border-color:var(--gap);background:var(--surface-2);color:var(--ink)"></div>
     </div>
+    <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
     <!-- Display area -->
     <div>
@@ -164,68 +175,108 @@
     @apply text-xs;
     color: var(--ink-muted);
   }
-  .flip-hint-back {
-    @apply text-xs self-center;
-    color: var(--ink-muted);
+  .back-links {
+    @apply flex w-full justify-end gap-4 text-xs font-medium;
+  }
+  .back-links a {
+    color: var(--accent-ink);
   }
 </style>
 
 <script>
-  const GOOGLE_SHEET_CSV_URL = import.meta.env.PUBLIC_GOOGLE_SHEET_CSV_URL;
-  const GOOGLE_FORM_ACTION_URL = import.meta.env.PUBLIC_GOOGLE_FORM_ACTION_URL;
+  // 卡片從 GitHub 公開 API 讀，不帶 token：每個訪客自己的 IP 每小時 60 次，一次載入只用 1 次
+  const REPO = import.meta.env.PUBLIC_SUGGEST_REPO || 'g0v/civictech-tw-data';
+  const APPROVED_LABEL = '許願池-通過';
+  const SLACK_URL = import.meta.env.PUBLIC_WISH_SLACK_URL;
+
+  // 跟 functions/api/wish.ts 的 FIELDS 小標題一致，改名要兩邊一起改
+  const HEADINGS: Record<string, string> = {
+    '一句話形容': 'description',
+    '現有工具的不足': 'painPoint',
+    '需要的超能力': 'superpower',
+    '目前的進度': 'progress',
+  };
 
   const form = document.getElementById('js-wish-form') as HTMLFormElement | null;
+  const submitBtn = document.getElementById('js-wish-submit') as HTMLButtonElement | null;
   const successMsg = document.getElementById('js-success-msg');
+  const successLink = document.getElementById('js-success-link') as HTMLAnchorElement | null;
+  const errorMsg = document.getElementById('js-error-msg');
   const container = document.getElementById('js-wishes-container');
   const loadingStatus = document.getElementById('js-wishes-loading');
 
-  if (form && successMsg) {
+  if (form && successMsg && errorMsg && submitBtn) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(form);
-      const searchParams = new URLSearchParams();
-      for (const [key, value] of formData) {
-        searchParams.append(key, value.toString());
+      const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      // Turnstile 會在表單裡塞一個 cf-turnstile-response 欄位
+      const turnstileToken = data['cf-turnstile-response'];
+      delete data['cf-turnstile-response'];
+      // 不要用 window.alert：它會擋住整個頁面，而且長得像瀏覽器出錯。
+      // 錯誤訊息就寫在表單旁邊，使用者才知道自己填的東西還在。
+      const showError = (message: string) => {
+        errorMsg.textContent = message;
+        errorMsg.classList.remove('hidden');
+      };
+      if (!turnstileToken) {
+        showError('機器人驗證還沒跑完，等它打勾再送出。');
+        return;
       }
+
+      errorMsg.classList.add('hidden');
+      submitBtn.disabled = true;
       try {
-        await fetch(GOOGLE_FORM_ACTION_URL, {
+        const res = await fetch('/api/wish', {
           method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: searchParams
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...data, turnstileToken }),
         });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.ok) throw new Error(out.message || '送不出去，稍後再按一次送出。');
         form.classList.add('hidden');
+        if (successLink && out.url) {
+          successLink.href = out.url;
+          successLink.classList.remove('hidden');
+        }
         successMsg.classList.remove('hidden');
       } catch (err) {
-        // 不要用 window.alert：它會擋住整個頁面，而且長得像瀏覽器出錯。
-        // 錯誤訊息就寫在表單旁邊，使用者才知道自己填的東西還在。
         console.error('送出失敗', err);
-        successMsg.textContent = '送不出去，可能是網路的問題。你填的內容還在，稍後再按一次送出。';
-        successMsg.classList.remove('hidden');
+        const fallback = '送不出去，可能是網路的問題。你填的內容還在，稍後再按一次送出。';
+        showError(err instanceof TypeError ? fallback : (err as Error).message || fallback);
+        // Turnstile 的 token 只能用一次，失敗後要換一張新的
+        (window as { turnstile?: { reset(): void } }).turnstile?.reset();
+      } finally {
+        submitBtn.disabled = false;
       }
     });
   }
 
+  interface Issue { title: string; body: string | null; html_url: string; pull_request?: unknown }
+
+  // issue 內文是 functions/api/wish.ts 組的：每個欄位一個 ### 小標題。
+  // 審核的人在 GitHub 上改過內文也照樣拆得開，只要小標題沒動。
+  function parseBody(body: string): Record<string, string> {
+    const fields: Record<string, string> = {};
+    const parts = body.split(/^### (.+)$/m);
+    for (let i = 1; i < parts.length; i += 2) {
+      const key = HEADINGS[parts[i].trim()];
+      if (key) fields[key] = parts[i + 1].trim().replace(/^(\s*)\\#/gm, '$1#');
+    }
+    return fields;
+  }
+
   async function loadWishes() {
     if (!container || !loadingStatus) return;
-    if (!GOOGLE_SHEET_CSV_URL) {
-      loadingStatus.textContent = '請先設定 PUBLIC_GOOGLE_SHEET_CSV_URL 環境變數。';
-      return;
-    }
     try {
-      const response = await fetch(GOOGLE_SHEET_CSV_URL);
-      if (!response.ok) throw new Error('無法取得 Google Sheet 資料');
-      const csvText = await response.text();
-      const rows = parseCSV(csvText);
+      const url = `https://api.github.com/repos/${REPO}/issues?labels=${encodeURIComponent(APPROVED_LABEL)}&state=open&per_page=100`;
+      const response = await fetch(url, { headers: { Accept: 'application/vnd.github+json' } });
+      if (!response.ok) throw new Error(`無法取得許願池資料（${response.status}）`);
+      const issues = (await response.json()) as Issue[];
 
-      const wishes = rows.slice(1)
-        .map((row, index) => ({
-          id: index, title: row[1] || '', description: row[2] || '',
-          painPoint: row[3] || '', superpower: row[4] || '',
-          progress: row[5] || '',
-          isApproved: (row[6] || '').trim().toUpperCase() === 'Y'
-        }))
-        .filter(wish => wish.isApproved && wish.title);
+      const wishes = issues
+        .filter((issue) => !issue.pull_request)
+        .map((issue) => ({ title: issue.title, url: issue.html_url, ...parseBody(issue.body ?? '') }))
+        .filter((wish) => wish.title);
 
       loadingStatus.classList.add('hidden');
 
@@ -238,20 +289,23 @@
         <div class="flip-card" tabindex="0">
           <div class="flip-card-inner">
             <div class="flip-card-front">
-              <div class="card-badge">${escapeHTML(wish.progress)}</div>
+              <div class="card-badge">${escapeHTML(wish.progress ?? '')}</div>
               <div class="avatar-placeholder" aria-hidden="true"></div>
               <h4 class="card-wish-title">${escapeHTML(wish.title)}</h4>
-              <p class="card-wish-desc">${escapeHTML(wish.description)}</p>
+              <p class="card-wish-desc">${escapeHTML(wish.description ?? '')}</p>
               <div class="flip-hint">翻面看它需要什麼</div>
             </div>
             <div class="flip-card-back">
               <h4 class="back-title">專案需求詳情</h4>
               <div class="back-content">
-                <p><strong>現況痛點：</strong>${escapeHTML(wish.painPoint)}</p>
-                <p><strong>極需支援：</strong>${escapeHTML(wish.superpower)}</p>
-                <p><strong>目前進度：</strong>${escapeHTML(wish.progress)}</p>
+                <p><strong>現況痛點：</strong>${escapeHTML(wish.painPoint ?? '')}</p>
+                <p><strong>極需支援：</strong>${escapeHTML(wish.superpower ?? '')}</p>
+                <p><strong>目前進度：</strong>${escapeHTML(wish.progress ?? '')}</p>
               </div>
-              <div class="flip-hint-back">🔄 移開或再次點擊翻回</div>
+              <div class="back-links">
+                ${SLACK_URL ? `<a href="${escapeHTML(SLACK_URL)}" target="_blank" rel="noopener noreferrer">到 Slack 一起聊 →</a>` : ''}
+                <a href="${escapeHTML(wish.url)}" target="_blank" rel="noopener noreferrer">提案頁 →</a>
+              </div>
             </div>
           </div>
         </div>
@@ -260,25 +314,6 @@
       console.error(err);
       loadingStatus.textContent = '載入許願池資料失敗，請重新整理網頁。';
     }
-  }
-
-  function parseCSV(text: string): string[][] {
-    const lines: string[][] = [];
-    let row: string[] = [''];
-    let inQuotes = false;
-    for (let i = 0; i < text.length; i++) {
-      const c = text[i]; const next = text[i + 1];
-      if (c === '"') {
-        if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
-        else { inQuotes = !inQuotes; }
-      } else if (c === ',' && !inQuotes) { row.push(''); }
-      else if ((c === '\r' || c === '\n') && !inQuotes) {
-        if (c === '\r' && next === '\n') i++;
-        lines.push(row); row = [''];
-      } else { row[row.length - 1] += c; }
-    }
-    if (row.length > 1 || row[0] !== '') lines.push(row);
-    return lines;
   }
 
   function escapeHTML(str: string): string {
