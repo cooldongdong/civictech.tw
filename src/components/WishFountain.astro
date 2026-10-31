@@ -79,6 +79,10 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23e8b23a' stroke='%23a8741a' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%23a8741a' stroke-width='1.5'/%3E%3Cpath d='M10 12a7 7 0 0 1 6-4' stroke='%23fff3c4' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") 16 16, pointer;
     touch-action: manipulation;
   }
+  /* 硬幣丟出去之後到女神沉回水裡之前，不能再投，鼠標就不該還是硬幣，不然看起來像還能投 */
+  .fountain[data-busy] canvas {
+    cursor: default;
+  }
   /* 介紹文字與女神的話放在同一格，輪流出現：女神開口時，左邊這一欄就是她的對話框 */
   .fountain-grid {
     display: grid;
@@ -196,7 +200,7 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
 <script>
   interface Pick { number: number; title: string; description: string; progress: string }
   interface Drop { x: number; y: number; vx: number; vy: number; land: number; kind: "jet" | "splash" }
-  interface Ripple { x: number; y: number; t0: number; size: number; life: number; bowl?: boolean }
+  interface Ripple { x: number; y: number; t0: number; size: number }
 
   const root = document.querySelector<HTMLElement>("[data-fountain]");
   if (root) fountain(root);
@@ -270,6 +274,13 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
     let spot = { u: 0, v: 0 };
     let now = 0;
 
+    // 硬幣在飛、或女神還在水面上時，不能再投（throwCoin 會直接 return），鼠標也要跟著換回箭頭
+    let busy = false;
+    function syncBusy() {
+      const next = coin !== null || goddess.state !== "hidden";
+      if (next !== busy) root.toggleAttribute("data-busy", (busy = next));
+    }
+
     const surface = (x: number, y: number) => ((x - cx) / rx) ** 2 + ((y - py) / ry) ** 2 <= 1;
 
     // ── 互動 ──
@@ -305,15 +316,17 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       if (reduced) {
         splash(tx, ty);
         goddess = { state: "shown", t0: now };
+        syncBusy();
         speak();
         draw();
         return;
       }
       coin = { sx: x, sy: y, tx, ty, t0: now };
+      syncBusy();
     }
 
     function splash(x: number, y: number) {
-      for (let i = 0; i < 3; i++) ripples.push({ x, y, t0: now + i * 0.18, size: 70 * s, life: 1.6 });
+      for (let i = 0; i < 3; i++) ripples.push({ x, y, t0: now + i * 0.18, size: 70 * s });
       if (reduced) return;
       for (let i = 0; i < 16; i++) {
         drops.push({ x, y, vx: (Math.random() - 0.5) * 140 * s, vy: -(90 + Math.random() * 150) * s, land: y, kind: "splash" });
@@ -385,6 +398,7 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       intro.hidden = false;
       fit();
       goddess = reduced ? { state: "hidden", t0: now } : { state: "sinking", t0: now };
+      syncBusy();
       if (reduced) draw();
     }
 
@@ -417,16 +431,14 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
         d.x += d.vx * dt;
         d.y += d.vy * dt;
         if (d.vy > 0 && d.y >= d.land) {
-          // 水滴落在哪裡，漣漪就從哪裡冒出來：水簾落進池子、噴泉落進上層的碗，都留下小小的一圈
-          const inBowl = d.land <= bowlY + 1;
-          if (Math.random() < (d.kind === "splash" ? 0.4 : inBowl ? 0.15 : 0.35)) {
-            const size = (d.kind === "splash" ? 8 + Math.random() * 6 : inBowl ? 3 + Math.random() * 4 : 5 + Math.random() * 7) * s;
-            ripples.push({ x: d.x, y: d.land, t0: now, size, life: 0.9, bowl: inBowl });
+          // 落進池子的水滴偶爾冒一圈漣漪就好。2026-10-31 試過每滴都冒、再加一圈水沫，反而太滿，改回這樣
+          if (d.land > bowlY + 1 && Math.random() < (d.kind === "splash" ? 0.3 : 0.04)) {
+            ripples.push({ x: d.x, y: d.land, t0: now, size: (12 + Math.random() * 14) * s });
           }
           drops.splice(i, 1);
         }
       }
-      for (let i = ripples.length - 1; i >= 0; i--) if (now - ripples[i].t0 > ripples[i].life) ripples.splice(i, 1);
+      for (let i = ripples.length - 1; i >= 0; i--) if (now - ripples[i].t0 > 1.6) ripples.splice(i, 1);
 
       if (coin && now - coin.t0 >= 0.75) {
         splash(coin.tx, coin.ty);
@@ -439,6 +451,7 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       }
       if (goddess.state === "sinking" && now - goddess.t0 >= 0.9) goddess.state = "hidden";
       if (sinking && now - sinking.t0 > 1) sinking = null;
+      syncBusy();
     }
 
     function draw() {
@@ -475,14 +488,15 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       ctx.beginPath();
       ctx.ellipse(cx, py, rx, ry, 0, 0, Math.PI * 2);
       ctx.clip();
-      // 水簾落進池子的那一圈白色水沫：漣漪就從這條線上冒出來，看得出水是落在這裡。
-      // 水簾只從碗的前緣流下來，所以只畫前半圈；位置與水簾落點一致（見 update 的 land）
-      ctx.beginPath();
-      ctx.ellipse(cx, py - 6 * s, 100 * s, ry * 0.45, 0, 0.08 * Math.PI, 0.92 * Math.PI);
-      ctx.lineWidth = 3 * s;
-      ctx.strokeStyle = pal.foam.replace(/[\d.]+\)$/, "0.25)");
-      ctx.stroke();
-      drawRipples(false);
+      ctx.lineWidth = 1.5;
+      for (const r of ripples) {
+        const k = (now - r.t0) / 1.6;
+        if (k < 0) continue;
+        ctx.beginPath();
+        ctx.ellipse(r.x, r.y, r.size * (0.2 + k), r.size * (0.2 + k) * (ry / rx), 0, 0, Math.PI * 2);
+        ctx.strokeStyle = pal.ripple.replace(/[\d.]+\)$/, `${(1 - k) * 0.9})`);
+        ctx.stroke();
+      }
       if (sinking) {
         const k = Math.min(1, (now - sinking.t0) / 1);
         ctx.globalAlpha = 1 - k;
@@ -490,23 +504,6 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
         ctx.globalAlpha = 1;
       }
       ctx.restore();
-    }
-
-    // 池子與上層的碗各畫各的漣漪，外面已經用各自的水面裁好
-    function drawRipples(bowl: boolean) {
-      ctx.lineWidth = 1.5;
-      for (const r of ripples) {
-        if (Boolean(r.bowl) !== bowl) continue;
-        const k = (now - r.t0) / r.life;
-        if (k < 0) continue;
-        // 從 0.4 倍開始擴散：從 0 開始的話，小漣漪剛冒出來只有一兩個像素，加上線寬會變成一顆顆小黑點
-        const grow = r.size * (0.4 + k * 0.8);
-        const strength = r.size > 20 * s ? 0.9 : 0.6;
-        ctx.beginPath();
-        ctx.ellipse(r.x, r.y, grow, grow * (ry / rx), 0, 0, Math.PI * 2);
-        ctx.strokeStyle = pal.ripple.replace(/[\d.]+\)$/, `${(1 - k) * strength})`);
-        ctx.stroke();
-      }
     }
 
     function drawPillar() {
@@ -522,12 +519,6 @@ const picks = wishes.map((w) => ({ number: w.number, title: w.title, description
       ctx.fill();
       ellipse(cx, bowlY, 78 * s, 15 * s, pal.stone);
       ellipse(cx, bowlY + 1 * s, 66 * s, 10 * s, pal.water);
-      ctx.save();
-      ctx.beginPath();
-      ctx.ellipse(cx, bowlY + 1 * s, 66 * s, 10 * s, 0, 0, Math.PI * 2);
-      ctx.clip();
-      drawRipples(true);
-      ctx.restore();
       // 噴口
       ctx.fillStyle = pal.stoneSide;
       ctx.fillRect(cx - 5 * s, py - 178 * s, 10 * s, 38 * s);
