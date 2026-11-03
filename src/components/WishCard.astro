@@ -34,6 +34,9 @@ const { wish, index = 0 } = Astro.props;
     text-decoration: none;
     color: inherit;
     transition: border-color 0.2s ease, transform 0.2s var(--ease-out-expo);
+    /* 格線與 flex 的子元素預設 min-width:auto，會被底下不換行的「徵求」撐開，
+       手機上整頁變好幾倍寬。歸零才讓 ellipsis 生效 */
+    min-width: 0;
   }
   /* /w 的進度篩選用 hidden 藏卡片，但上面的 display:flex 會蓋過瀏覽器預設的 display:none */
   .wcard[hidden] {
@@ -86,6 +89,7 @@ const { wish, index = 0 } = Astro.props;
     border-top: 1px solid var(--line);
   }
   .wcard-need {
+    min-width: 0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
