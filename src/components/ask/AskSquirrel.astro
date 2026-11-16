@@ -72,21 +72,20 @@ const examples = [
 <style is:global>
   /* 用 is:global：訊息是 JS 動態加的，scoped 樣式套不到。每條規則都以 .ask 開頭，不會漏到別的地方 */
   .ask {
-    --sq-fur: #c98a4b;
-    --sq-edge: #8a5a2b;
-    --sq-belly: #f6e3c8;
-    --sq-ear: #e7b98a;
-    --sq-ink: #5b4636;
-    --sq-laptop: #2f3b57;
-    --sq-laptop-edge: #1f2840;
+    /* 照片裡的紅松鼠：四肢紅棕、頭偏灰褐、白肚子 */
+    --sq-fur: #c8693a;
+    --sq-head: #a8805e;
+    --sq-edge: #7a3f1f;
+    --sq-belly: #fbf4ea;
+    --sq-ear: #e9a77f;
+    --sq-ink: #4a3426;
   }
   :root[data-theme="dark"] .ask {
-    --sq-fur: #d39a5e;
-    --sq-edge: #f0c896;
-    --sq-belly: #f6e3c8;
-    --sq-ear: #f0c896;
-    --sq-laptop: #dfe9f2;
-    --sq-laptop-edge: #9fb4c6;
+    --sq-fur: #d9824f;
+    --sq-head: #c29a76;
+    --sq-edge: #f2c4a2;
+    --sq-belly: #fbf4ea;
+    --sq-ear: #f2c4a2;
   }
 
   .ask-fab {
