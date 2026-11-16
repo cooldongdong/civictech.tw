@@ -7,11 +7,10 @@
 // token 要有 Account › AI Search:Edit。這把是管理用的，只在本機用，不要放進 Pages。
 // Pages 上的 AI_SEARCH_TOKEN 只給 Run 權限。
 //
-// 做三件事：實例不存在就建一個 → 內容有變的文件重新上傳 → 知識庫裡已經沒有的文件刪掉。
+// 做三件事：實例不存在就建一個 → 全部文件重新上傳 → 知識庫裡已經沒有的文件刪掉。
 // 什麼時候要跑：sync-data.mjs 或 sync-guides.mjs 之後。不跑的話，機器人講的是舊資料。
 
 import { readFile } from "node:fs/promises";
-import { createHash } from "node:crypto";
 
 const ACCOUNT = process.env.CF_ACCOUNT_ID;
 const TOKEN = process.env.AI_SEARCH_ADMIN_TOKEN;
@@ -62,7 +61,7 @@ if (got.status === 404) {
 // 2. 現有文件
 const existing = new Map();
 for (let page = 1; ; page++) {
-  const list = await api(`/${INSTANCE}/items?page=${page}&per_page=100`);
+  const list = await api(`/${INSTANCE}/items?page=${page}&per_page=50`);
   if (!list.ok) {
     if (got.status === 404) break; // 剛建好的實例，還沒有東西
     throw new Error(`列出文件失敗 ${list.status}: ${JSON.stringify(list.body)}`);
@@ -70,25 +69,22 @@ for (let page = 1; ; page++) {
   const items = list.body.result ?? [];
   for (const it of items) existing.set(it.key, it);
   const info = list.body.result_info;
-  if (items.length === 0 || !info || page * (info.per_page ?? 100) >= (info.total_count ?? 0)) break;
+  if (items.length === 0 || !info || page * (info.per_page ?? 50) >= (info.total_count ?? 0)) break;
 }
 console.log(`AI Search 上現有 ${existing.size} 份`);
 
-// 3. 上傳有變的。用 md5 比對（AI Search 回傳的 checksum 欄位格式文件沒寫，對不上就全部重傳，不會出錯只是比較慢）
-const md5 = (s) => createHash("md5").update(s).digest("hex");
+// 3. 全部重傳。同一個 key 再傳一次會直接覆蓋（2026-11-16 實測，id 不變）。
+// 不做「只傳有變的」：AI Search 回傳的 checksum 不是內容的 md5，比對不出來。
+// 231 份大約 10 萬 token，每月免費的 ingestion 額度是 500 萬，全部重傳不心疼。
 let uploaded = 0;
 for (const d of docs) {
-  const old = existing.get(d.key);
-  if (old && old.checksum === md5(d.text) && old.status !== "error") continue;
   uploaded++;
-  if (DRY) {
-    console.log(`  會上傳 ${d.key}`);
-    continue;
-  }
+  if (DRY) continue;
   const form = new FormData();
   form.append("file", new Blob([d.text], { type: "text/markdown" }), d.key);
-  const up = await api(`/${INSTANCE}/items`, { method: "PUT", body: form });
+  const up = await api(`/${INSTANCE}/items`, { method: "POST", body: form });
   if (!up.ok) throw new Error(`上傳 ${d.key} 失敗 ${up.status}: ${JSON.stringify(up.body)}`);
+  if (uploaded % 50 === 0) console.log(`  已上傳 ${uploaded}`);
 }
 
 // 4. 刪掉已經不在知識庫裡的（例如專案在 Airtable 被下架、改了 slug）
@@ -105,4 +101,4 @@ for (const [key, it] of existing) {
   if (!del.ok) throw new Error(`刪除 ${key} 失敗 ${del.status}: ${JSON.stringify(del.body)}`);
 }
 
-console.log(`${DRY ? "（試跑）" : ""}上傳 ${uploaded} 份、刪除 ${removed} 份、不變 ${docs.length - uploaded}`);
+console.log(`${DRY ? "（試跑）" : ""}上傳 ${uploaded} 份、刪除 ${removed} 份。索引在背景跑，通常一兩分鐘內完成`);

@@ -34,3 +34,21 @@ export function sourceOf(key: string, title?: string): { title: string; url: str
     kind: m[1] === "p" ? "project" : "guide",
   };
 }
+
+/**
+ * 檢查回答裡的 civictech.tw 專案／文章連結。knownKeys 裡沒有的（模型自己湊出來的網址）拆掉連結、保留文字。
+ * 只管 /p/ 與 /g/：其他站內頁（例如 /w/new）跟站外網址照原樣留著。
+ */
+export function checkLinks(text: string, knownKeys: Map<string, unknown>): { text: string; dropped: number } {
+  let dropped = 0;
+  const out = text.replace(/\[([^\]]+)\]\((https?:\/\/(?:www\.)?civictech\.tw\/([pg])\/([^)\s#?]+)[^)\s]*)\)/g, (all, label, _url, kind, slug) => {
+    let s = slug;
+    try {
+      s = decodeURIComponent(slug);
+    } catch {}
+    if (knownKeys.has(`${kind}--${s.replace(/\.html$/, "")}.md`)) return all;
+    dropped++;
+    return label;
+  });
+  return { text: out, dropped };
+}

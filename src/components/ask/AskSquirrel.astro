@@ -253,24 +253,6 @@ const examples = [
   .ask-msg.error {
     color: var(--gap);
   }
-  .ask-sources {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 10px;
-  }
-  .ask-sources a {
-    font-size: 0.78rem;
-    padding: 3px 9px;
-    border-radius: 999px;
-    border: 1px solid var(--line-strong);
-    color: var(--ink-2);
-    text-decoration: none;
-  }
-  .ask-sources a:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
   .ask-thinking {
     color: var(--ink-muted);
   }
@@ -380,7 +362,7 @@ const examples = [
 <script>
   import { MAX_TURNS } from "../../lib/ask";
 
-  type Turn = { role: "user" | "assistant"; content: string; sources?: { title: string; url: string }[] };
+  type Turn = { role: "user" | "assistant"; content: string };
   type TurnstileApi = {
     render(el: HTMLElement, opts: Record<string, unknown>): string;
     execute(id: string): void;
@@ -469,17 +451,6 @@ const examples = [
     if (t.role === "user") el.textContent = t.content;
     else {
       el.innerHTML = md(t.content);
-      if (t.sources?.length) {
-        const s = document.createElement("div");
-        s.className = "ask-sources";
-        for (const src of t.sources) {
-          const a = document.createElement("a");
-          a.href = src.url;
-          a.textContent = src.title;
-          s.append(a);
-        }
-        el.append(s);
-      }
       fixLinks(el);
     }
     log.append(el);
@@ -565,7 +536,7 @@ const examples = [
       });
       const out = await res.json().catch(() => ({ ok: false }));
       if (!out.ok) throw new Error(out.message ?? "松鼠一時想不起來，請再問一次。");
-      turns.push({ role: "assistant", content: out.answer, sources: out.sources });
+      turns.push({ role: "assistant", content: out.answer });
       save();
       thinking.remove();
       const el = addMsg(turns.at(-1)!);

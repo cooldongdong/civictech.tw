@@ -16,7 +16,7 @@
 //   AI_SEARCH_INSTANCE   選填，預設 civictech-tw
 //   ASK_MODEL            選填，生成用的模型；不設就用 AI Search 實例的預設
 
-import { ASK_PROMPT, MAX_QUESTION, MAX_TURNS, sourceOf } from "../../src/lib/ask.ts";
+import { ASK_PROMPT, MAX_QUESTION, MAX_TURNS, checkLinks, sourceOf } from "../../src/lib/ask.ts";
 
 interface Env {
   AI_SEARCH_TOKEN?: string;
@@ -86,10 +86,11 @@ export async function onRequestPost({ request, env }: Context): Promise<Response
 
   const raw = (await res.json()) as Record<string, any>;
   const out = (raw.result ?? raw) as { choices?: { message?: { content?: unknown } }[]; chunks?: Chunk[] };
-  const answer = textOf(out.choices?.[0]?.message?.content).trim();
-
-  // 同一份文件可能被切成好幾塊都命中，來源只列一次，照命中分數排
   const titles = await docTitles(env, request.url);
+  // 模型寫出來的站內連結，知識庫裡沒有那一頁的就拆掉連結、只留文字。不靠模型自律，連結一定點得到東西
+  const { text: answer, dropped } = checkLinks(textOf(out.choices?.[0]?.message?.content).trim(), titles);
+
+  // 檢索命中的文件（除錯與記錄用，前端不顯示：命中不等於回答有用到）。同一份文件可能好幾塊都命中，只列一次
   const seen = new Set<string>();
   const sources = (out.chunks ?? [])
     .map((c) => c.item?.key)
@@ -99,7 +100,7 @@ export async function onRequestPost({ request, env }: Context): Promise<Response
     .slice(0, 5);
 
   // 量額度用：之後要決定換模型或付費，要看每題實際花多少
-  console.log(JSON.stringify({ ask: true, ms: Date.now() - started, turns: turns.length, chunks: out.chunks?.length ?? 0 }));
+  console.log(JSON.stringify({ ask: true, ms: Date.now() - started, turns: turns.length, chunks: out.chunks?.length ?? 0, dropped }));
 
   if (!answer) return reply(502, "松鼠一時想不起來，請再問一次。");
   return Response.json({ ok: true, answer, sources });
@@ -134,6 +135,7 @@ async function docTitles(env: Env, url: string): Promise<Map<string, string>> {
     const docs = (await res.json()) as { key: string; title: string }[];
     titleCache = new Map(docs.map((d) => [d.key, d.title]));
   } catch (e) {
+    // 讀不到就沒辦法檢查連結，checkLinks 會把站內連結全部拆掉——寧可少連結，不要壞連結
     console.error("ask: 讀不到 ask-docs.json", e);
     return new Map();
   }
