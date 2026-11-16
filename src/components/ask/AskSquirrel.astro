@@ -1,0 +1,648 @@
+---
+// 右下角的「問黑客松鼠」。每一頁都有，掛在 Base.astro。
+//
+// 對話存在 sessionStorage：點回答裡的專案連結換頁之後，打開對話框還接得下去；關掉分頁就清空。
+// 不存到伺服器，後端也不記任何對話內容。
+//
+// Turnstile 用 execute 模式，每問一題換一張 token（token 只能用一次）。
+// 大部分人看不到驗證框；Cloudflare 起疑時才會在輸入框上方跳出來。
+import Squirrel from "./Squirrel.astro";
+import { MAX_QUESTION } from "../../lib/ask";
+import { listedProjects } from "../../lib/projects";
+import { getGuides } from "../../lib/guides";
+
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+const guideCount = (await getGuides()).all.length;
+
+const examples = [
+  "我想監督政府預算，有什麼工具？",
+  "颱風地震的時候，有什麼公民科技可以用？",
+  "我是新手，想參與 g0v 要從哪裡開始？",
+];
+---
+
+<div class="ask" data-ask data-sitekey={turnstileSiteKey}>
+  <button type="button" class="ask-fab" data-ask-open aria-label="問黑客松鼠" aria-expanded="false" aria-controls="ask-panel">
+    <Squirrel size={52} />
+  </button>
+
+  <section id="ask-panel" class="ask-panel" data-ask-panel role="dialog" aria-label="問黑客松鼠" hidden>
+    <header class="ask-head">
+      <Squirrel size={40} />
+      <div class="min-w-0">
+        <p class="ask-who">黑客松鼠</p>
+        <p class="ask-sub">讀過站上 {listedProjects.length} 個專案、{guideCount} 篇行動指引</p>
+      </div>
+      <button type="button" class="ask-icon-btn" data-ask-reset aria-label="重新開始對話" title="重新開始">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg>
+      </button>
+      <button type="button" class="ask-icon-btn" data-ask-close aria-label="關閉">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </header>
+
+    <div class="ask-log" data-ask-log aria-live="polite">
+      <div class="ask-msg bot">
+        <p>嗨，我是黑客松鼠！跟我說你關心什麼事，我幫你從松果堆裡翻出相關的公民科技專案。</p>
+      </div>
+      <div class="ask-examples" data-ask-examples>
+        {examples.map((q) => <button type="button" class="ask-chip">{q}</button>)}
+      </div>
+    </div>
+
+    <form class="ask-form" data-ask-form>
+      <div class="ask-turnstile" data-ask-turnstile></div>
+      <div class="ask-row">
+        <textarea
+          name="q"
+          rows="1"
+          maxlength={MAX_QUESTION}
+          placeholder="問問看…"
+          aria-label="你的問題"
+          data-ask-input></textarea>
+        <button type="submit" class="ask-send" aria-label="送出" data-ask-send>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </button>
+      </div>
+      <p class="ask-note">AI 會出錯，重要的事請點進專案頁確認。</p>
+    </form>
+  </section>
+</div>
+
+<style is:global>
+  /* 用 is:global：訊息是 JS 動態加的，scoped 樣式套不到。每條規則都以 .ask 開頭，不會漏到別的地方 */
+  .ask {
+    --sq-fur: #c98a4b;
+    --sq-edge: #8a5a2b;
+    --sq-belly: #f6e3c8;
+    --sq-ear: #e7b98a;
+    --sq-ink: #5b4636;
+    --sq-laptop: #2f3b57;
+    --sq-laptop-edge: #1f2840;
+  }
+  :root[data-theme="dark"] .ask {
+    --sq-fur: #d39a5e;
+    --sq-edge: #f0c896;
+    --sq-belly: #f6e3c8;
+    --sq-ear: #f0c896;
+    --sq-laptop: #dfe9f2;
+    --sq-laptop-edge: #9fb4c6;
+  }
+
+  .ask-fab {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    box-shadow: 0 6px 20px var(--shadow);
+    cursor: pointer;
+    transition: transform 0.2s var(--ease-out-expo);
+  }
+  .ask-fab:hover {
+    transform: translateY(-2px);
+  }
+  .ask-fab[aria-expanded="true"] {
+    display: none;
+  }
+
+  /* 面板尺寸固定，內容多寡只影響中間那一段的捲動，標題與輸入框永遠在同一個位置 */
+  .ask-panel {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 60;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 380px;
+    height: min(600px, calc(100dvh - 32px));
+    border-radius: 16px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    box-shadow: 0 12px 40px var(--shadow);
+    overflow: hidden;
+    animation: ask-in 0.35s var(--ease-out-expo) both;
+  }
+  .ask-panel[hidden] {
+    display: none;
+  }
+  @keyframes ask-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ask-panel {
+      animation: none;
+    }
+    .ask-fab {
+      transition: none;
+    }
+  }
+  /* 手機：貼底全寬，上面留一截看得到原本的頁面 */
+  @media (max-width: 480px) {
+    .ask-panel {
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: min(640px, calc(100dvh - 48px));
+      border-radius: 16px 16px 0 0;
+      border-bottom: 0;
+    }
+  }
+
+  .ask-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 10px 12px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .ask-head > div {
+    flex: 1;
+  }
+  .ask-who {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .ask-sub {
+    margin: 2px 0 0;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ask-icon-btn {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+  }
+  .ask-icon-btn:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  .ask-log {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    overscroll-behavior: contain;
+    padding: 16px 10px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .ask-msg {
+    max-width: 88%;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .ask-msg.user {
+    align-self: flex-end;
+    padding: 8px 12px;
+    border-radius: 14px 14px 4px 14px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    white-space: pre-wrap;
+  }
+  .ask-msg.bot {
+    align-self: flex-start;
+  }
+  .ask-msg p {
+    margin: 0 0 0.5em;
+  }
+  .ask-msg p:last-child {
+    margin-bottom: 0;
+  }
+  .ask-msg ul,
+  .ask-msg ol {
+    margin: 0 0 0.5em;
+    padding-left: 1.2em;
+  }
+  .ask-msg ul {
+    list-style: disc;
+  }
+  .ask-msg ol {
+    list-style: decimal;
+  }
+  .ask-msg li + li {
+    margin-top: 0.25em;
+  }
+  .ask-msg a {
+    color: var(--accent);
+  }
+  .ask-msg.error {
+    color: var(--gap);
+  }
+  .ask-sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .ask-sources a {
+    font-size: 0.78rem;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+  .ask-sources a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .ask-thinking {
+    color: var(--ink-muted);
+  }
+  .ask-thinking span {
+    animation: ask-dot 1.2s infinite both;
+  }
+  .ask-thinking span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .ask-thinking span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  @keyframes ask-dot {
+    0%,
+    80%,
+    100% {
+      opacity: 0.2;
+    }
+    40% {
+      opacity: 1;
+    }
+  }
+
+  .ask-examples {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .ask-examples[hidden] {
+    display: none;
+  }
+  .ask-chip {
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .ask-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .ask-form {
+    padding: 10px 12px 10px;
+    border-top: 1px solid var(--line);
+  }
+  .ask-turnstile:empty {
+    display: none;
+  }
+  .ask-turnstile {
+    margin-bottom: 8px;
+  }
+  .ask-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .ask-row textarea {
+    flex: 1;
+    min-width: 0;
+    resize: none;
+    font: inherit;
+    font-size: 16px; /* 小於 16px，iOS 點下去會自動放大整頁 */
+    line-height: 1.4;
+    height: 42px;
+    max-height: 120px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .ask-row textarea:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+  .ask-send {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex: none;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent-fill);
+    color: var(--on-accent);
+    cursor: pointer;
+  }
+  .ask-send:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .ask-note {
+    margin: 6px 0 0;
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    text-align: center;
+  }
+</style>
+
+<script>
+  import { MAX_TURNS } from "../../lib/ask";
+
+  type Turn = { role: "user" | "assistant"; content: string; sources?: { title: string; url: string }[] };
+  type TurnstileApi = {
+    render(el: HTMLElement, opts: Record<string, unknown>): string;
+    execute(id: string): void;
+    reset(id: string): void;
+  };
+
+  const KEY = "ask-squirrel";
+  const root = document.querySelector<HTMLElement>("[data-ask]")!;
+  const fab = root.querySelector<HTMLButtonElement>("[data-ask-open]")!;
+  const panel = root.querySelector<HTMLElement>("[data-ask-panel]")!;
+  const log = root.querySelector<HTMLElement>("[data-ask-log]")!;
+  const examples = root.querySelector<HTMLElement>("[data-ask-examples]")!;
+  const form = root.querySelector<HTMLFormElement>("[data-ask-form]")!;
+  const input = root.querySelector<HTMLTextAreaElement>("[data-ask-input]")!;
+  const send = root.querySelector<HTMLButtonElement>("[data-ask-send]")!;
+  const tsBox = root.querySelector<HTMLElement>("[data-ask-turnstile]")!;
+  const greeting = log.firstElementChild!.cloneNode(true);
+
+  let turns: Turn[] = load();
+  let busy = false;
+
+  function load(): Turn[] {
+    try {
+      const v = JSON.parse(sessionStorage.getItem(KEY) ?? "null");
+      return Array.isArray(v?.turns) ? v.turns : [];
+    } catch {
+      return [];
+    }
+  }
+  function save(open = !panel.hidden) {
+    try {
+      sessionStorage.setItem(KEY, JSON.stringify({ turns, open }));
+    } catch {}
+  }
+
+  // ── 簡單的 Markdown：只認連結、粗體、列表、段落。先跳脫 HTML，再把認得的語法換回來 ──
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&${{ "&": "amp", "<": "lt", ">": "gt", '"': "quot", "'": "#39" }[c]};`);
+  function inline(s: string): string {
+    return esc(s)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, t, u) => `<a href="${u}">${t}</a>`)
+      .replace(/(^|[\s（(])(https?:\/\/[^\s<)）]+)/g, (_, p, u) => `${p}<a href="${u}">${u}</a>`);
+  }
+  function md(text: string): string {
+    const out: string[] = [];
+    let list: "ul" | "ol" | null = null;
+    const close = () => {
+      if (list) out.push(`</${list}>`);
+      list = null;
+    };
+    for (const line of text.split("\n")) {
+      const ul = line.match(/^\s*[-*•]\s+(.*)/);
+      const ol = line.match(/^\s*\d+[.、]\s+(.*)/);
+      const kind = ul ? "ul" : ol ? "ol" : null;
+      if (kind) {
+        if (list !== kind) {
+          close();
+          out.push(`<${kind}>`);
+          list = kind;
+        }
+        out.push(`<li>${inline((ul ?? ol)![1])}</li>`);
+      } else if (line.trim()) {
+        close();
+        out.push(`<p>${inline(line.replace(/^#+\s*/, ""))}</p>`);
+      } else close();
+    }
+    close();
+    return out.join("");
+  }
+  // 站內連結留在同一個分頁（對話會接著），站外的開新分頁
+  function fixLinks(el: HTMLElement) {
+    for (const a of el.querySelectorAll("a")) {
+      const u = new URL(a.href);
+      if (u.hostname === "civictech.tw") {
+        a.href = u.pathname + u.search + u.hash;
+      } else {
+        a.target = "_blank";
+        a.rel = "noopener";
+      }
+    }
+  }
+
+  function addMsg(t: Turn) {
+    const el = document.createElement("div");
+    el.className = `ask-msg ${t.role === "user" ? "user" : "bot"}`;
+    if (t.role === "user") el.textContent = t.content;
+    else {
+      el.innerHTML = md(t.content);
+      if (t.sources?.length) {
+        const s = document.createElement("div");
+        s.className = "ask-sources";
+        for (const src of t.sources) {
+          const a = document.createElement("a");
+          a.href = src.url;
+          a.textContent = src.title;
+          s.append(a);
+        }
+        el.append(s);
+      }
+      fixLinks(el);
+    }
+    log.append(el);
+    return el;
+  }
+  function render() {
+    log.replaceChildren(greeting.cloneNode(true), examples);
+    examples.hidden = turns.length > 0;
+    for (const t of turns) addMsg(t);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // ── Turnstile：第一次打開時才載入，每題 execute 一次拿新 token ──
+  let tsId: string | undefined;
+  let tsWaiter: ((token: string | null) => void) | undefined;
+  function turnstile(): TurnstileApi | undefined {
+    return (window as { turnstile?: TurnstileApi }).turnstile;
+  }
+  function loadTurnstile(): Promise<void> {
+    if (turnstile()) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      s.async = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error("turnstile"));
+      document.head.append(s);
+    });
+  }
+  async function getToken(): Promise<string | null> {
+    await loadTurnstile();
+    const ts = turnstile()!;
+    if (!tsId) {
+      tsId = ts.render(tsBox, {
+        sitekey: root.dataset.sitekey,
+        execution: "execute",
+        appearance: "interaction-only",
+        language: "zh-tw",
+        callback: (t: string) => tsWaiter?.(t),
+        "error-callback": () => tsWaiter?.(null),
+        "expired-callback": () => tsWaiter?.(null),
+      });
+    } else ts.reset(tsId);
+    return new Promise((resolve) => {
+      tsWaiter = (t) => {
+        tsWaiter = undefined;
+        resolve(t);
+      };
+      ts.execute(tsId!);
+    });
+  }
+
+  async function ask(question: string) {
+    if (busy) return;
+    const q = question.trim();
+    if (!q) return;
+    busy = true;
+    send.disabled = true;
+    examples.hidden = true;
+    input.value = "";
+    autosize();
+
+    turns.push({ role: "user", content: q });
+    save();
+    addMsg(turns.at(-1)!);
+    const thinking = document.createElement("div");
+    thinking.className = "ask-msg bot ask-thinking";
+    thinking.innerHTML = "翻松果中<span>.</span><span>.</span><span>.</span>";
+    log.append(thinking);
+    log.scrollTop = log.scrollHeight;
+
+    let message: string | undefined;
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("沒有通過機器人驗證，請重新整理頁面再問一次。");
+      const res = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          turnstileToken: token,
+          messages: turns.slice(-MAX_TURNS * 2).map(({ role, content }) => ({ role, content })),
+        }),
+      });
+      const out = await res.json().catch(() => ({ ok: false }));
+      if (!out.ok) throw new Error(out.message ?? "松鼠一時想不起來，請再問一次。");
+      turns.push({ role: "assistant", content: out.answer, sources: out.sources });
+      save();
+      thinking.remove();
+      const el = addMsg(turns.at(-1)!);
+      // 回答通常比畫面長：捲到回答的開頭，而不是最底下
+      log.scrollTop = el.offsetTop - log.offsetTop - 8;
+    } catch (e) {
+      message = e instanceof Error && e.message !== "turnstile" ? e.message : "連不上松鼠，請檢查網路再試一次。";
+    } finally {
+      busy = false;
+      send.disabled = false;
+    }
+    if (message) {
+      // 失敗的那一題不留在對話裡，放回輸入框讓人可以直接再送一次
+      turns.pop();
+      save();
+      thinking.remove();
+      log.lastElementChild?.remove();
+      const err = document.createElement("div");
+      err.className = "ask-msg bot error";
+      err.textContent = message;
+      log.append(err);
+      input.value = q;
+      autosize();
+      log.scrollTop = log.scrollHeight;
+    }
+  }
+
+  function autosize() {
+    input.style.height = "42px";
+    input.style.height = `${Math.min(input.scrollHeight + 2, 120)}px`;
+  }
+
+  function open(focus = true) {
+    panel.hidden = false;
+    fab.setAttribute("aria-expanded", "true");
+    render();
+    save(true);
+    if (focus && matchMedia("(pointer: fine)").matches) input.focus();
+    loadTurnstile().catch(() => {});
+  }
+  function close() {
+    panel.hidden = true;
+    fab.setAttribute("aria-expanded", "false");
+    save(false);
+    fab.focus();
+  }
+
+  fab.addEventListener("click", () => open());
+  root.querySelector("[data-ask-close]")!.addEventListener("click", close);
+  root.querySelector("[data-ask-reset]")!.addEventListener("click", () => {
+    turns = [];
+    save();
+    render();
+    input.focus();
+  });
+  examples.addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest("button");
+    if (b) ask(b.textContent ?? "");
+  });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    ask(input.value);
+  });
+  input.addEventListener("input", autosize);
+  input.addEventListener("keydown", (e) => {
+    // Enter 送出、Shift+Enter 換行；選字中（注音、倉頡）按的 Enter 不算
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      ask(input.value);
+    }
+  });
+  panel.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+
+  // 從回答點連結換頁之後，對話框維持打開
+  try {
+    if (JSON.parse(sessionStorage.getItem(KEY) ?? "null")?.open) open(false);
+  } catch {}
+</script>

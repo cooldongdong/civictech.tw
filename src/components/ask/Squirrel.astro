@@ -1,0 +1,64 @@
+---
+// 黑客松鼠。畫法跟許願池的湖中女神同一套：純色塊、彎弧閉眼、淡腮紅、金色點綴。
+// 抱著一台筆電，筆電背面的標誌是一顆金色松果——收集專案的松鼠，也是寫程式的黑客。
+// 顏色走 CSS 變數，深色模式在 AskSquirrel.astro 裡換。
+interface Props {
+  size?: number;
+  class?: string;
+}
+const { size = 48, class: cls } = Astro.props;
+---
+
+<svg
+  class:list={["squirrel", cls]}
+  width={size}
+  height={size}
+  viewBox="0 0 120 120"
+  aria-hidden="true"
+  stroke-linejoin="round"
+  stroke-linecap="round"
+>
+  <!-- 尾巴：在身後捲起來，比身體還大，是一眼認得出是松鼠的關鍵 -->
+  <path
+    d="M70 102 C98 104 116 84 112 58 C109 38 92 26 78 34 C68 40 72 54 84 54 C92 54 94 64 88 74 C82 84 72 88 66 92 Z"
+    fill="var(--sq-fur)"
+    stroke="var(--sq-edge)"
+    stroke-width="2.5"></path>
+  <path d="M84 40 C96 40 104 52 102 64" fill="none" stroke="var(--sq-edge)" stroke-width="2" opacity="0.6"></path>
+
+  <!-- 身體與肚子 -->
+  <ellipse cx="54" cy="88" rx="25" ry="23" fill="var(--sq-fur)" stroke="var(--sq-edge)" stroke-width="2.5"></ellipse>
+  <ellipse cx="54" cy="92" rx="15" ry="15" fill="var(--sq-belly)"></ellipse>
+  <!-- 腳 -->
+  <ellipse cx="40" cy="109" rx="9" ry="5" fill="var(--sq-fur)" stroke="var(--sq-edge)" stroke-width="2.5"></ellipse>
+  <ellipse cx="68" cy="109" rx="9" ry="5" fill="var(--sq-fur)" stroke="var(--sq-edge)" stroke-width="2.5"></ellipse>
+
+  <!-- 耳朵，尖端一撮毛 -->
+  <path d="M34 40 L32 18 L48 31 Z" fill="var(--sq-fur)" stroke="var(--sq-edge)" stroke-width="2.5"></path>
+  <path d="M74 40 L76 18 L60 31 Z" fill="var(--sq-fur)" stroke="var(--sq-edge)" stroke-width="2.5"></path>
+  <path d="M36 34 L35 24 L43 31 Z" fill="var(--sq-ear)"></path>
+  <path d="M72 34 L73 24 L65 31 Z" fill="var(--sq-ear)"></path>
+
+  <!-- 頭 -->
+  <ellipse cx="54" cy="50" rx="24" ry="21" fill="var(--sq-fur)" stroke="var(--sq-edge)" stroke-width="2.5"></ellipse>
+  <ellipse cx="54" cy="58" rx="10" ry="7" fill="var(--sq-belly)"></ellipse>
+  <!-- 腮紅 -->
+  <ellipse cx="38" cy="57" rx="4.5" ry="2.8" fill="#e98a8a" opacity="0.4"></ellipse>
+  <ellipse cx="70" cy="57" rx="4.5" ry="2.8" fill="#e98a8a" opacity="0.4"></ellipse>
+  <!-- 彎弧閉眼，跟女神一樣 -->
+  <path d="M41 49 A4.5 4.5 0 0 0 49 49" fill="none" stroke="var(--sq-ink)" stroke-width="2.4"></path>
+  <path d="M59 49 A4.5 4.5 0 0 0 67 49" fill="none" stroke="var(--sq-ink)" stroke-width="2.4"></path>
+  <!-- 鼻子與 ω 嘴 -->
+  <ellipse cx="54" cy="55" rx="2.6" ry="2" fill="var(--sq-ink)"></ellipse>
+  <path d="M49 59 Q51.5 62 54 59 Q56.5 62 59 59" fill="none" stroke="var(--sq-ink)" stroke-width="1.8"></path>
+
+  <!-- 筆電：從背面看，螢幕朝著松鼠 -->
+  <rect x="36" y="74" width="36" height="25" rx="3" fill="var(--sq-laptop)" stroke="var(--sq-laptop-edge)" stroke-width="2"></rect>
+  <!-- 背蓋上的金色松果 -->
+  <ellipse cx="54" cy="89" rx="4.6" ry="5.4" fill="#e8b23a"></ellipse>
+  <path d="M48.6 85.6 Q54 80.6 59.4 85.6 Z" fill="#a8741a"></path>
+  <path d="M54 81.4 L55.4 78.6" stroke="#a8741a" stroke-width="1.8"></path>
+  <!-- 扶著螢幕上緣的兩隻小手 -->
+  <ellipse cx="41" cy="74.5" rx="5" ry="3.6" fill="var(--sq-fur)" stroke="var(--sq-edge)" stroke-width="2"></ellipse>
+  <ellipse cx="67" cy="74.5" rx="5" ry="3.6" fill="var(--sq-fur)" stroke="var(--sq-edge)" stroke-width="2"></ellipse>
+</svg>
