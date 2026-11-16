@@ -72,20 +72,28 @@ const examples = [
 <style is:global>
   /* 用 is:global：訊息是 JS 動態加的，scoped 樣式套不到。每條規則都以 .ask 開頭，不會漏到別的地方 */
   .ask {
-    /* 照片裡的紅松鼠：四肢紅棕、頭偏灰褐、白肚子 */
-    --sq-fur: #c8693a;
-    --sq-head: #a8805e;
-    --sq-edge: #7a3f1f;
-    --sq-belly: #fbf4ea;
-    --sq-ear: #e9a77f;
-    --sq-ink: #4a3426;
+    --sq-fur: #e0823f;
+    --sq-fur2: #c2662c;
+    --sq-fur3: #9a4c1e;
+    --sq-tail: #d4733a;
+    --sq-tail2: #f0a868;
+    --sq-cream: #fff4e4;
+    --sq-ear: #f6c09a;
+    --sq-ink: #33241c;
+    --sq-blush: #f2908a;
+    --sq-hoodie: #0d5f74;
+    --sq-hoodie2: #16748b;
+    --sq-laptop: #d3dce3;
+    --sq-laptop2: #a9b7c2;
   }
+  /* 深色底上，深青色帽 T 會消失，換成亮一點的青 */
   :root[data-theme="dark"] .ask {
-    --sq-fur: #d9824f;
-    --sq-head: #c29a76;
-    --sq-edge: #f2c4a2;
-    --sq-belly: #fbf4ea;
-    --sq-ear: #f2c4a2;
+    --sq-fur: #e08549;
+    --sq-fur2: #c46a37;
+    --sq-tail: #d0733d;
+    --sq-tail2: #eda874;
+    --sq-hoodie: #2e9cb8;
+    --sq-hoodie2: #4fb2cb;
   }
 
   .ask-fab {
