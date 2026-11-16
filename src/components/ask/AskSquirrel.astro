@@ -96,10 +96,16 @@ const examples = [
     --sq-hoodie2: #4fb2cb;
   }
 
+  /* 右下角被按鈕佔掉的高度（按鈕 64px＋底部間距＋12px 縫）。
+     首頁的問卷卡、活動卡從這裡往上排，才不會跟按鈕互相遮住 */
+  :root {
+    --corner-offset: calc(max(1.25rem, env(safe-area-inset-bottom)) + 64px + 12px);
+  }
   .ask-fab {
     position: fixed;
-    right: max(16px, env(safe-area-inset-right));
-    bottom: max(16px, env(safe-area-inset-bottom));
+    /* 跟首頁問卷卡同一個角落間距（right-5 = 1.25rem），右緣才對得齊 */
+    right: max(1.25rem, env(safe-area-inset-right));
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
     z-index: 60;
     display: grid;
     place-items: center;

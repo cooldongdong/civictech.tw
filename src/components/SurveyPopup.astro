@@ -1,11 +1,12 @@
 ---
 // src/components/SurveyPopup.astro — 角落滑入式問卷邀請（捲動一段距離後才出現，可關閉）
+// 底部從 --corner-offset 往上排：右下角有黑客松鼠的按鈕，不讓開會互相遮住（變數定義在 AskSquirrel.astro）。
 // 抽獎截止（7/2 24:00 台灣時間）一過，前端自動把抽獎相關文案降級為純問卷邀請。
 ---
 
 <div
   id="survey-popup"
-  class="fixed bottom-5 right-5 z-50 w-[calc(100%-2.5rem)] sm:w-[336px] translate-y-6 opacity-0 pointer-events-none transition-all duration-500 ease-out"
+  class="fixed bottom-[var(--corner-offset,1.25rem)] right-5 z-50 w-[calc(100%-2.5rem)] sm:w-[336px] translate-y-6 opacity-0 pointer-events-none transition-all duration-500 ease-out"
 >
   <div class="popup-card relative rounded-2xl p-5">
     <button
