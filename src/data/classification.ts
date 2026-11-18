@@ -72,7 +72,7 @@ export const overrides: Record<string, CategorySlug> = {
   政府公開通訊錄: "democracy",
   "Blulu Metrics": "democracy", // 審議民主
   Holopolis: "democracy", // 審議工具
-  美國國會台灣觀測站: "democracy", // 原本歸 17（全球夥伴），它不是社群工具
+  美國台灣觀測站: "democracy", // 原本歸 17（全球夥伴），它不是社群工具
   臺灣防空識別區快訊: "democracy", // 勉強：國防資訊的公開與監督，沒有更近的類
   "CHANGE — 台灣選戰版圖": "democracy",
   財產申報開放觀測站: "democracy",
