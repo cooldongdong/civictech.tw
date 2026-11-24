@@ -44,9 +44,10 @@ const jsonLd = {
 ---
 
 <Base title={`${title}｜公民科技行動指引`} description={description} current="guide" jsonLd={jsonLd}>
-  <article class="pt-28 sm:pt-32">
+  <!-- 站內搜尋只收內文與標題；大綱是標題的重複、出處那行每篇都一樣，都不收 -->
+  <article class="pt-28 sm:pt-32" data-pagefind-body data-pagefind-filter="kind:guide" data-pagefind-meta={`category:${group.title}`}>
     <header class="wrap">
-      <a href={`/g#${group.key}`} class="text-sm no-underline" style="color:var(--ink-muted)">
+      <a href={`/g#${group.key}`} data-pagefind-ignore class="text-sm no-underline" style="color:var(--ink-muted)">
         ← 行動指引・{group.title}
       </a>
       <h1 class="mt-5 max-w-[30ch] text-[1.9rem] font-semibold leading-tight sm:text-[2.4rem]" style="color:var(--ink)">
@@ -57,7 +58,7 @@ const jsonLd = {
     <div class="wrap mt-9 grid gap-10 pb-20 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-14">
       <div class="min-w-0">
         {toc.length > 0 && (
-          <details class="toc-mobile mb-8 rounded-lg border lg:hidden" style="border-color:var(--line);background:var(--surface-2)">
+          <details data-pagefind-ignore class="toc-mobile mb-8 rounded-lg border lg:hidden" style="border-color:var(--line);background:var(--surface-2)">
             <summary class="cursor-pointer px-5 py-3 text-sm font-semibold" style="color:var(--ink)">本文大綱</summary>
             <nav aria-label="本文大綱" class="px-5 pb-4">
               <ol class="toc m-0 list-none p-0">
@@ -72,12 +73,12 @@ const jsonLd = {
           <Content />
         </div>
         <!-- 作者與授權內文第一段已經寫了，這裡只補內文沒有的那一樣：原文在哪 -->
-        <p class="mb-0 mt-12 max-w-[68ch] border-t pt-5 text-sm" style="border-color:var(--line);color:var(--ink-muted)">
+        <p data-pagefind-ignore class="mb-0 mt-12 max-w-[68ch] border-t pt-5 text-sm" style="border-color:var(--line);color:var(--ink-muted)">
           原文在 <a href={source} target="_blank" rel="noopener noreferrer" class="underline underline-offset-[3px]" style="color:var(--accent)">g0v HackMD</a>，本頁於 <span class="num">{synced}</span> 拷貝；兩邊不一致時以原文為準。
         </p>
       </div>
 
-      <aside class="hidden text-sm lg:sticky lg:top-28 lg:block lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto" style="color:var(--ink-muted)">
+      <aside data-pagefind-ignore class="hidden text-sm lg:sticky lg:top-28 lg:block lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto" style="color:var(--ink-muted)">
         {toc.length > 0 && (
           <nav aria-label="本文大綱">
             <p class="m-0 mb-2 text-xs">本文大綱</p>

@@ -62,9 +62,11 @@ const jsonLd = {
 ---
 
 <Base title={`${project.name}｜台灣公民科技資料庫`} description={description} current="home" jsonLd={jsonLd}>
-  <article class="pt-28 sm:pt-32">
+  <!-- 站內搜尋（Pagefind）只收這個 article；欄位名、選單、同類專案這些每頁都有的字標 ignore，
+       不然搜「解決」「網站」會每一頁都命中。kind／category 給搜尋結果分組與標示用 -->
+  <article class="pt-28 sm:pt-32" data-pagefind-body data-pagefind-filter="kind:project" data-pagefind-meta={`category:${category.name}`}>
     <header class="wrap">
-      <a href={`/c/${category.slug}`} class="text-sm no-underline" style={`color:var(--c-${category.slug})`}>
+      <a href={`/c/${category.slug}`} data-pagefind-ignore class="text-sm no-underline" style={`color:var(--c-${category.slug})`}>
         ← {category.name}
       </a>
       <h1 class="mt-5 text-[2rem] font-semibold leading-tight sm:text-[2.6rem]" style="color:var(--ink)">
@@ -84,7 +86,7 @@ const jsonLd = {
           <dl class="m-0 grid max-w-[62ch] gap-4">
             {details.map((l) => (
               <div class="grid gap-1 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-5">
-                <dt class="text-xs sm:pt-1" style="color:var(--ink-muted)">{l.label}</dt>
+                <dt data-pagefind-ignore class="text-xs sm:pt-1" style="color:var(--ink-muted)">{l.label}</dt>
                 <dd class="m-0 text-[1rem] leading-[1.75] [overflow-wrap:anywhere]" style="color:var(--ink-2)">
                   {l.label === "討論在哪裡" && project.slack ? (
                     <details class="slack-pick relative">
@@ -92,7 +94,7 @@ const jsonLd = {
                         {l.text}
                         <svg class="slack-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
                       </summary>
-                      <div class="slack-menu absolute left-0 top-full z-10 mt-2 grid min-w-[15rem] gap-1 rounded-lg border p-2 text-sm" style="border-color:var(--line);background:var(--surface)">
+                      <div data-pagefind-ignore class="slack-menu absolute left-0 top-full z-10 mt-2 grid min-w-[15rem] gap-1 rounded-lg border p-2 text-sm" style="border-color:var(--line);background:var(--surface)">
                         {project.slack.archiveUrl && (
                           <a href={project.slack.archiveUrl} target="_blank" rel="noopener noreferrer" class="rounded-md px-3 py-2 no-underline" style="color:var(--ink)">
                             看過去的討論<span class="block text-xs" style="color:var(--ink-muted)">#{project.slack.name} 的封存，免登入</span>
@@ -111,13 +113,13 @@ const jsonLd = {
         )}
         {project.intro && project.aiInsight ? (
           <details class="mt-8 max-w-[62ch]">
-            <summary class="cursor-pointer text-sm font-semibold" style="color:var(--ink)">專案自述</summary>
+            <summary data-pagefind-ignore class="cursor-pointer text-sm font-semibold" style="color:var(--ink)">專案自述</summary>
             <p class="mb-0 mt-3 text-[1.05rem] leading-[1.9] [overflow-wrap:anywhere]" style="color:var(--ink-2)">{project.intro}</p>
           </details>
         ) : project.intro ? (
           <p class="m-0 max-w-[62ch] text-[1.05rem] leading-[1.9] [overflow-wrap:anywhere]" style="color:var(--ink-2)">{project.intro}</p>
         ) : project.aiInsight ? null : (
-          <div class="rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
+          <div data-pagefind-ignore class="rounded-lg border p-5" style="border-color:var(--line);background:var(--surface-2)">
             <p class="m-0 text-[0.95rem]" style="color:var(--ink-muted)">
               這個專案還沒有人寫介紹。
               {project.links.length > 0 ? "下面的連結是目前資料庫裡有的全部。" : "資料庫裡目前只有它的名字。"}
@@ -130,7 +132,7 @@ const jsonLd = {
         )}
 
         {links.length > 0 && (
-          <div class="mt-8">
+          <div class="mt-8" data-pagefind-ignore>
             <h2 class="m-0 mb-3 text-sm font-semibold" style="color:var(--ink)">相關連結</h2>
             <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
               {links.map((l) => (
@@ -158,7 +160,7 @@ const jsonLd = {
       <aside class="text-sm" style="color:var(--ink-muted)">
         <dl class="m-0 grid gap-4">
           <div>
-            <dt class="mb-1 text-xs" style="color:var(--ink-muted)">議題分類</dt>
+            <dt data-pagefind-ignore class="mb-1 text-xs" style="color:var(--ink-muted)">議題分類</dt>
             <dd class="m-0">
               <a href={`/c/${category.slug}`} style={`color:var(--c-${category.slug})`}>{category.name}</a>
             </dd>
@@ -166,14 +168,14 @@ const jsonLd = {
 
           {project.tags.length > 0 && (
             <div>
-              <dt class="mb-1 text-xs">標籤</dt>
+              <dt data-pagefind-ignore class="mb-1 text-xs">標籤</dt>
               <dd class="m-0" style="color:var(--ink-2)">{project.tags.join("・")}</dd>
             </div>
           )}
 
           {project.impactCategories.length > 0 && (
             <div>
-              <dt class="mb-1 text-xs">影響力類別</dt>
+              <dt data-pagefind-ignore class="mb-1 text-xs">影響力類別</dt>
               <dd class="m-0" style="color:var(--ink-2)">
                 {project.impactCategories.map((c, i) => (
                   <>
@@ -186,7 +188,7 @@ const jsonLd = {
           )}
 
           {suggestEditEnabled && (
-            <div>
+            <div data-pagefind-ignore>
               <dt class="mb-1 text-xs">這筆資料有錯或過時？</dt>
               <dd class="m-0">
                 <a href={editUrl} style="color:var(--accent)">建議修改</a>，
@@ -199,7 +201,7 @@ const jsonLd = {
     </div>
 
     {siblings.length > 0 && (
-      <section class="wrap mt-16 border-t pt-10 pb-20" style="border-color:var(--line)">
+      <section data-pagefind-ignore class="wrap mt-16 border-t pt-10 pb-20" style="border-color:var(--line)">
         <h2 class="m-0 mb-5 text-base font-semibold" style="color:var(--ink)">同一類的其他專案</h2>
         <div class="grid gap-3 sm:grid-cols-3">
           {siblings.map((p, i) => <ProjectCard project={p} index={i} />)}
