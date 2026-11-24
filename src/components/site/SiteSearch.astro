@@ -1,0 +1,448 @@
+---
+// 站內全文搜尋：導覽列上的放大鏡，點了（或按 ⌘K／Ctrl+K／「/」）蓋一層搜尋面板在頁面上。
+//
+// 索引是 build 完由 Pagefind 產的（package.json 的 build 指令），搜尋在瀏覽器本機跑，
+// 不打後端、不吃 AI Search 的額度，打字就有結果。收哪些字由頁面上的 data-pagefind-* 決定：
+// 只收專案頁（/p/）與行動指引（/g/）的 article，見那兩個頁面的註解。
+//
+// 搜不到想要的，最底下一鍵把字帶去問黑客松鼠（只填進輸入框，不自動送出：送一次就花一次額度）。
+// `npm run dev` 沒有索引，面板會說要 build 後才能用；要試請 `npm run build && npm run preview`。
+
+import { listedProjects } from "../../lib/projects";
+import { getGuides } from "../../lib/guides";
+
+const total = listedProjects.length + (await getGuides()).all.length;
+const tries = ["假訊息", "預算", "立法院", "空氣品質"];
+---
+
+<button
+  type="button"
+  class="site-search-btn flex h-10 w-10 items-center justify-center rounded-md"
+  data-search-open
+  aria-label="搜尋專案與行動指引"
+  aria-haspopup="dialog"
+  title="搜尋（⌘K）"
+>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="7" /><line x1="20.5" y1="20.5" x2="16" y2="16" />
+  </svg>
+</button>
+
+<dialog class="site-search" data-search aria-label="搜尋專案與行動指引">
+  <div class="ss-box">
+    <div class="ss-head">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7" /><line x1="20.5" y1="20.5" x2="16" y2="16" />
+      </svg>
+      <input
+        type="search"
+        placeholder="搜尋專案、行動指引…"
+        autocomplete="off"
+        spellcheck="false"
+        enterkeyhint="go"
+        aria-label="搜尋關鍵字"
+        aria-controls="ss-results"
+        data-search-input
+      />
+      <button type="button" class="ss-close" data-search-close aria-label="關閉搜尋">
+        <span class="ss-kbd ss-esc">Esc</span>
+        <svg class="ss-x" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></svg>
+      </button>
+    </div>
+
+    <div id="ss-results" class="ss-body" data-search-results aria-live="polite">
+      <div class="ss-hint" data-search-hint>
+        <p class="m-0">在 <span class="num">{total}</span> 個專案與行動指引裡找，打字就有結果。</p>
+        <p class="ss-tries m-0">
+          試試看：
+          {tries.map((t) => <button type="button" class="ss-try" data-search-try>{t}</button>)}
+        </p>
+      </div>
+    </div>
+
+    <div class="ss-foot" data-search-foot hidden>
+      <button type="button" class="ss-ask" data-search-ask>
+        找不到想要的？<strong>問黑客松鼠「<span data-search-ask-q></span>」</strong>
+        <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .site-search-btn {
+    color: var(--ink-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+  .site-search-btn:hover {
+    color: var(--ink);
+    background: var(--surface-2);
+  }
+
+  .site-search {
+    width: min(640px, calc(100vw - 2rem));
+    max-width: none;
+    max-height: none;
+    margin: 12vh auto auto;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 24px 60px -12px var(--shadow), 0 2px 8px var(--shadow);
+  }
+  .site-search::backdrop {
+    background: rgb(10 16 20 / 0.45);
+    backdrop-filter: blur(2px);
+  }
+  .ss-box {
+    display: flex;
+    flex-direction: column;
+    max-height: min(70vh, 640px);
+  }
+  .ss-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.4rem 0.6rem 0.4rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-muted);
+  }
+  .ss-head input {
+    flex: 1;
+    min-width: 0;
+    height: 3rem;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 1.05rem;
+  }
+  .ss-head input::-webkit-search-cancel-button { display: none; }
+  .ss-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    padding: 0 0.4rem;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+  }
+  .ss-close:hover { background: var(--surface-2); color: var(--ink); }
+  .ss-x { display: none; }
+  .ss-kbd {
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+  }
+
+  .ss-body {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.5rem;
+  }
+  .ss-hint {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+  }
+  .ss-tries { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+  .ss-try {
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .ss-try:hover { border-color: var(--line-strong); color: var(--ink); }
+
+  .ss-body :global(.ss-group) {
+    margin: 0.6rem 0.75rem 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+  .ss-body :global(.ss-group .num) { font-weight: 400; }
+  .ss-body :global(ul) { margin: 0; padding: 0; list-style: none; }
+  .ss-body :global(.ss-item) {
+    display: block;
+    padding: 0.65rem 0.75rem;
+    border-radius: 9px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .ss-body :global(.ss-item[aria-selected="true"]) { background: var(--accent-soft); }
+  .ss-body :global(.ss-title) {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-weight: 600;
+    font-size: 0.98rem;
+  }
+  .ss-body :global(.ss-cat) {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+  .ss-body :global(.ss-excerpt) {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 0.2rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--ink-2);
+    overflow-wrap: anywhere;
+  }
+  .ss-body :global(mark) {
+    background: transparent;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .ss-body :global(.ss-more) {
+    margin: 0.1rem 0.75rem 0.4rem;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+  .ss-body :global(.ss-empty) {
+    padding: 1.5rem 0.75rem;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+  }
+
+  .ss-foot {
+    border-top: 1px solid var(--line);
+    padding: 0.5rem;
+  }
+  .ss-ask {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0.7rem 0.75rem;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--ink-muted);
+    font: inherit;
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+  }
+  .ss-ask strong { color: var(--accent); font-weight: 600; overflow-wrap: anywhere; }
+  .ss-ask:hover, .ss-ask[aria-selected="true"] { background: var(--accent-soft); }
+
+  /* 手機：整個螢幕，鍵盤彈出來時結果還看得到 */
+  @media (max-width: 640px) {
+    /* 分類放到標題下面，不跟長標題搶一行 */
+    .ss-body :global(.ss-title) { flex-direction: column; gap: 0.1rem; }
+    .site-search {
+      width: 100vw;
+      height: 100dvh;
+      margin: 0;
+      border: none;
+      border-radius: 0;
+    }
+    .ss-box { max-height: 100dvh; height: 100%; }
+    .ss-body { flex: 1; }
+    .ss-esc { display: none; }
+    .ss-x { display: block; }
+  }
+</style>
+
+<script>
+  type Pagefind = {
+    init(): Promise<void>;
+    preload(q: string): Promise<void>;
+    search(q: string, opts?: { filters?: Record<string, string> }): Promise<{ results: { data(): Promise<Hit> }[] } | null>;
+  };
+  type Hit = { url: string; excerpt: string; meta: { title?: string; category?: string } };
+
+  const PER_GROUP = { project: 6, guide: 3 };
+  const GROUPS = [
+    { kind: "project", label: "專案" },
+    { kind: "guide", label: "行動指引" },
+  ] as const;
+
+  const dialog = document.querySelector<HTMLDialogElement>("[data-search]")!;
+  const input = dialog.querySelector<HTMLInputElement>("[data-search-input]")!;
+  const results = dialog.querySelector<HTMLElement>("[data-search-results]")!;
+  const hint = dialog.querySelector<HTMLElement>("[data-search-hint]")!;
+  const foot = dialog.querySelector<HTMLElement>("[data-search-foot]")!;
+  const askBtn = dialog.querySelector<HTMLButtonElement>("[data-search-ask]")!;
+  const askQ = dialog.querySelector<HTMLElement>("[data-search-ask-q]")!;
+
+  let pagefind: Promise<Pagefind | null> | undefined;
+  function loadPagefind() {
+    // 路徑放變數裡：讓 Vite 不要在 build 時去解析它（索引是 Astro build 完才產生的）
+    const url = "/pagefind/pagefind.js";
+    pagefind ??= import(/* @vite-ignore */ url)
+      .then(async (pf: Pagefind) => {
+        await pf.init();
+        return pf;
+      })
+      .catch(() => null);
+    return pagefind;
+  }
+
+  // 只有最後一次打的字算數：打字很快時，慢回來的舊結果不能蓋掉新的
+  let seq = 0;
+  let active = -1;
+
+  function options() {
+    return [...dialog.querySelectorAll<HTMLElement>(".ss-item, [data-search-ask]")].filter(
+      (el) => el.offsetParent !== null,
+    );
+  }
+  function setActive(i: number) {
+    const opts = options();
+    opts.forEach((el) => el.removeAttribute("aria-selected"));
+    active = opts.length ? (i + opts.length) % opts.length : -1;
+    const el = opts[active];
+    if (el) {
+      el.setAttribute("aria-selected", "true");
+      el.scrollIntoView({ block: "nearest" });
+    }
+  }
+
+  // build 用 format: 'file'，Pagefind 記的是 /p/x.html；站內連結一律不帶 .html，
+  // 不然 Web Analytics 會把同一頁算成兩頁
+  const cleanUrl = (u: string) => u.replace(/\.html$/, "");
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+
+  async function run() {
+    const q = input.value.trim();
+    const my = ++seq;
+    foot.hidden = !q;
+    askQ.textContent = q;
+    if (!q) {
+      results.replaceChildren(hint);
+      active = -1;
+      return;
+    }
+    const pf = await loadPagefind();
+    if (my !== seq) return;
+    if (!pf) {
+      results.innerHTML = `<p class="ss-empty m-0">搜尋索引還沒準備好（本機開發模式沒有索引，要 build 後才能用）。</p>`;
+      return;
+    }
+    const groups = await Promise.all(
+      GROUPS.map(async (g) => {
+        const r = await pf.search(q, { filters: { kind: g.kind } });
+        const all = r?.results ?? [];
+        const hits = await Promise.all(all.slice(0, PER_GROUP[g.kind]).map((x) => x.data()));
+        return { ...g, total: all.length, hits };
+      }),
+    );
+    if (my !== seq) return;
+
+    const html = groups
+      .filter((g) => g.hits.length)
+      .map(
+        (g) => `
+        <p class="ss-group">${g.label} <span class="num">${g.total}</span></p>
+        <ul>${g.hits
+          .map(
+            (h) => `<li><a class="ss-item" href="${esc(cleanUrl(h.url))}">
+              <span class="ss-title"><span>${esc(h.meta.title ?? "")}</span>${h.meta.category ? `<span class="ss-cat">${esc(h.meta.category)}</span>` : ""}</span>
+              <span class="ss-excerpt">${h.excerpt}</span>
+            </a></li>`,
+          )
+          .join("")}</ul>
+        ${g.total > g.hits.length ? `<p class="ss-more">還有 ${g.total - g.hits.length} 筆，換個更精確的關鍵字試試</p>` : ""}`,
+      )
+      .join("");
+    results.innerHTML = html || `<p class="ss-empty m-0">找不到「${esc(q)}」。換個說法，或問問黑客松鼠？</p>`;
+    setActive(0);
+  }
+
+  function open() {
+    if (dialog.open) return;
+    dialog.showModal();
+    input.select();
+    loadPagefind();
+  }
+  function close() {
+    dialog.close();
+  }
+
+  document.querySelectorAll("[data-search-open]").forEach((b) => b.addEventListener("click", open));
+  dialog.querySelector("[data-search-close]")!.addEventListener("click", close);
+  // 點面板外面（backdrop）關掉
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) close();
+  });
+
+  // 選字中（注音、倉頡）不搜，選完字才搜：不然會拿「ㄐㄧㄚˇ」去搜
+  input.addEventListener("input", (e) => {
+    if (!(e as InputEvent).isComposing) run();
+  });
+  input.addEventListener("compositionend", run);
+  input.addEventListener("focus", () => loadPagefind(), { once: true });
+
+  dialog.addEventListener("keydown", (e) => {
+    if (e.isComposing) return;
+    // type=search 的輸入框會把 Esc 吃掉拿去清空文字，對話框收不到；這裡直接關
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setActive(active + (e.key === "ArrowDown" ? 1 : -1));
+    } else if (e.key === "Enter" && document.activeElement === input) {
+      e.preventDefault();
+      options()[active]?.click();
+    }
+  });
+  results.addEventListener("mousemove", (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>(".ss-item");
+    if (el) setActive(options().indexOf(el));
+  });
+  results.addEventListener("click", (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>("[data-search-try]");
+    if (!t) return;
+    input.value = t.textContent ?? "";
+    input.focus();
+    run();
+  });
+
+  askBtn.addEventListener("click", () => {
+    const q = input.value.trim();
+    close();
+    document.dispatchEvent(new CustomEvent("ask:prefill", { detail: q }));
+  });
+
+  // ⌘K／Ctrl+K 隨時可開；「/」只在沒有在打字的時候
+  document.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      dialog.open ? close() : open();
+      return;
+    }
+    const t = e.target as HTMLElement;
+    // 面板自己的輸入框不算：從 ⌘K 開、Esc 關之後，焦點有時會留在已經關掉的輸入框上
+    const typing = !dialog.contains(t) && t.closest("input, textarea, select, [contenteditable='true']");
+    if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      open();
+    }
+  });
+</script>
