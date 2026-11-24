@@ -426,7 +426,7 @@ const examples = [
 </style>
 
 <script>
-  import { MAX_TURNS } from "../../lib/ask";
+  import { MAX_QUESTION, MAX_TURNS } from "../../lib/ask";
 
   type Turn = { role: "user" | "assistant"; content: string };
   type TurnstileApi = {
@@ -686,6 +686,14 @@ const examples = [
   });
   panel.addEventListener("keydown", (e) => {
     if (e.key === "Escape") close();
+  });
+
+  // 站內搜尋找不到時，把搜尋的字帶過來（SiteSearch.astro）。只填進輸入框，送不送由使用者決定
+  document.addEventListener("ask:prefill", (e) => {
+    open();
+    input.value = String((e as CustomEvent).detail ?? "").slice(0, MAX_QUESTION);
+    autosize();
+    input.focus();
   });
 
   // 從回答點連結換頁之後，對話框維持打開
